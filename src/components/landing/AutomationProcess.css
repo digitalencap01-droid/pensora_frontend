@@ -1,0 +1,491 @@
+/* ========================================
+   AUTOMATION PROCESS
+======================================== */
+
+.automation-process {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  padding: 10px 0 20px;
+}
+
+.automation-container {
+  width: min(1500px, 96%);
+  margin: 0 auto;
+}
+
+
+/* ========================================
+   PROCESS WRAPPER
+======================================== */
+
+.process-wrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 15px;
+}
+
+
+/* ========================================
+   SVG WAVE
+======================================== */
+
+.process-svg {
+  position: absolute;
+  top: 30px;
+  left: 2%;
+  width: 96%;
+  height: 160px;
+  z-index: 1;
+  overflow: visible;
+  pointer-events: none;
+}
+
+
+/* ========================================
+   PATH ANIMATION
+======================================== */
+
+.process-path {
+  stroke-dasharray: 2000;
+  stroke-dashoffset: 2000;
+  animation:
+    drawProcessLine 2s
+    cubic-bezier(0.65, 0, 0.35, 1)
+    forwards;
+}
+
+@keyframes drawProcessLine {
+  0% {
+    stroke-dashoffset: 2000;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+
+/* ========================================
+   PATH DOTS
+======================================== */
+
+.path-dot {
+  opacity: 0;
+  animation:
+    showDot 0.35s ease forwards;
+}
+
+.dot-one {
+  fill: #D94A2A;
+  animation-delay: 0.15s;
+}
+
+.dot-two {
+  fill: #D94A2A;
+  animation-delay: 0.5s;
+}
+
+.dot-three {
+  fill: #8C1F3D;
+  animation-delay: 0.9s;
+}
+
+.dot-four {
+  fill: #4B1D6B;
+  animation-delay: 1.3s;
+}
+
+.dot-five {
+  fill: #F2A65A;
+  animation-delay: 1.7s;
+}
+
+@keyframes showDot {
+  from {
+    opacity: 0;
+    transform: scale(0);
+    transform-origin: center;
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+
+/* ========================================
+   STEPS GRID
+======================================== */
+
+.steps-grid {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns:
+    repeat(5, minmax(0, 1fr));
+  align-items: start;
+  gap: 30px;
+  width: 100%;
+}
+
+
+/* ========================================
+   STEP
+======================================== */
+
+.process-step {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  transform: translateY(25px);
+  animation:
+    stepEntrance 0.65s
+    cubic-bezier(0.22, 1, 0.36, 1)
+    forwards;
+  animation-delay:
+    calc(0.25s + var(--delay));
+}
+
+@keyframes stepEntrance {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* ========================================
+   ICON AREA
+======================================== */
+
+.icon-area {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+
+/* ========================================
+   OUTER INCOMPLETE RING
+======================================== */
+
+.step-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  padding: 3px;
+  -webkit-mask:
+    radial-gradient(
+      farthest-side,
+      transparent calc(100% - 4px),
+      #000 calc(100% - 3px)
+    );
+  mask:
+    radial-gradient(
+      farthest-side,
+      transparent calc(100% - 4px),
+      #000 calc(100% - 3px)
+    );
+  transform: rotate(-30deg);
+}
+
+
+/* ========================================
+   INDIVIDUAL RING COLORS
+======================================== */
+
+.step-one .step-ring {
+  background:
+    conic-gradient(
+      #F2A65A 0deg,
+      #F2A65A 165deg,
+      rgba(242,166,90,.15) 165deg,
+      rgba(242,166,90,.15) 230deg,
+      transparent 230deg,
+      transparent 360deg
+    );
+}
+
+.step-two .step-ring {
+  background:
+    conic-gradient(
+      #D94A2A 0deg,
+      #F26B4F 160deg,
+      rgba(217,74,42,.12) 160deg,
+      rgba(217,74,42,.12) 225deg,
+      transparent 225deg,
+      transparent 360deg
+    );
+}
+
+.step-three .step-ring {
+  background:
+    conic-gradient(
+      #D94A2A 0deg,
+      #8C1F3D 165deg,
+      rgba(140,31,61,.12) 165deg,
+      rgba(140,31,61,.12) 225deg,
+      transparent 225deg,
+      transparent 360deg
+    );
+}
+
+.step-four .step-ring {
+  background:
+    conic-gradient(
+      #8C1F3D 0deg,
+      #4B1D6B 165deg,
+      rgba(75,29,107,.12) 165deg,
+      rgba(75,29,107,.12) 225deg,
+      transparent 225deg,
+      transparent 360deg
+    );
+}
+
+.step-five .step-ring {
+  background:
+    conic-gradient(
+      #F2A65A 0deg,
+      #D94A2A 165deg,
+      rgba(242,166,90,.12) 165deg,
+      rgba(242,166,90,.12) 225deg,
+      transparent 225deg,
+      transparent 360deg
+    );
+}
+
+
+/* ========================================
+   WHITE ICON CIRCLE
+======================================== */
+
+.step-icon {
+  position: relative;
+  z-index: 3;
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #fffaf6
+    );
+  box-shadow:
+    0 15px 30px rgba(75, 29, 107, 0.09),
+    0 5px 12px rgba(217, 74, 42, 0.06);
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+
+/* ========================================
+   ICON COLORS
+======================================== */
+
+.step-one .step-icon {
+  color: #D94A2A;
+}
+
+.step-two .step-icon {
+  color: #D94A2A;
+}
+
+.step-three .step-icon {
+  color: #8C1F3D;
+}
+
+.step-four .step-icon {
+  color: #4B1D6B;
+}
+
+.step-five .step-icon {
+  color: #D94A2A;
+}
+
+
+/* ========================================
+   ICON HOVER
+======================================== */
+
+.process-step:hover .step-icon {
+  transform:
+    translateY(-6px)
+    scale(1.04);
+  box-shadow:
+    0 20px 40px rgba(75, 29, 107, 0.12),
+    0 8px 18px rgba(217, 74, 42, 0.08);
+}
+
+
+/* ========================================
+   NUMBER BADGE
+======================================== */
+
+.step-number {
+  min-width: 42px;
+  height: 42px;
+  padding: 0 10px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 14px;
+  box-shadow:
+    0 7px 18px rgba(75,29,107,.12);
+}
+
+.step-one .step-number {
+  background:
+    linear-gradient(
+      135deg,
+      #D94A2A,
+      #F26B38
+    );
+}
+
+.step-two .step-number {
+  background:
+    linear-gradient(
+      135deg,
+      #D94A2A,
+      #F2775D
+    );
+}
+
+.step-three .step-number {
+  background:
+    linear-gradient(
+      135deg,
+      #D94A2A,
+      #8C1F3D
+    );
+}
+
+.step-four .step-number {
+  background:
+    linear-gradient(
+      135deg,
+      #8C1F3D,
+      #4B1D6B
+    );
+}
+
+.step-five .step-number {
+  background:
+    linear-gradient(
+      135deg,
+      #F2A65A,
+      #D94A2A
+    );
+}
+
+
+/* ========================================
+   TEXT
+======================================== */
+
+.step-title {
+  margin: 0 0 8px;
+  color: #1d1830;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.step-description {
+  margin: 0;
+  max-width: 200px;
+  color: #5f5968;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+
+/* ========================================
+   RESPONSIVE — TABLET
+======================================== */
+
+@media (max-width: 1100px) {
+  .steps-grid {
+    grid-template-columns:
+      repeat(3, 1fr);
+    row-gap: 50px;
+  }
+
+  .process-svg {
+    display: none;
+  }
+}
+
+
+/* ========================================
+   RESPONSIVE — MOBILE
+======================================== */
+
+@media (max-width: 700px) {
+  .steps-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+  }
+
+  .process-step {
+    width: 100%;
+    padding: 20px;
+    border-radius: 20px;
+    background:
+      rgba(255,255,255,.65);
+    border:
+      1px solid
+      rgba(140,31,61,.07);
+  }
+
+  .icon-area {
+    width: 115px;
+    height: 115px;
+  }
+
+  .step-icon {
+    width: 84px;
+    height: 84px;
+  }
+
+  .step-title {
+    font-size: 18px;
+  }
+
+  .step-description {
+    font-size: 13.5px;
+  }
+}
+
+
+/* ========================================
+   REDUCED MOTION
+======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .process-path,
+  .path-dot,
+  .process-step {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
