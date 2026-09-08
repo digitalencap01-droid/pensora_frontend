@@ -272,53 +272,61 @@ export const Landing: React.FC = () => {
       <nav 
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 flex items-center ${
           isScrolled 
-            ? 'h-[76px] bg-[#F7E6D5]/90 backdrop-blur-md border-b border-[#ebdcd0] shadow-sm' 
-            : 'h-[86px] bg-transparent'
+            ? 'h-[74px] bg-[#FAF5F0]/95 backdrop-blur-md border-b border-[#F3DEC8] shadow-sm' 
+            : 'h-[84px] bg-transparent'
         }`}
       >
-        <div className="max-w-[1440px] w-[calc(100%-100px)] mx-auto px-12 flex items-center justify-between">
+        <div className="max-w-[1440px] w-[calc(100%-40px)] sm:w-[calc(100%-80px)] mx-auto px-4 sm:px-8 flex items-center justify-between">
           
           {/* Logo */}
           <a 
             href="/" 
-            className="flex items-center gap-2 group cursor-pointer"
+            className="flex items-center gap-2.5 group cursor-pointer"
             onMouseEnter={() => setCursorVariant('hover')}
             onMouseLeave={() => setCursorVariant('default')}
           >
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#4B1D6B] to-[#8C1F3D] flex items-center justify-center shadow-xs">
-              <Sparkles className="w-5 h-5 text-[#F7E6D5] animate-pulse" />
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#2B0847] via-[#48115B] to-[#801B48] flex items-center justify-center shadow-xs">
+              <Sparkles className="w-5 h-5 text-[#FAF5F0]" />
             </div>
-            <span className="text-xl font-black tracking-tight text-[#2D123A]">
-              webo<span className="font-semibold text-[#8C1F3D]">buzz</span>
+            <span className="text-xl font-black tracking-tight text-[#1E122C]">
+              webo<span className="font-extrabold text-[#D94A2A]">buzz</span>
             </span>
           </a>
 
           {/* Nav links */}
-          <div className="hidden md:flex items-center gap-9 text-[11px] font-black uppercase tracking-widest text-[#2D123A]/70">
-            {['Services', 'Strategy', 'Audits', 'Workspace', 'Insights', 'About Us'].map((item) => (
+          <div className="hidden lg:flex items-center gap-6 xl:gap-8 text-[11px] font-black uppercase tracking-widest text-[#1E122C]/75">
+            {[
+              { label: 'SERVICES', href: '#services' },
+              { label: 'STRATEGY', href: '#strategy' },
+              { label: 'AUDITS', href: '#audits' },
+              { label: 'WORKSPACE', href: '#workspace' },
+              { label: 'BLOGS', href: '#insights' },
+              { label: 'ABOUT US', href: '#about' },
+              { label: 'CONTACT US', href: '#contact' },
+            ].map((item) => (
               <a 
-                key={item} 
-                href={`#${item.toLowerCase().replace(' ', '-')}`}
+                key={item.label} 
+                href={item.href}
                 className="relative py-1 transition-colors hover:text-[#4B1D6B] group"
                 onMouseEnter={() => setCursorVariant('hover')}
                 onMouseLeave={() => setCursorVariant('default')}
               >
-                <span>{item}</span>
+                <span>{item.label}</span>
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#D94A2A] transition-all duration-300 group-hover:w-full" />
               </a>
             ))}
           </div>
 
-          {/* Action CTA */}
-          <div className="flex items-center gap-4">
+          {/* Action CTA: LOGIN */}
+          <div className="flex items-center gap-3">
             <a 
               href="/signup"
               onMouseEnter={() => setCursorVariant('hover')}
               onMouseLeave={() => setCursorVariant('default')}
-              className="px-6 py-3 bg-[#4B1D6B] hover:bg-[#8C1F3D] text-[#FFFDFC] text-xs font-black uppercase tracking-widest rounded-xl transition-all duration-200 shadow-xs flex items-center gap-2 hover:-translate-y-0.5"
+              className="px-6 py-2.5 bg-gradient-to-r from-[#2B0847] via-[#48115B] to-[#801B48] hover:opacity-95 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-200 shadow-xs flex items-center gap-2 hover:-translate-y-0.5 active:translate-y-0"
             >
-              <span>Launch App</span>
-              <ArrowRight className="w-4 h-4" />
+              <span>LOGIN</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </a>
           </div>
 

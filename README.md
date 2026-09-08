@@ -160,9 +160,10 @@ The interface is built with the **Warm Peach & Plum Luxury Design System**, deli
 ## 🛠️ Tech Stack & Architecture
 
 - **Core Framework**: [React 18.2](https://react.dev/) + [TypeScript 5.2](https://www.typescriptlang.org/)
+- **Server State & AI Async Engine**: [TanStack Query v5](https://tanstack.com/query/latest) (Smart Caching, Optimistic Mutations, Automated Background AI Polling)
 - **Build Tool & Bundler**: [Vite 5.1](https://vitejs.dev/) with Fast Refresh
 - **Styling**: [Tailwind CSS 3.4](https://tailwindcss.com/) + PostCSS + Autoprefixer
-- **State Management**: React Context API (`MarketingContext`) with local persistence and workspace switching
+- **State Management**: React Context API (`MarketingContext`) + TanStack Query Client
 - **Routing**: [React Router v6.22](https://reactrouter.com/) (Protected layout routes + onboarding wizard routing)
 - **Animations & Micro-interactions**: [Framer Motion 13.1](https://www.framer.com/motion/)
 - **Smooth Scrolling**: [Lenis 1.3](https://lenis.darkroom.engineering/)

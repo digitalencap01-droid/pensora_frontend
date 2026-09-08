@@ -259,16 +259,16 @@ export const LandingInsights: React.FC = () => {
               <div
                 className={`absolute bottom-0 right-0 pointer-events-none select-none z-0 ${
                   article.id === 'funnels'
-                    ? 'w-[190px] sm:w-[210px]'
+                    ? 'w-[200px] sm:w-[225px] -bottom-1 -right-1'
                     : article.id === 'copilots'
-                    ? 'w-[170px] sm:w-[185px] bottom-1 right-1'
-                    : 'w-[175px] sm:w-[190px] bottom-1 right-1'
+                    ? 'w-[190px] sm:w-[215px] -bottom-1 -right-1'
+                    : 'w-[195px] sm:w-[220px] -bottom-1 -right-1'
                 }`}
               >
                 <img
                   src={article.illusSrc}
                   alt={article.illusAlt}
-                  className="w-full h-auto object-contain object-right-bottom block"
+                  className="w-full h-auto object-contain object-right-bottom block drop-shadow-xl group-hover:scale-105 group-hover:-translate-y-1 transition-transform duration-500 ease-out"
                 />
               </div>
             </motion.div>

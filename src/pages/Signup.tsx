@@ -16,6 +16,7 @@ import {
 
 export const Signup: React.FC = () => {
   const navigate = useNavigate();
+  const [isLogin, setIsLogin] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -29,7 +30,7 @@ export const Signup: React.FC = () => {
       setError('Please fill in all fields');
       return;
     }
-    if (!consent) {
+    if (!isLogin && !consent) {
       setError('Please authorize website scan and competitor audit consent to proceed');
       return;
     }
@@ -37,10 +38,14 @@ export const Signup: React.FC = () => {
     setLoading(true);
     setError('');
 
-    // Simulated signup latency
+    // Simulated auth latency
     setTimeout(() => {
       setLoading(false);
-      navigate('/onboarding');
+      if (isLogin) {
+        navigate('/dashboard');
+      } else {
+        navigate('/onboarding');
+      }
     }, 800);
   };
 
@@ -53,7 +58,7 @@ export const Signup: React.FC = () => {
       <div className="w-full max-w-[1100px] bg-[#FDE6D8] rounded-[32px] sm:rounded-[42px] border border-[#F2D0B8] shadow-[0_24px_70px_rgba(234,88,12,0.07)] p-4 sm:p-6 lg:p-7 flex flex-col lg:flex-row items-center lg:items-stretch justify-between gap-6 lg:gap-8 my-auto">
         
         {/* ========================================================
-            LEFT COLUMN: WHITE SIGNUP FORM CARD
+            LEFT COLUMN: WHITE SIGNUP/LOGIN FORM CARD
             ======================================================== */}
         <div className="w-full lg:w-[420px] xl:w-[440px] bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-7 lg:p-8 border border-[#F3DEC8] shadow-[0_12px_40px_rgba(234,88,12,0.05)] flex flex-col justify-between shrink-0">
           
@@ -69,9 +74,27 @@ export const Signup: React.FC = () => {
                 </span>
               </Link>
 
-              <span className="text-[9px] font-black text-[#EA580C] uppercase tracking-wider bg-[#FFF5EC] border border-[#F2A65A]/40 px-3 py-1 rounded-full shadow-3xs">
-                Register
-              </span>
+              {/* Toggle Mode Button */}
+              <div className="flex items-center bg-[#FAF5F0] p-0.5 rounded-full border border-[#F3DEC8]">
+                <button
+                  type="button"
+                  onClick={() => { setIsLogin(false); setError(''); }}
+                  className={`px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-full transition-all cursor-pointer ${
+                    !isLogin ? 'bg-[#D94A2A] text-white shadow-3xs' : 'text-[#6B5E77] hover:text-[#1E122C]'
+                  }`}
+                >
+                  Register
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setIsLogin(true); setError(''); }}
+                  className={`px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-full transition-all cursor-pointer ${
+                    isLogin ? 'bg-[#D94A2A] text-white shadow-3xs' : 'text-[#6B5E77] hover:text-[#1E122C]'
+                  }`}
+                >
+                  Login
+                </button>
+              </div>
             </div>
 
             {/* AI Platform Pill */}
@@ -84,11 +107,22 @@ export const Signup: React.FC = () => {
             {/* Headline & Subtitle */}
             <div className="text-left mb-4">
               <h1 className="text-[22px] sm:text-[24px] font-black text-[#1E122C] tracking-tight leading-[1.12]">
-                Create your<br />
-                <span className="text-[#EA580C] font-serif italic">Digital Marketing</span> Account
+                {isLogin ? (
+                  <>
+                    Welcome back to<br />
+                    <span className="text-[#EA580C] font-serif italic">Your Marketing</span> Workspace
+                  </>
+                ) : (
+                  <>
+                    Create your<br />
+                    <span className="text-[#EA580C] font-serif italic">Digital Marketing</span> Account
+                  </>
+                )}
               </h1>
               <p className="text-[11px] text-slate-500 font-medium leading-relaxed mt-1">
-                Register in under a minute to start automating templates.
+                {isLogin 
+                  ? 'Sign in to access your campaigns, AI agents & analytics.'
+                  : 'Register in under a minute to start automating templates.'}
               </p>
             </div>
           </div>

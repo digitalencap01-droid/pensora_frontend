@@ -13,7 +13,7 @@ import {
 
 export const LandingFooter: React.FC = () => {
   return (
-    <footer className="bg-[#FEF9F5] pt-14 sm:pt-20 md:pt-24 pb-0 relative overflow-hidden select-none">
+    <footer id="contact" className="bg-[#FEF9F5] pt-14 sm:pt-20 md:pt-24 pb-0 relative overflow-hidden select-none">
       
       {/* ========================================================
           MAIN WHITE FOOTER CARD (ONE UNIFIED SLEEK CONTAINER)
