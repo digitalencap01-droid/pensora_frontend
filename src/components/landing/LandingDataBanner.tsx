@@ -36,7 +36,7 @@ export const LandingDataBanner: React.FC = () => {
             </h3>
 
             <p className="text-xs text-white/80 leading-relaxed max-w-sm">
-              Combine search console analytics with creative copywriting drafts. Aura matches what your audience actively searches for with content generated in seconds.
+              Combine search console analytics with creative copywriting drafts. GrowWise AI matches what your audience actively searches for with content generated in seconds.
             </p>
 
             <button

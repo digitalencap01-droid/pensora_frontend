@@ -16,7 +16,7 @@ export const Discover: React.FC = () => {
       {/* Title */}
       <div className="space-y-1">
         <h1 className="text-2xl sm:text-3xl font-black text-[#1E122C] tracking-tight">Discover</h1>
-        <p className="text-xs sm:text-sm text-[#6B5E77] font-medium">Here is what Aura found about your active market and target audience.</p>
+        <p className="text-xs sm:text-sm text-[#6B5E77] font-medium">Here is what GrowWise AI found about your active market and target audience.</p>
       </div>
 
       {isLoading ? (

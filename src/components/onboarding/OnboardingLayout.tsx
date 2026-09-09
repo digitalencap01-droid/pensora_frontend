@@ -123,18 +123,13 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
         {/* Left Column (Purple brand side panel with robot illustration) */}
         <div className="hidden lg:flex flex-col justify-between w-[310px] p-8 bg-gradient-to-b from-[#EAEEF6] to-[#E2E8F3] border-r border-slate-200/50 shrink-0">
           
-          {/* WeboBuzz Logo - Stacked WeboBuzz with custom split green-blue circle */}
-          <div className="flex items-center gap-2.5">
-            <div 
-              className="w-9 h-9 rounded-full shrink-0 border border-slate-100 shadow-sm"
-              style={{
-                background: 'linear-gradient(135deg, #C8FF55 50%, #5C4DF7 50%)'
-              }}
+          {/* GrowWise AI Logo */}
+          <div className="flex items-center">
+            <img 
+              src="/growwise-logo.png" 
+              alt="GrowWise AI" 
+              className="h-9 w-auto object-contain"
             />
-            <div className="flex flex-col leading-[1.0] text-left">
-              <span className="font-extrabold text-[#151A1F] text-[13px] tracking-tight">webo</span>
-              <span className="font-black text-[#151A1F] text-[13px] tracking-tight -mt-0.5">buzz</span>
-            </div>
           </div>
 
           {/* Center Brand Text & Illustration */}
@@ -145,7 +140,7 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
                 your <span className="italic font-serif bg-gradient-to-r from-[#5C4DF7] to-[#C8FF55] bg-clip-text text-transparent">workspace</span>
               </h3>
               <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                Tell us a few details about your business and let Aura tailor your AI workspace for smarter marketing.
+                Tell us a few details about your business and let GrowWise AI tailor your AI workspace for smarter marketing.
               </p>
             </div>
 
@@ -154,7 +149,7 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
               <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-[45px] pointer-events-none" />
               <img 
                 src={transparentRobot} 
-                alt="Aura AI Assistant Robot Illustration" 
+                alt="GrowWise AI Assistant Robot Illustration" 
                 className="w-[210px] h-[210px] object-contain relative z-10 hover:-translate-y-1.5 transition-transform duration-500"
               />
             </div>
@@ -178,15 +173,13 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
           
           {/* Top Header Row */}
           <div className="h-[68px] border-b border-slate-100 px-8 flex items-center justify-between shrink-0">
-            {/* Center Aura Logo badge */}
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-[#5C4DF7] flex items-center justify-center text-white shadow-xs">
-                <Sparkles className="w-4 h-4" />
-              </div>
-              <span className="font-extrabold text-[#151A1F] text-sm tracking-tight">Aura</span>
-              <span className="text-[9px] font-bold text-[#5C4DF7] bg-[#5C4DF7]/10 border border-[#5C4DF7]/10 px-1.5 py-0.5 rounded-md">
-                AI Manager
-              </span>
+            {/* Center GrowWise AI Logo badge */}
+            <div className="flex items-center">
+              <img 
+                src="/growwise-logo.png" 
+                alt="GrowWise AI" 
+                className="h-8 w-auto object-contain"
+              />
             </div>
             
             {/* Support link */}
@@ -271,7 +264,7 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
                   {/* Bullet checklist with mockup-perfect solid checkmarks for active and plain checks for inactive */}
                   <ul className="space-y-3">
                     {[
-                      { label: 'AI Marketing Assistant (Aura)', checked: true },
+                      { label: 'AI Marketing Assistant (GrowWise AI)', checked: true },
                       { label: 'Campaign Insights & Analytics', checked: activeStepperIndex >= 2 },
                       { label: 'Content Strategy Generator', checked: activeStepperIndex >= 3 },
                       { label: 'Audience Insights & Targeting', checked: activeStepperIndex >= 4 }
@@ -296,7 +289,7 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
                   {/* Small Live Graphic Mockup Card */}
                   <div className="bg-white border border-slate-100 rounded-xl p-3 shadow-xs space-y-2.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">AURA DASHBOARD</span>
+                      <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">GROWWISE AI DASHBOARD</span>
                       <div className="flex gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-[#C8FF55]" />
                         <span className="w-1.5 h-1.5 rounded-full bg-[#5C4DF7]" />

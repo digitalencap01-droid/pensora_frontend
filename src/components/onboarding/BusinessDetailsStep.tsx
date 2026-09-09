@@ -57,7 +57,7 @@ export const BusinessDetailsStep: React.FC<BusinessDetailsStepProps> = ({
         <h2 className="text-2.5xl font-extrabold text-slate-900 tracking-tight leading-tight">
           Tell us about your <span className="font-serif italic text-brand-650">business</span>
         </h2>
-        <p className="text-xs text-slate-500 font-medium leading-relaxed">This helps Aura configure content templates and default settings.</p>
+        <p className="text-xs text-slate-500 font-medium leading-relaxed">This helps GrowWise AI configure content templates and default settings.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">

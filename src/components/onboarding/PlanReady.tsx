@@ -68,7 +68,7 @@ export const PlanReady: React.FC<PlanReadyProps> = ({ onStart }) => {
         <h2 className="text-2.5xl font-extrabold text-slate-800 tracking-tight leading-tight">
           Your marketing plan is <span className="font-serif italic text-brand-650">ready</span>
         </h2>
-        <p className="text-xs text-slate-500 font-medium">Aura has compiled your opportunities and calculated business health scores.</p>
+        <p className="text-xs text-slate-500 font-medium">GrowWise AI has compiled your opportunities and calculated business health scores.</p>
       </div>
 
       {/* Completion & Readiness Meters */}

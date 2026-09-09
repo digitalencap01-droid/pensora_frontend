@@ -28,13 +28,12 @@ export const LandingFooter: React.FC = () => {
             
             {/* Col 1: Brand & Socials */}
             <div className="col-span-2 md:col-span-3 lg:col-span-4 space-y-3.5 pr-0 lg:pr-6">
-              <a href="/" className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#D94A2A] to-[#F2A65A] flex items-center justify-center text-white shadow-xs">
-                  <Sparkles className="w-4.5 h-4.5" />
-                </div>
-                <span className="text-xl font-black tracking-tight text-[#1E122C]">
-                  webo<span className="text-[#8C1F3D]">buzz</span>
-                </span>
+              <a href="/" className="inline-flex items-center group">
+                <img 
+                  src="/growwise-logo.png" 
+                  alt="GrowWise AI" 
+                  className="h-10 sm:h-11 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                />
               </a>
 
               <p className="text-xs sm:text-[13px] text-[#6B5E77] font-medium leading-relaxed max-w-sm">
@@ -154,8 +153,8 @@ export const LandingFooter: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="w-3.5 h-3.5 text-[#8C1F3D] shrink-0" />
-                  <a href="mailto:hello@webobuzz.com" className="hover:text-[#8C1F3D] transition-colors whitespace-nowrap">
-                    hello@webobuzz.com
+                  <a href="mailto:hello@growwise.ai" className="hover:text-[#8C1F3D] transition-colors whitespace-nowrap">
+                    hello@growwise.ai
                   </a>
                 </div>
                 <div className="flex items-center gap-2">
@@ -177,7 +176,7 @@ export const LandingFooter: React.FC = () => {
           <div className="border-t border-[#F3DEC8] pt-6 pb-8 sm:pb-10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs relative z-30">
             {/* Left Copyright Badge */}
             <div className="bg-white/90 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[#F3DEC8] shadow-2xs text-[#1E122C] font-bold">
-              &copy; {new Date().getFullYear()} Webobuzz. All rights reserved.
+              &copy; {new Date().getFullYear()} GrowWise AI. All rights reserved.
             </div>
 
             {/* Right Legal Policy Links Pill */}

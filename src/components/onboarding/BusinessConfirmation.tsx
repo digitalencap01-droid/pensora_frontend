@@ -155,7 +155,7 @@ export const BusinessConfirmation: React.FC<BusinessConfirmationProps> = ({
                 className="h-4.5 w-4.5 rounded border-slate-200 text-brand-500 focus:ring-brand-500 cursor-pointer mt-0.5"
               />
               <label htmlFor="audit-consent" className="cursor-pointer select-none leading-normal">
-                I authorize Aura to run search audits and draft automated content in Co-Pilot mode.
+                I authorize GrowWise AI to run search audits and draft automated content in Co-Pilot mode.
               </label>
             </div>
 

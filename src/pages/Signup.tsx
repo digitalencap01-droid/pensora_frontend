@@ -65,13 +65,12 @@ export const Signup: React.FC = () => {
           {/* Top Brand Header */}
           <div>
             <div className="flex items-center justify-between mb-2.5">
-              <Link to="/" className="flex items-center gap-2 group">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#2D0B38] to-[#4A154B] flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform">
-                  <Sparkles className="w-4 h-4 text-[#FDBA74]" />
-                </div>
-                <span className="text-[21px] font-black tracking-tight text-[#1E122C]">
-                  webo<span className="text-[#EA580C]">buzz</span>
-                </span>
+              <Link to="/" className="flex items-center group">
+                <img 
+                  src="/growwise-logo.png" 
+                  alt="GrowWise AI" 
+                  className="h-9 sm:h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                />
               </Link>
 
               {/* Toggle Mode Button */}
@@ -194,7 +193,7 @@ export const Signup: React.FC = () => {
                 className="w-3.5 h-3.5 rounded border-[#D8C7B8] text-[#EA580C] focus:ring-[#EA580C] mt-0.5 cursor-pointer accent-[#EA580C]"
               />
               <label htmlFor="consent" className="text-[10.5px] text-[#5A5265] font-medium leading-tight cursor-pointer select-none">
-                I authorize webobuzz to scan my website, identify SEO issues, and audit competitors.
+                I authorize GrowWise AI to scan my website, identify SEO issues, and audit competitors.
               </label>
             </div>
 
@@ -279,7 +278,7 @@ export const Signup: React.FC = () => {
           <div className="w-full flex items-center justify-center my-1 select-none pointer-events-none">
             <img
               src="/signup-artwork.jpg"
-              alt="webobuzz AI Marketing automation flow"
+              alt="GrowWise AI Marketing automation flow"
               className="w-full max-w-[560px] h-auto object-contain"
             />
           </div>

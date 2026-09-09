@@ -16,7 +16,7 @@ export const LandingVideoSection: React.FC = () => {
           <div className="absolute inset-0 z-0">
             <img
               src="https://images.unsplash.com/photo-1542744094-3a31f103e35f?auto=format&fit=crop&q=80&w=1200"
-              alt="Aura AI product video preview"
+              alt="GrowWise AI product video preview"
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-black/60 backdrop-blur-xs" />

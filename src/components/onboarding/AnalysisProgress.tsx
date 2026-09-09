@@ -63,7 +63,7 @@ export const AnalysisProgress: React.FC<AnalysisProgressProps> = ({
             <span className="text-[10px] font-bold uppercase tracking-wider">Website Analysis Complete</span>
           </div>
           <h2 className="text-2xl font-extrabold text-[#151A1F] tracking-tight leading-tight pt-1">
-            Here's what Aura found
+            Here's what GrowWise AI found
           </h2>
           <p className="text-[12px] text-slate-500 font-semibold leading-relaxed">
             Verify the details fetched from your website before continuing.

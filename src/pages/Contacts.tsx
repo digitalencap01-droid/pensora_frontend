@@ -521,7 +521,7 @@ export const Contacts: React.FC = () => {
   };
 
   const handleLoadImportTemplate = () => {
-    const template = `Name,Email,Phone,Company,Job Title,Location,Lifecycle Stage,Lead Score,Priority,Consent,Tags\n"Vikram Sharma","vikram@example.com","9876543210","Alpha Tech","CEO","Mumbai","mql",85,"high","yes","premium;mumbai"\n"Sophia Loren","sophia@example.com","9999988888","Aura Retail","Designer","London","customer",90,"medium","yes","london;buyer"`;
+    const template = `Name,Email,Phone,Company,Job Title,Location,Lifecycle Stage,Lead Score,Priority,Consent,Tags\n"Vikram Sharma","vikram@example.com","9876543210","Alpha Tech","CEO","Mumbai","mql",85,"high","yes","premium;mumbai"\n"Sophia Loren","sophia@example.com","9999988888","GrowWise Retail","Designer","London","customer",90,"medium","yes","london;buyer"`;
     setCsvText(template);
   };
 

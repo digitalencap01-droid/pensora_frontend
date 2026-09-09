@@ -35,13 +35,12 @@ export const LandingNavbar: React.FC = () => {
       <div className="max-w-[1440px] h-full mx-auto px-6 md:px-10 flex items-center justify-between">
         
         {/* Brand Logo */}
-        <div className="flex items-center gap-2.5 cursor-pointer select-none" onClick={() => navigate('/')}>
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#2B0847] via-[#48115B] to-[#801B48] flex items-center justify-center shadow-xs">
-            <Sparkles className="w-5 h-5 text-[#FAF5F0]" />
-          </div>
-          <span className="text-xl font-black tracking-tight text-[#1E122C]">
-            webo<span className="font-extrabold text-[#D94A2A]">buzz</span>
-          </span>
+        <div className="flex items-center cursor-pointer select-none group" onClick={() => navigate('/')}>
+          <img 
+            src="/growwise-logo.png" 
+            alt="GrowWise AI" 
+            className="h-10 sm:h-11 md:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+          />
         </div>
 
         {/* Navigation Links */}

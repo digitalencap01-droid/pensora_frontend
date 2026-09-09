@@ -39,7 +39,7 @@ export const LandingImageBanner: React.FC = () => {
               AI That Works Like<br />Your Marketing Team
             </h3>
             <p className="text-xs text-white/80 leading-relaxed">
-              Aura doesn't just give suggestions. She logs into your channels, sets budgets, publishes optimized content copies, and manages tags natively.
+              GrowWise AI doesn't just give suggestions. It logs into your channels, sets budgets, publishes optimized content copies, and manages tags natively.
             </p>
             <button className="px-5 py-2.5 bg-theme-lime hover:bg-[#bceb4c] text-theme-textDark font-bold text-xs rounded-full flex items-center gap-1.5 transition-all duration-200 hover:-translate-y-[2px]">
               <span>Explore AI</span>

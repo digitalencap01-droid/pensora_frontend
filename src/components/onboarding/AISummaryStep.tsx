@@ -71,7 +71,7 @@ export const AISummaryStep: React.FC<AISummaryStepProps> = ({
         <h2 className="text-2.5xl font-extrabold text-slate-800 tracking-tight leading-tight">
           AI Profile <span className="font-serif italic text-brand-650">Summary</span>
         </h2>
-        <p className="text-xs text-slate-500 font-medium">Aura has compiled your inputs into a strategic profile. Review the initial understanding below.</p>
+        <p className="text-xs text-slate-500 font-medium">GrowWise AI has compiled your inputs into a strategic profile. Review the initial understanding below.</p>
       </div>
 
       <div className="space-y-4">

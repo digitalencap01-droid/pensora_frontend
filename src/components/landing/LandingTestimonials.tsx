@@ -7,21 +7,21 @@ export const LandingTestimonials: React.FC = () => {
 
   const testimonials = [
     {
-      quote: "Aura felt like having a senior marketing expert working in our dashboard 24/7. It identified layout problems on our checkout page and redrafted our Google Ad campaigns, helping us grow sales by 38% in less than 3 weeks.",
+      quote: "GrowWise AI felt like having a senior marketing expert working in our dashboard 24/7. It identified layout problems on our checkout page and redrafted our Google Ad campaigns, helping us grow sales by 38% in less than 3 weeks.",
       author: "Sarah Jenkins",
       role: "Founder, Bloom Boutique",
       stat: "+38% ROAS",
       avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=100"
     },
     {
-      quote: "Before Aura, we spent 15 hours a week coordinating blogs, Instagram templates, and search tags. Now, the AI researches active Portland search trends, writes drafts, and queues drafts automatically. A huge relief.",
+      quote: "Before GrowWise AI, we spent 15 hours a week coordinating blogs, Instagram templates, and search tags. Now, the AI researches active Portland search trends, writes drafts, and queues drafts automatically. A huge relief.",
       author: "Marcus Chen",
       role: "Operations Lead, Greenhouse Coffee",
       stat: "2.4× Engagement",
       avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=100"
     },
     {
-      quote: "We connected our Search Console and within 10 minutes Aura identified 14 high-value organic search queries that we weren't ranking for. The content draft it created ranking on Google in days.",
+      quote: "We connected our Search Console and within 10 minutes GrowWise AI identified 14 high-value organic search queries that we weren't ranking for. The content draft it created ranking on Google in days.",
       author: "Elena Rostova",
       role: "Marketing Manager, Acme Digital",
       stat: "42 hrs Saved Monthly",

@@ -74,7 +74,7 @@ export const AIAssistant: React.FC = () => {
               <Sparkles className="w-5 h-5 text-[#FAF5F0]" />
             </div>
             <div>
-              <h4 className="text-sm font-black text-[#1E122C]">Aura AI Manager</h4>
+              <h4 className="text-sm font-black text-[#1E122C]">GrowWise AI Manager</h4>
               <p className="text-[10px] text-[#D94A2A] font-extrabold tracking-wide">Online &bull; Active for {business?.name || 'My Shop'}</p>
             </div>
           </div>

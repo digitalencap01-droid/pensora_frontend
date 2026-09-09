@@ -16,7 +16,7 @@ export const Recommendations: React.FC = () => {
           <Sparkles className="w-5 h-5 text-[#D94A2A] animate-pulse" />
         </h1>
         <p className="text-xs sm:text-sm text-[#6B5E77] font-medium">
-          Aura continually audits your connected accounts and searches to find shortcuts to get customers.
+          GrowWise AI continually audits your connected accounts and searches to find shortcuts to get customers.
         </p>
       </div>
 

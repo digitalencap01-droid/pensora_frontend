@@ -28,7 +28,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuOpen }) => {
           </div>
           <input
             type="text"
-            placeholder="Search campaigns, contacts, insights, or ask AI..."
+            placeholder="Search campaigns, contacts, insights, or ask GrowWise AI..."
             onClick={() => setAssistantOpen(true)}
             className="w-full pl-10 pr-12 py-2.5 bg-white border border-[#F3DEC8] rounded-full text-xs font-semibold text-[#1E122C] placeholder-[#6B5E77]/70 shadow-2xs focus:outline-none focus:border-[#D94A2A] focus:ring-2 focus:ring-[#D94A2A]/10 transition-all cursor-pointer"
             readOnly

@@ -182,14 +182,14 @@ export const Landing: React.FC = () => {
   const [testimonialIdx, setTestimonialIdx] = useState(0);
   const testimonials = [
     {
-      quote: "Aura replaced our fragmented dashboards with a unified visual co-pilot. In three months, our organic campaigns generated 42% more leads while cutting ad spends.",
+      quote: "GrowWise AI replaced our fragmented dashboards with a unified visual co-pilot. In three months, our organic campaigns generated 42% more leads while cutting ad spends.",
       author: "Priya Sharma",
       role: "Creative Director, Bloom Boutique",
       avatar: "PS",
       color: "#4B1D6B"
     },
     {
-      quote: "The scroll animation visual tools and auto-marketing suggestions allowed our local shop to compete globally. Aura is not just a platform; it is our marketing partner.",
+      quote: "The scroll animation visual tools and auto-marketing suggestions allowed our local shop to compete globally. GrowWise AI is not just a platform; it is our marketing partner.",
       author: "Vikram Malhotra",
       role: "Founder, Greenhouse Coffee",
       avatar: "VM",
@@ -198,7 +198,7 @@ export const Landing: React.FC = () => {
     {
       quote: "We loved the multi-workspace management. We audit multiple client sites, draft social media tags, and review lead score values, all within a beautiful dark theme settings panel.",
       author: "Sarah Jenkins",
-      role: "Digital Specialist, Aura Retail",
+      role: "Digital Specialist, GrowWise Retail",
       avatar: "SJ",
       color: "#D94A2A"
     }
@@ -281,16 +281,15 @@ export const Landing: React.FC = () => {
           {/* Logo */}
           <a 
             href="/" 
-            className="flex items-center gap-2.5 group cursor-pointer"
+            className="flex items-center group cursor-pointer"
             onMouseEnter={() => setCursorVariant('hover')}
             onMouseLeave={() => setCursorVariant('default')}
           >
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#2B0847] via-[#48115B] to-[#801B48] flex items-center justify-center shadow-xs">
-              <Sparkles className="w-5 h-5 text-[#FAF5F0]" />
-            </div>
-            <span className="text-xl font-black tracking-tight text-[#1E122C]">
-              webo<span className="font-extrabold text-[#D94A2A]">buzz</span>
-            </span>
+            <img 
+              src="/growwise-logo.png" 
+              alt="GrowWise AI" 
+              className="h-10 sm:h-11 md:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+            />
           </a>
 
           {/* Nav links */}
@@ -477,7 +476,7 @@ export const Landing: React.FC = () => {
               </div>
               <div className="text-xs">
                 <span className="block font-black text-[#2D123A] uppercase tracking-wider">Trusted by growing brands</span>
-                <span className="block text-slate-500 font-bold mt-0.5">120+ Brands Growing with Webobuzz</span>
+                <span className="block text-slate-500 font-bold mt-0.5">120+ Brands Growing with GrowWise AI</span>
               </div>
             </div>
 

@@ -359,7 +359,7 @@ export const Settings: React.FC = () => {
                 <ShieldCheck className="w-4.5 h-4.5 text-[#4B1D6B]" />
                 AI Manager Autonomy
               </h3>
-              <p className="text-[10px] text-[#6B5E77] font-semibold">Configure what actions Aura can execute automatically vs what requires your sign-off.</p>
+              <p className="text-[10px] text-[#6B5E77] font-semibold">Configure what actions GrowWise AI can execute automatically vs what requires your sign-off.</p>
             </div>
 
             <div className="space-y-4 divide-y divide-[#F3DEC8]/70">

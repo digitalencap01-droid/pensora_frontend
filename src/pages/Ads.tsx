@@ -22,7 +22,7 @@ export const Ads: React.FC = () => {
       <div className="space-y-1">
         <h1 className="text-2xl sm:text-3xl font-black text-[#1E122C] tracking-tight">Your advertising</h1>
         <p className="text-xs sm:text-sm text-[#6B5E77] font-medium">
-          Aura monitors your paid search and social campaigns, optimizing budgets automatically to save you money.
+          GrowWise AI monitors your paid search and social campaigns, optimizing budgets automatically to save you money.
         </p>
       </div>
 

@@ -26,7 +26,7 @@ export const Website: React.FC = () => {
       <div className="space-y-1">
         <h1 className="text-2xl sm:text-3xl font-black text-[#1E122C] tracking-tight">Improve your website</h1>
         <p className="text-xs sm:text-sm text-[#6B5E77] font-medium">
-          Aura audits your website's layout and code templates to make it easier for visitors to buy.
+          GrowWise AI audits your website's layout and code templates to make it easier for visitors to buy.
         </p>
       </div>
 

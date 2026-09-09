@@ -23,7 +23,7 @@ export const Actions: React.FC = () => {
       <div className="space-y-1">
         <h1 className="text-2xl sm:text-3xl font-black text-[#1E122C] tracking-tight">AI Actions</h1>
         <p className="text-xs sm:text-sm text-[#6B5E77] font-medium">
-          Monitor actions Aura is executing automatically, or review drafts awaiting your approval.
+          Monitor actions GrowWise AI is executing automatically, or review drafts awaiting your approval.
         </p>
       </div>
 
@@ -72,9 +72,9 @@ export const Actions: React.FC = () => {
           title={`No tasks in "${tabs.find(t => t.id === activeTab)?.label}"`}
           description={
             activeTab === 'needs_approval'
-              ? 'Aura is busy preparing optimizations. Check back shortly for new action items.'
+              ? 'GrowWise AI is busy preparing optimizations. Check back shortly for new action items.'
               : activeTab === 'working'
-              ? 'Aura is currently idle. She automatically runs audits when data syncs.'
+              ? 'GrowWise AI is currently idle. It automatically runs audits when data syncs.'
               : 'Completed actions will list here once you approve drafts.'
           }
         />

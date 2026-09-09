@@ -229,18 +229,17 @@ export const Onboarding: React.FC = () => {
             {/* Top Content: Logo, Tag & Headline */}
             <div className="relative z-10">
               {/* Brand Logo Header */}
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#EA580C] to-[#8C1F3D] flex items-center justify-center text-white shadow-xs">
-                  <span className="font-black text-base">✦</span>
-                </div>
-                <span className="font-black text-2xl tracking-tight text-[#15111E]">
-                  webobuzz
-                </span>
+              <div className="flex items-center">
+                <img 
+                  src="/growwise-logo.png" 
+                  alt="GrowWise AI" 
+                  className="h-10 sm:h-11 w-auto object-contain"
+                />
               </div>
 
               {/* Tag & Title */}
               <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[#EA580C] mt-5 block">
-                AURA SETUP
+                GROWWISE AI SETUP
               </span>
               <h1 className="text-3xl sm:text-[34px] font-black text-[#15111E] tracking-tight leading-[1.06] mt-1.5">
                 Let's build <br />

@@ -391,7 +391,7 @@ export const Dashboard: React.FC = () => {
               <MessageSquare className="w-4 h-4 stroke-[2.2]" />
             </div>
             <div className="truncate">
-              <h4 className="text-xs font-black tracking-tight text-[#1E122C] leading-tight truncate">Ask AI Assistant</h4>
+              <h4 className="text-xs font-black tracking-tight text-[#1E122C] leading-tight truncate">Ask GrowWise AI</h4>
               <p className="text-[10px] text-[#6B5E77] font-medium pt-0.5 leading-none truncate">Get AI recommendations</p>
             </div>
           </div>
