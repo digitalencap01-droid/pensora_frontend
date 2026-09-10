@@ -1,5 +1,5 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Home, 
   Briefcase, 
@@ -11,99 +11,396 @@ import {
   Sparkles,
   MessageSquare,
   Users,
-  ChevronRight
+  ChevronRight,
+  ChevronDown,
+  Globe,
+  DollarSign,
+  FileText,
+  Mail,
+  Share2,
+  Search,
+  Target,
+  BookOpen
 } from 'lucide-react';
 import { useMarketing } from '../../context/MarketingContext';
 
-export const Sidebar: React.FC = () => {
-  const { setAssistantOpen, activeWorkspace } = useMarketing();
+interface SubMenuItem {
+  to: string;
+  label: string;
+  icon: React.ElementType;
+}
 
-  const navItems = [
-    { to: '/dashboard', label: 'Home', icon: Home },
-    { to: '/contacts', label: 'Contacts', icon: Users },
-    { to: '/settings', label: 'My Business', icon: Briefcase },
-    { to: '/discover', label: 'Discover', icon: Compass },
-    { to: '/plan', label: 'Plan', icon: Calendar },
-    { to: '/actions', label: 'Actions', icon: Zap },
-    { to: '/results', label: 'Results', icon: BarChart3 },
-  ];
+interface ChannelNavConfig {
+  id: string;
+  title: string;
+  icon: React.ElementType;
+  primaryRoute: string;
+  badge?: string;
+  subItems: SubMenuItem[];
+}
+
+const ALL_CHANNEL_CONFIGS: Record<string, ChannelNavConfig> = {
+  blog: {
+    id: 'blog',
+    title: 'AI Blog Writer',
+    icon: FileText,
+    primaryRoute: '/blog?tab=write',
+    badge: 'Articles',
+    subItems: [
+      { to: '/blog?tab=write', label: 'Write New Article', icon: Sparkles },
+      { to: '/blog?tab=library', label: 'Post History & Drafts', icon: BookOpen },
+      { to: '/blog?tab=overview', label: 'Blog Overview', icon: BarChart3 }
+    ]
+  },
+  linkedin: {
+    id: 'linkedin',
+    title: 'LinkedIn',
+    icon: Briefcase,
+    primaryRoute: '/contacts',
+    badge: 'B2B',
+    subItems: [
+      { to: '/contacts', label: 'Leads & Pipeline', icon: Users },
+      { to: '/blog?tab=write', label: 'Post Creator & Studio', icon: Sparkles },
+      { to: '/discover', label: 'Audience Insights', icon: Compass }
+    ]
+  },
+  seo: {
+    id: 'seo',
+    title: 'SEO Optimization',
+    icon: Search,
+    primaryRoute: '/website',
+    badge: 'Organic',
+    subItems: [
+      { to: '/website', label: 'SEO Audit & Health', icon: Globe },
+      { to: '/discover', label: 'Keyword & Competitors', icon: Compass },
+      { to: '/results', label: 'Organic Rankings', icon: BarChart3 }
+    ]
+  },
+  sem: {
+    id: 'sem',
+    title: 'SEM & Paid Ads',
+    icon: DollarSign,
+    primaryRoute: '/ads',
+    badge: 'Paid',
+    subItems: [
+      { to: '/ads', label: 'Ad Campaigns & Funnels', icon: Target },
+      { to: '/content', label: 'Ad Creative Studio', icon: Sparkles },
+      { to: '/results', label: 'ROAS & Conversions', icon: BarChart3 }
+    ]
+  },
+  email: {
+    id: 'email',
+    title: 'Email Marketing',
+    icon: Mail,
+    primaryRoute: '/contacts',
+    badge: 'Drip',
+    subItems: [
+      { to: '/contacts', label: 'Subscribers & Segments', icon: Users },
+      { to: '/content', label: 'Newsletter & Drip Flows', icon: Sparkles },
+      { to: '/results', label: 'Open & Click Rates', icon: BarChart3 }
+    ]
+  },
+  whatsapp: {
+    id: 'whatsapp',
+    title: 'WhatsApp Marketing',
+    icon: MessageSquare,
+    primaryRoute: '/contacts',
+    badge: 'Direct',
+    subItems: [
+      { to: '/contacts', label: 'Broadcast Audiences', icon: Users },
+      { to: '/content', label: 'Message Templates', icon: Sparkles },
+      { to: '/actions', label: 'Automated Bot Alerts', icon: Zap }
+    ]
+  },
+  social: {
+    id: 'social',
+    title: 'Social Media',
+    icon: Share2,
+    primaryRoute: '/content',
+    badge: 'Viral',
+    subItems: [
+      { to: '/content', label: 'Reels & Post Studio', icon: Sparkles },
+      { to: '/plan', label: 'Publishing Calendar', icon: Calendar },
+      { to: '/results', label: 'Reach & Engagement', icon: BarChart3 }
+    ]
+  }
+};
+
+export const Sidebar: React.FC = () => {
+  const { setAssistantOpen, activeWorkspace, actions } = useMarketing();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const brandName = activeWorkspace?.name || 'Bloom Boutique';
+  const userChannels = activeWorkspace?.channels || [];
+
+  // Normalize channel keys
+  const activeChannelKeys = Array.from(new Set(
+    userChannels.map(ch => {
+      const lower = ch.toLowerCase();
+      if (lower === 'search_console' || lower === 'google') return 'seo';
+      if (lower === 'google_ads' || lower === 'ads') return 'sem';
+      if (lower === 'instagram' || lower === 'facebook' || lower === 'tiktok' || lower === 'twitter') return 'social';
+      return lower;
+    })
+  )).filter(key => ALL_CHANNEL_CONFIGS[key]);
+
+  const displayChannelKeys = activeChannelKeys.length > 0 
+    ? activeChannelKeys 
+    : ['blog', 'linkedin', 'email', 'seo', 'social'];
+
+  // Helper to determine which channel matches the current route
+  const getActiveChannelForRoute = (pathname: string): string | null => {
+    if (pathname.startsWith('/blog')) return 'blog';
+    if (pathname.startsWith('/ads')) return 'sem';
+    if (pathname.startsWith('/website')) return 'seo';
+    return null;
+  };
+
+  // State to track manually toggled or active channel dropdowns
+  const [expandedChannels, setExpandedChannels] = useState<Record<string, boolean>>({});
+
+  // Auto-expand the channel if currently on its active route
+  useEffect(() => {
+    const routeChannel = getActiveChannelForRoute(location.pathname);
+    if (routeChannel) {
+      setExpandedChannels(prev => ({
+        ...prev,
+        [routeChannel]: true
+      }));
+    }
+  }, [location.pathname]);
+
+  const handleChannelClick = (channelKey: string, primaryRoute: string) => {
+    setExpandedChannels(prev => ({
+      ...prev,
+      [channelKey]: !prev[channelKey]
+    }));
+    navigate(primaryRoute);
+  };
+
+  const handleChevronToggle = (e: React.MouseEvent, channelKey: string) => {
+    e.stopPropagation();
+    setExpandedChannels(prev => ({
+      ...prev,
+      [channelKey]: !prev[channelKey]
+    }));
+  };
+
+  const pendingActionsCount = actions.filter(a => a.status === 'needs_approval' || a.status === 'working').length;
 
   return (
     <aside 
       className="hidden lg:flex flex-col w-64 border-r border-[#F3DEC8]/70 bg-[#FEF9F5] h-screen fixed left-0 top-0 z-30 select-none overflow-hidden"
     >
-      {/* Background Decorative Wave in Lower-Left Corner */}
-      <div className="absolute inset-0 pointer-events-none select-none z-0 overflow-hidden opacity-90">
-        <img
-          src="/dashboard-sidebar-wave.png"
-          alt=""
-          className="w-full h-full object-cover object-bottom pointer-events-none"
-        />
-      </div>
-
       {/* 1. Brand Header */}
-      <div className="flex items-center gap-3 px-6 h-20 border-b border-[#F3DEC8]/60 relative z-10">
-        <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#D94A2A] via-[#8C1F3D] to-[#4B1D6B] flex items-center justify-center text-white shadow-xs shrink-0">
-          <Sparkles className="w-5 h-5 text-white" />
+      <div className="flex items-center gap-3 px-5 h-20 border-b border-[#F3DEC8]/60 relative z-10 bg-white/40 shrink-0">
+        <div className="w-10 h-10 rounded-2xl bg-white border border-[#F3DEC8] flex items-center justify-center shadow-xs shrink-0 overflow-hidden p-1">
+          <img src="/growwise-icon.png" alt="GrowWise AI" className="w-full h-full object-contain" />
         </div>
         <div className="min-w-0">
-          <h2 className="font-black text-[#1E122C] text-sm sm:text-[15px] tracking-tight truncate leading-tight">
+          <h2 className="font-black text-[#1E122C] text-sm tracking-tight truncate leading-tight">
             {brandName}
           </h2>
-          <span className="text-[10px] text-[#6B5E77] font-semibold block leading-none pt-0.5">
-            AI for Modern Brands
+          <span className="text-[10px] text-[#D94A2A] font-bold block leading-none pt-0.5">
+            GrowWise AI
           </span>
         </div>
       </div>
 
-      {/* 2. Navigation Links */}
-      <nav className="flex-1 px-4 py-5 space-y-1 overflow-y-auto relative z-10">
-        {navItems.map((item) => (
+      {/* 2. Scrollable Navigation Menu Area */}
+      <nav className="flex-1 px-3.5 py-4 space-y-4 overflow-y-auto relative z-10 custom-scrollbar">
+        
+        {/* Top Pinned: Home / Overview */}
+        <div className="space-y-1">
           <NavLink
-            key={item.to}
-            to={item.to}
+            to="/dashboard"
             className={({ isActive }) => `
-              flex items-center gap-3.5 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wide transition-all duration-200
+              flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold tracking-wide transition-all duration-200
               ${isActive 
                 ? 'bg-[#FFEFEA] text-[#D94A2A] font-black border-l-4 border-[#D94A2A] rounded-l-none shadow-2xs' 
-                : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/60'
+                : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/70'
               }
             `}
           >
-            <item.icon className="w-4 h-4 shrink-0" />
-            <span>{item.label}</span>
+            <Home className="w-4 h-4 shrink-0 text-[#D94A2A]" />
+            <span>Home Overview</span>
           </NavLink>
-        ))}
+        </div>
+
+        {/* Dynamic Channel Sections */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between px-3 pt-1">
+            <span className="text-[9.5px] font-black uppercase tracking-wider text-[#8C1F3D]">
+              Marketing Avenues
+            </span>
+            <span className="text-[8.5px] font-bold text-[#EA580C] bg-[#FFF0E6] border border-[#FAD8C7] px-1.5 py-0.5 rounded-md">
+              {displayChannelKeys.length} Active
+            </span>
+          </div>
+
+          <div className="space-y-1.5">
+            {displayChannelKeys.map((channelKey) => {
+              const config = ALL_CHANNEL_CONFIGS[channelKey];
+              if (!config) return null;
+
+              const isChannelActiveOnRoute = 
+                (channelKey === 'blog' && location.pathname.startsWith('/blog')) ||
+                (channelKey === 'sem' && location.pathname.startsWith('/ads')) ||
+                (channelKey === 'seo' && location.pathname.startsWith('/website'));
+
+              const isExpanded = !!expandedChannels[channelKey];
+              const ChannelIcon = config.icon;
+
+              return (
+                <div key={channelKey} className={`rounded-xl overflow-hidden transition-all ${
+                  isChannelActiveOnRoute ? 'bg-white/90 border border-[#D94A2A]/40 shadow-3xs' : 'bg-white/40 border border-[#F3DEC8]/50 hover:bg-white/70'
+                }`}>
+                  {/* Top-Level Channel Header */}
+                  <div
+                    onClick={() => handleChannelClick(channelKey, config.primaryRoute)}
+                    className={`w-full flex items-center justify-between px-3 py-2 text-xs font-black transition-colors cursor-pointer group ${
+                      isChannelActiveOnRoute ? 'text-[#D94A2A]' : 'text-[#1E122C]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className={`w-6 h-6 rounded-lg border flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
+                        isChannelActiveOnRoute ? 'bg-[#FFEFEA] border-[#FAD8C7] text-[#D94A2A]' : 'bg-[#FAF5F0] border-[#F3DEC8] text-[#8C1F3D]'
+                      }`}>
+                        <ChannelIcon className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="truncate text-left">{config.title}</span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {config.badge && (
+                        <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-md bg-[#FAF5F0] text-[#8C1F3D] border border-[#F3DEC8]/80">
+                          {config.badge}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={(e) => handleChevronToggle(e, channelKey)}
+                        className="p-1 hover:bg-[#FAF5F0] rounded-md transition-colors"
+                      >
+                        {isExpanded ? (
+                          <ChevronDown className="w-3.5 h-3.5 text-[#6B5E77]" />
+                        ) : (
+                          <ChevronRight className="w-3.5 h-3.5 text-[#6B5E77]" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Channel Submenus (Only shown when expanded) */}
+                  {isExpanded && (
+                    <div className="px-2 pb-2 pt-0.5 space-y-0.5 border-t border-[#F3DEC8]/40 bg-[#FAF5F0]/30 animate-in fade-in duration-200">
+                      {config.subItems.map((subItem) => {
+                        const SubIcon = subItem.icon;
+                        const currentFull = location.pathname + location.search;
+                        const isSubActive = currentFull === subItem.to || (subItem.to === '/blog?tab=write' && location.pathname === '/blog' && !location.search);
+
+                        return (
+                          <NavLink
+                            key={`${channelKey}-${subItem.to}-${subItem.label}`}
+                            to={subItem.to}
+                            className={`
+                              flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all
+                              ${isSubActive 
+                                ? 'bg-white text-[#D94A2A] font-black shadow-3xs border border-[#F3DEC8]' 
+                                : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/60'
+                              }
+                            `}
+                          >
+                            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSubActive ? 'bg-[#D94A2A]' : 'bg-[#D94A2A]/40'}`} />
+                            <SubIcon className={`w-3 h-3 shrink-0 ${isSubActive ? 'text-[#D94A2A]' : 'text-[#6B5E77]'}`} />
+                            <span className="truncate">{subItem.label}</span>
+                          </NavLink>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* General Management Tools */}
+        <div className="space-y-1 pt-1">
+          <span className="text-[9.5px] font-black uppercase tracking-wider text-[#8A8294] px-3 block">
+            Workspace Tools
+          </span>
+
+          <NavLink
+            to="/actions"
+            className={({ isActive }) => `
+              flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-bold tracking-wide transition-all duration-200
+              ${isActive 
+                ? 'bg-[#FFEFEA] text-[#D94A2A] font-black border-l-4 border-[#D94A2A] rounded-l-none shadow-2xs' 
+                : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/70'
+              }
+            `}
+          >
+            <div className="flex items-center gap-3">
+              <Zap className="w-4 h-4 text-[#D94A2A] shrink-0" />
+              <span>AI Actions</span>
+            </div>
+            {pendingActionsCount > 0 && (
+              <span className="px-1.5 py-0.5 rounded-md bg-[#D94A2A] text-white text-[9px] font-black leading-none">
+                {pendingActionsCount}
+              </span>
+            )}
+          </NavLink>
+
+          <NavLink
+            to="/plan"
+            className={({ isActive }) => `
+              flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-bold tracking-wide transition-all duration-200
+              ${isActive 
+                ? 'bg-[#FFEFEA] text-[#D94A2A] font-black border-l-4 border-[#D94A2A] rounded-l-none shadow-2xs' 
+                : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/70'
+              }
+            `}
+          >
+            <Calendar className="w-4 h-4 text-[#7E22CE] shrink-0" />
+            <span>Strategy Calendar</span>
+          </NavLink>
+
+          <NavLink
+            to="/results"
+            className={({ isActive }) => `
+              flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-bold tracking-wide transition-all duration-200
+              ${isActive 
+                ? 'bg-[#FFEFEA] text-[#D94A2A] font-black border-l-4 border-[#D94A2A] rounded-l-none shadow-2xs' 
+                : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/70'
+              }
+            `}
+          >
+            <BarChart3 className="w-4 h-4 text-[#10B981] shrink-0" />
+            <span>ROI & Analytics</span>
+          </NavLink>
+        </div>
+
       </nav>
 
-      {/* 3. Mid-Lower Motto / Ambient Typography */}
-      <div className="px-6 py-4 relative z-10">
-        <h3 className="text-lg font-serif font-black text-[#1E122C] leading-tight">
-          Ideas <br />
-          Strategy <br />
-          Growth
-        </h3>
-        <p className="text-[10.5px] text-[#6B5E77] font-semibold pt-1">
-          All in one place.
-        </p>
-      </div>
-
-      {/* 4. Footer Nav & Profile Card */}
-      <div className="p-4 border-t border-[#F3DEC8]/70 space-y-2 relative z-10 bg-white/40 backdrop-blur-xs">
+      {/* 3. Footer Nav & Profile Card */}
+      <div className="p-3.5 border-t border-[#F3DEC8]/70 space-y-2 relative z-10 bg-white/60 backdrop-blur-xs shrink-0">
+        {/* Ask GrowWise AI Pill Button */}
         <button
           onClick={() => setAssistantOpen(true)}
-          className="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-bold text-[#1E122C] hover:bg-white/90 transition-all border border-transparent hover:border-[#F3DEC8]/70 cursor-pointer"
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-[#1E122C] bg-white hover:bg-[#FFF8F5] transition-all border border-[#F3DEC8] hover:border-[#D94A2A]/40 shadow-3xs hover:shadow-2xs cursor-pointer group"
         >
-          <MessageSquare className="w-4 h-4 text-[#8C1F3D] shrink-0" />
-          <span>Ask GrowWise AI</span>
+          <div className="w-5 h-5 rounded-lg bg-[#FFF8F5] border border-[#F3DEC8] flex items-center justify-center shrink-0 overflow-hidden p-0.5 group-hover:scale-105 transition-transform">
+            <img src="/growwise-icon.png" alt="GrowWise AI" className="w-full h-full object-contain" />
+          </div>
+          <span className="group-hover:text-[#D94A2A] transition-colors">Ask GrowWise AI</span>
         </button>
 
         <NavLink
           to="/settings"
           className={({ isActive }) => `
-            flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-bold transition-all
+            flex items-center gap-3 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all
             ${isActive 
               ? 'bg-[#FFEFEA] text-[#D94A2A]' 
               : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/90'
@@ -115,7 +412,7 @@ export const Sidebar: React.FC = () => {
         </NavLink>
 
         {/* User Workspace Profile Pill */}
-        <div className="pt-1">
+        <div className="pt-0.5">
           <div className="flex items-center justify-between p-2 rounded-xl bg-white/90 border border-[#F3DEC8] shadow-2xs cursor-pointer hover:border-[#D94A2A]/40 transition-all">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-7 h-7 rounded-full bg-[#2D0B3F] text-white flex items-center justify-center font-black text-xs shrink-0 shadow-2xs">

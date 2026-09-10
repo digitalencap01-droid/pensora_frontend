@@ -25,6 +25,7 @@ export const apiService = {
     const domainPart = cleanUrl.split('.')[0] || 'My Shop';
     const capitalized = domainPart.charAt(0).toUpperCase() + domainPart.slice(1);
     return {
+      id: `b_${Date.now()}`,
       name: capitalized,
       website: url,
       description: `A growing boutique retail business providing unique products in the ${capitalized} space, dedicated to quality and customer service.`,
@@ -57,10 +58,26 @@ export const apiService = {
     }
   },
 
+  async approveAction(id: string): Promise<void> {
+    await delay(200);
+    const actionIndex = mockActions.findIndex(a => a.id === id);
+    if (actionIndex !== -1) {
+      mockActions[actionIndex].status = 'completed';
+    }
+  },
+
   // Recommendations APIs
   async getRecommendations(): Promise<Recommendation[]> {
     await delay(300);
     return [...mockRecommendations];
+  },
+
+  async applyRecommendation(id: string): Promise<void> {
+    await delay(300);
+    const recIndex = mockRecommendations.findIndex(r => r.id === id);
+    if (recIndex !== -1) {
+      mockRecommendations[recIndex].applied = true;
+    }
   },
 
   // Content Suggestions APIs

@@ -5,7 +5,7 @@ export interface Business {
   description: string;
   services: string[];
   location: string;
-  socials: {
+  socials?: {
     instagram?: string;
     facebook?: string;
     twitter?: string;
@@ -29,6 +29,68 @@ export interface Business {
   readinessScore?: number;
   aiSummary?: string;
   recommendedFirstAction?: string;
+  channelStrategies?: ChannelStrategyDetails;
+}
+
+export interface SeoStrategy {
+  focusKeywords: string[];
+  targetGeography: string;
+  competitorDomains: string[];
+  primaryGoal: 'ranking' | 'organic_traffic' | 'local_seo' | 'technical_fix';
+}
+
+export interface SemStrategy {
+  monthlyBudget: string;
+  platforms: string[];
+  conversionGoal: 'roas_sales' | 'lead_form' | 'app_installs' | 'traffic';
+  targetCPA?: string;
+}
+
+export interface BlogStrategy {
+  topicsAndPillars: string[];
+  publishingCadence: 'daily' | 'weekly_2_3' | 'weekly_1' | 'bi_weekly' | 'monthly';
+  contentType: 'how_to_guides' | 'industry_insights' | 'case_studies' | 'product_updates' | 'thought_leadership';
+  cmsPlatform?: string;
+}
+
+export interface LinkedinStrategy {
+  profileOrCompanyUrl: string;
+  targetJobTitles: string[];
+  targetIndustries: string[];
+  targetCompanySize: string;
+  contentStyle: 'thought_leadership' | 'case_studies' | 'hiring_culture' | 'product_launches';
+  outreachGoal: 'inbound_branding' | 'b2b_lead_generation' | 'executive_presence';
+}
+
+export interface EmailStrategy {
+  currentListSize: string;
+  primaryCampaignType: 'weekly_newsletter' | 'drip_nurture' | 'cold_outreach' | 'ecommerce_promos';
+  currentESP: string;
+  sendingCadence: 'daily' | 'weekly' | 'biweekly' | 'monthly';
+}
+
+export interface WhatsappStrategy {
+  whatsappNumber: string;
+  businessType: 'support_crm' | 'promotional_broadcasts' | 'abandoned_cart_recovery' | 'order_updates';
+  subscriberOptInCount: string;
+  preferredLanguage: string;
+}
+
+export interface SocialStrategy {
+  platforms: string[];
+  primaryFocus: 'reels_short_video' | 'visual_carousels' | 'stories_community' | 'influencer_collab';
+  postingFrequency: 'daily' | '3_times_week' | 'weekly';
+  aestheticStyle: 'minimalist_clean' | 'vibrant_bold' | 'corporate_sleek' | 'warm_lifestyle';
+}
+
+export interface ChannelStrategyDetails {
+  seo?: SeoStrategy;
+  sem?: SemStrategy;
+  blog?: BlogStrategy;
+  linkedin?: LinkedinStrategy;
+  email?: EmailStrategy;
+  whatsapp?: WhatsappStrategy;
+  social?: SocialStrategy;
 }
 
 export type MarketingGoal = 

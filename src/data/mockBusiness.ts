@@ -2,6 +2,7 @@ import { Business } from '../types';
 
 export const mockBusinessPresets: Record<string, Business> = {
   'acmedigital.com': {
+    id: 'b_acme',
     name: 'Acme Digital',
     website: 'https://acmedigital.com',
     description: 'A boutique creative digital agency helping local small businesses grow their online presence through modern design and branding.',
@@ -23,6 +24,7 @@ export const mockBusinessPresets: Record<string, Business> = {
     consentGranted: true
   },
   'greenhousecoffee.com': {
+    id: 'b_greenhouse',
     name: 'Greenhouse Coffee & Roasters',
     website: 'https://greenhousecoffee.com',
     description: 'An eco-friendly, specialty coffee roastery and community café offering organic, fair-trade single-origin coffees and homemade pastries.',
@@ -44,6 +46,7 @@ export const mockBusinessPresets: Record<string, Business> = {
     consentGranted: true
   },
   'bloomboutique.shop': {
+    id: 'b_bloom',
     name: 'Bloom Boutique',
     website: 'https://bloomboutique.shop',
     description: 'An online boutique curated with sustainable, ethically sourced women\'s clothing, jewelry, and lifestyle accessories for the modern minimalist.',
@@ -60,13 +63,14 @@ export const mockBusinessPresets: Record<string, Business> = {
     },
     targetAudience: 'Eco-conscious shoppers, sustainable apparel followers, and minimalist women interested in capsule styling.',
     competitors: ['Everlane', 'Reformation', 'Organic Basics', 'Cuyana'],
-    toneOfVoice: 'luxurious',
+    toneOfVoice: 'premium',
     monthlyBudget: '$2,000+',
     consentGranted: true
   }
 };
 
 export const defaultBusiness: Business = {
+  id: 'b_default',
   name: 'My Business',
   website: '',
   description: 'A local business seeking growth through digital channels.',

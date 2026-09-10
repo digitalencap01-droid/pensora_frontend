@@ -13,7 +13,7 @@ export const LandingOneStop: React.FC = () => {
       x: 0,
       transition: {
         duration: 0.8,
-        ease: [0.16, 1, 0.3, 1],
+        ease: [0.16, 1, 0.3, 1] as const,
         staggerChildren: 0.12
       }
     }
@@ -24,7 +24,7 @@ export const LandingOneStop: React.FC = () => {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
+      transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }
     }
   };
 
@@ -34,7 +34,7 @@ export const LandingOneStop: React.FC = () => {
     visible: (custom: number) => ({
       opacity: 1, 
       x: 0,
-      transition: { duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: custom }
+      transition: { duration: 1.2, ease: [0.16, 1, 0.3, 1] as const, delay: custom }
     })
   };
 
@@ -44,7 +44,7 @@ export const LandingOneStop: React.FC = () => {
     visible: (custom: number) => ({
       opacity: 1, 
       x: 0,
-      transition: { duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: custom }
+      transition: { duration: 1.2, ease: [0.16, 1, 0.3, 1] as const, delay: custom }
     })
   };
 

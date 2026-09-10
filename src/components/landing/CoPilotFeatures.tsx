@@ -196,7 +196,7 @@ export const CoPilotFeatures: React.FC = () => {
         ? { duration: 0 }
         : {
             duration: 0.85,
-            ease: [0.16, 1, 0.3, 1]
+            ease: [0.16, 1, 0.3, 1] as const
           }
     }
   };
@@ -214,7 +214,7 @@ export const CoPilotFeatures: React.FC = () => {
         ? { duration: 0 }
         : {
             duration: 0.9,
-            ease: [0.16, 1, 0.3, 1]
+            ease: [0.16, 1, 0.3, 1] as const
           }
     }
   };
@@ -232,7 +232,7 @@ export const CoPilotFeatures: React.FC = () => {
         : {
             duration: 0.5,
             delay: 0.15,
-            ease: [0.16, 1, 0.3, 1]
+            ease: [0.16, 1, 0.3, 1] as const
           }
     }
   };
@@ -250,7 +250,7 @@ export const CoPilotFeatures: React.FC = () => {
         : {
             duration: 0.55,
             delay: 0.2,
-            ease: [0.16, 1, 0.3, 1]
+            ease: [0.16, 1, 0.3, 1] as const
           }
     }
   };

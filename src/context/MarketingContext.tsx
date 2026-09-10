@@ -143,14 +143,14 @@ export const MarketingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       productsServices: ['Linen dresses', 'Organic cotton tops', 'Handmade jewelry'],
       targetAudienceType: 'B2C',
       targetAudienceDesc: 'Millennial women looking for timeless, sustainable, and minimal apparel.',
-      channels: ['instagram', 'email', 'social'],
+      channels: ['blog', 'linkedin', 'email', 'seo', 'social'],
       toneOfVoice: 'friendly',
       monthlyBudget: '$500 - $2,000',
       consentGranted: true,
       profileCompletion: 100,
       readinessScore: 85,
-      aiSummary: 'Bloom Boutique is a sustainable, eco-friendly apparel brand focused on direct-to-consumer B2C e-commerce sales. They utilize Instagram and Email as primary acquisition channels.',
-      recommendedFirstAction: 'Launch Instagram retargeting campaign for the new Summer Linen Dress collection.'
+      aiSummary: 'Bloom Boutique is a sustainable, eco-friendly apparel brand focused on direct-to-consumer B2C e-commerce sales. They utilize AI Blog Writer, LinkedIn, and Email as primary acquisition channels.',
+      recommendedFirstAction: 'Launch AI Blog article for the new Summer Linen Dress collection.'
     },
     {
       id: 'w_greenhouse',
@@ -166,7 +166,7 @@ export const MarketingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       productsServices: ['Micro-roasted beans', 'Cold brew kegs', 'Drip coffee filters'],
       targetAudienceType: 'Both',
       targetAudienceDesc: 'Daily coffee drinkers seeking single-origin beans and local coffee shops needing wholesale keg supply.',
-      channels: ['email', 'google_ads', 'search_console'],
+      channels: ['blog', 'email', 'sem', 'seo'],
       toneOfVoice: 'casual',
       monthlyBudget: '$2,000+',
       consentGranted: true,

@@ -121,9 +121,8 @@ export const Contacts: React.FC = () => {
   
   const [sortBy, setSortBy] = useState<'score' | 'date' | 'name'>('score');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 50;
+  const [itemsPerPage, setItemsPerPage] = useState(25);
 
   // Selection states
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -212,7 +211,7 @@ export const Contacts: React.FC = () => {
   // Reset page when filters change
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedStage, selectedPriority, selectedSource, selectedScoreRange]);
+  }, [searchQuery, selectedStage, selectedPriority, selectedSource, selectedScoreRange, itemsPerPage]);
 
   // ----------------------------------------------------
   // ACTION HANDLERS
@@ -572,7 +571,7 @@ export const Contacts: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300 pb-12 text-left font-sans relative">
+    <div className="space-y-8 animate-in fade-in duration-300 pb-12 text-left font-sans relative w-full max-w-full min-w-0">
       
       {/* HEADER SECTION */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#F3DEC8]/70 pb-5">
@@ -719,9 +718,9 @@ export const Contacts: React.FC = () => {
       </Card>
 
       {/* CONTACTS LIST TABLE */}
-      <Card className="border border-[#F3DEC8] bg-white rounded-[28px] shadow-sm overflow-hidden p-0">
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left text-xs font-bold">
+      <Card className="border border-[#F3DEC8] bg-white rounded-[28px] shadow-sm overflow-hidden p-0 w-full max-w-full min-w-0">
+        <div className="w-full overflow-x-auto">
+          <table className="w-full min-w-[960px] border-collapse text-left text-xs font-bold">
             <thead>
               <tr className="bg-[#FFF8F5] border-b border-[#F3DEC8] text-[10px] font-black text-[#6B5E77] uppercase tracking-wider">
                 <th className="px-5 py-4 w-12 text-center">
@@ -756,7 +755,7 @@ export const Contacts: React.FC = () => {
                       onClick={() => { setActiveContact(c); setContactDetailOpen(true); }}
                     >
                       {/* Checkbox select */}
-                      <td className="px-5 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                      <td className="px-5 py-3.5 text-center" onClick={(e) => e.stopPropagation()}>
                         <input 
                           type="checkbox"
                           checked={selectedIds.includes(c.id)}
@@ -766,7 +765,7 @@ export const Contacts: React.FC = () => {
                       </td>
 
                       {/* Name Avatar */}
-                      <td className="px-6 py-4">
+                      <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-[#F5EEFB] border border-[#E9D5F7] flex items-center justify-center text-[10px] font-black text-[#4B1D6B] shrink-0 shadow-3xs">
                             {initials}
@@ -779,7 +778,7 @@ export const Contacts: React.FC = () => {
                       </td>
 
                       {/* Contact Info */}
-                      <td className="px-6 py-4 font-semibold text-[#6B5E77]">
+                      <td className="px-5 py-3.5 font-semibold text-[#6B5E77]">
                         <div className="space-y-1">
                           <div className="flex items-center gap-1.5">
                             <Mail className="w-3 h-3 text-[#6B5E77]" />
@@ -793,7 +792,7 @@ export const Contacts: React.FC = () => {
                       </td>
 
                       {/* Company & Role */}
-                      <td className="px-6 py-4">
+                      <td className="px-5 py-3.5">
                         {c.company || c.jobTitle ? (
                           <div>
                             <span className="font-black text-[#1E122C] text-xs block leading-tight">{c.jobTitle || 'No Title'}</span>
@@ -808,7 +807,7 @@ export const Contacts: React.FC = () => {
                       </td>
 
                       {/* Lifecycle & Status */}
-                      <td className="px-6 py-4">
+                      <td className="px-5 py-3.5">
                         <div className="flex flex-col gap-1.5 items-start">
                           <span className={`px-2.5 py-0.5 text-[9.5px] font-black uppercase tracking-wider rounded-full border ${getStageColor(c.lifecycleStage)}`}>
                             {c.lifecycleStage}
@@ -820,41 +819,45 @@ export const Contacts: React.FC = () => {
                       </td>
 
                       {/* Score & Priority */}
-                      <td className="px-6 py-4">
+                      <td className="px-5 py-3.5">
                         <div className="space-y-1.5 w-32">
-                          <div className="flex items-center justify-between text-[10px]">
-                            <span className="font-bold text-[#6B5E77]">Score:</span>
-                            <span className={`font-black ${c.leadScore >= 80 ? 'text-emerald-700' : c.leadScore >= 40 ? 'text-[#4B1D6B]' : 'text-rose-600'}`}>{c.leadScore}</span>
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 bg-[#FAF5F0] border border-[#F3DEC8]/60 rounded-full h-1.5 overflow-hidden">
+                              <div 
+                                className={`h-full rounded-full transition-all duration-300 ${c.leadScore >= 80 ? 'bg-emerald-500' : c.leadScore >= 40 ? 'bg-gradient-to-r from-[#4B1D6B] to-[#D94A2A]' : 'bg-rose-500'}`}
+                                style={{ width: `${c.leadScore}%` }}
+                              />
+                            </div>
+                            <span className={`text-[11px] font-black shrink-0 ${c.leadScore >= 80 ? 'text-emerald-700' : c.leadScore >= 40 ? 'text-[#4B1D6B]' : 'text-rose-600'}`}>
+                              {c.leadScore}
+                            </span>
                           </div>
-                          <div className="w-full bg-[#FAF5F0] border border-[#F3DEC8]/50 rounded-full h-2 overflow-hidden">
-                            <div 
-                              className={`h-full rounded-full ${c.leadScore >= 80 ? 'bg-emerald-600' : c.leadScore >= 40 ? 'bg-gradient-to-r from-[#4B1D6B] to-[#D94A2A]' : 'bg-rose-500'}`}
-                              style={{ width: `${c.leadScore}%` }}
-                            />
-                          </div>
-                          <span className={`inline-block px-2 py-0.5 rounded-full border text-[9px] font-black tracking-wider leading-none uppercase ${getPriorityColor(c.priority)}`}>
+                          <span className={`inline-block px-2 py-0.5 rounded-full border text-[8.5px] font-black uppercase tracking-wider leading-none ${getPriorityColor(c.priority)}`}>
                             {c.priority}
                           </span>
                         </div>
                       </td>
 
                       {/* Tags & Segment */}
-                      <td className="px-6 py-4">
-                        <div className="space-y-1.5 max-w-[180px]">
+                      <td className="px-5 py-3.5">
+                        <div className="flex flex-col gap-1.5 min-w-[170px] max-w-[210px]">
                           {c.segment && (
-                            <span className="inline-block bg-[#FFF8F5] border border-[#F3DEC8] text-[10px] text-[#D94A2A] font-black px-2 py-0.5 rounded-full">
-                              {c.segment}
-                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="inline-flex items-center gap-1 bg-[#FFF4EE] border border-[#FAD8C7] text-[#D94A2A] text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap shadow-3xs">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#D94A2A] shrink-0" />
+                                <span>{c.segment}</span>
+                              </span>
+                            </div>
                           )}
-                          <div className="flex flex-wrap gap-1">
-                            {c.tags.slice(0, 3).map((tag, idx) => (
-                              <span key={idx} className="bg-[#F5EEFB] border border-[#E9D5F7] text-[9.5px] font-black text-[#4B1D6B] px-1.5 py-0.5 rounded-md">
+                          <div className="flex items-center gap-1 flex-wrap">
+                            {c.tags.slice(0, 2).map((tag, idx) => (
+                              <span key={idx} className="bg-[#F5EEFB] border border-[#E9D5F7] text-[9.5px] font-semibold text-[#4B1D6B] px-1.5 py-0.5 rounded-md whitespace-nowrap">
                                 {tag}
                               </span>
                             ))}
-                            {c.tags.length > 3 && (
-                              <span className="bg-[#FAF5F0] text-[#6B5E77] text-[8.5px] font-black px-1.5 py-0.5 rounded-md border border-[#F3DEC8]">
-                                +{c.tags.length - 3}
+                            {c.tags.length > 2 && (
+                              <span className="bg-white border border-[#F3DEC8] text-[#6B5E77] text-[8.5px] font-bold px-1.5 py-0.5 rounded-md shadow-3xs whitespace-nowrap" title={c.tags.slice(2).join(', ')}>
+                                +{c.tags.length - 2}
                               </span>
                             )}
                           </div>
@@ -862,7 +865,7 @@ export const Contacts: React.FC = () => {
                       </td>
 
                       {/* Row Action buttons */}
-                      <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                      <td className="px-5 py-3.5 text-center" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-center gap-1">
                           <button 
                             onClick={() => triggerEdit(c)}
@@ -904,38 +907,62 @@ export const Contacts: React.FC = () => {
         </div>
 
         {/* PAGINATION FOOTER PANEL */}
-        <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-400">
-            Showing <strong className="text-slate-700">{filteredContacts.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}</strong> to <strong className="text-slate-700">{Math.min(currentPage * itemsPerPage, filteredContacts.length)}</strong> of <strong className="text-slate-700">{filteredContacts.length}</strong> contacts
-          </span>
+        <div className="px-6 py-4 bg-[#FAF5F0]/60 border-t border-[#F3DEC8] flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-3.5">
+            <span className="text-xs font-bold text-[#6B5E77]">
+              Showing <strong className="text-[#1E122C] font-black">{filteredContacts.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}</strong> to <strong className="text-[#1E122C] font-black">{Math.min(currentPage * itemsPerPage, filteredContacts.length)}</strong> of <strong className="text-[#1E122C] font-black">{filteredContacts.length}</strong> contacts
+            </span>
+
+            {/* Items Per Page Selector */}
+            <div className="flex items-center gap-1.5 border border-[#F3DEC8] bg-white rounded-xl px-2.5 py-1 shadow-3xs">
+              <span className="text-[10px] font-black text-[#6B5E77] uppercase tracking-wider">Per Page:</span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="text-xs font-black text-[#1E122C] bg-transparent border-0 focus:outline-none cursor-pointer"
+              >
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
+          </div>
 
           <div className="flex items-center gap-1.5">
+            {/* Previous Page Button */}
             <button 
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              className="p-1.5 border border-[#F3DEC8] rounded-lg bg-white text-[#6B5E77] hover:bg-[#FAF5F0] cursor-pointer disabled:opacity-40 disabled:hover:bg-white"
+              className="p-2 border border-[#F3DEC8] rounded-xl bg-white text-[#6B5E77] hover:bg-[#FFF8F5] hover:text-[#D94A2A] hover:border-[#D94A2A]/40 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-[#6B5E77] disabled:hover:border-[#F3DEC8] shadow-3xs flex items-center justify-center"
+              title="Previous Page"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             
+            {/* Page Number Buttons */}
             {Array.from({ length: totalPages }).map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => setCurrentPage(idx + 1)}
-                className={`w-7 h-7 rounded-lg text-xs font-black border flex items-center justify-center cursor-pointer transition-all ${
+                className={`min-w-8 h-8 px-2.5 rounded-xl text-xs font-black border flex items-center justify-center cursor-pointer transition-all duration-200 ${
                   currentPage === idx + 1 
-                    ? 'border-[#4B1D6B] bg-[#4B1D6B] text-white shadow-xs' 
-                    : 'border-[#F3DEC8] bg-white text-[#6B5E77] hover:bg-[#FAF5F0]'
+                    ? 'border-[#4B1D6B] bg-gradient-to-r from-[#2B0847] via-[#48115B] to-[#801B48] text-white shadow-xs' 
+                    : 'border-[#F3DEC8] bg-white text-[#6B5E77] hover:bg-[#FFF8F5] hover:text-[#D94A2A] hover:border-[#D94A2A]/40'
                 }`}
               >
                 {idx + 1}
               </button>
             ))}
 
+            {/* Next Page Button */}
             <button 
               onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}
-              className="p-1.5 border border-[#F3DEC8] rounded-lg bg-white text-[#6B5E77] hover:bg-[#FAF5F0] cursor-pointer disabled:opacity-40 disabled:hover:bg-white"
+              className="p-2 border border-[#F3DEC8] rounded-xl bg-white text-[#6B5E77] hover:bg-[#FFF8F5] hover:text-[#D94A2A] hover:border-[#D94A2A]/40 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-[#6B5E77] disabled:hover:border-[#F3DEC8] shadow-3xs flex items-center justify-center"
+              title="Next Page"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -1020,50 +1047,77 @@ export const Contacts: React.FC = () => {
 
       {/* 1. SLIDING PROFILE DETAILS DRAWER */}
       {contactDetailOpen && activeContact && (
-        <div className="fixed inset-0 z-40 overflow-hidden flex justify-end">
+        <div className="fixed inset-0 z-50 overflow-hidden">
           {/* Backdrop */}
           <div 
-            className="absolute inset-0 bg-[#1E122C]/40 backdrop-blur-xs transition-opacity duration-300 animate-in fade-in"
+            className="fixed inset-0 bg-[#1E122C]/40 backdrop-blur-xs transition-opacity duration-300 animate-in fade-in"
             onClick={() => setContactDetailOpen(false)}
           />
           
-          {/* Drawer container */}
-          <div className="relative w-full max-w-md bg-white h-screen shadow-2xl flex flex-col z-10 animate-in slide-in-from-right duration-300 border-l border-[#F3DEC8]">
-            {/* Header */}
-            <div className="p-6 border-b border-[#F3DEC8] flex items-center justify-between bg-[#FFF8F5]">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F5EEFB] border border-[#E8D4F8] text-[#4B1D6B] text-[10px] font-black uppercase tracking-wider">
-                <Sparkles className="w-3 h-3 text-[#D94A2A]" />
-                Contact Profile Detail
-              </span>
+          {/* Drawer container rigidly pinned to right edge from top to bottom */}
+          <div className="fixed right-0 top-0 bottom-0 h-full max-h-screen w-full sm:w-[480px] max-w-[100vw] bg-[#FAF5F0] shadow-2xl flex flex-col z-10 animate-in slide-in-from-right duration-300 border-l border-[#F3DEC8] overflow-hidden">
+            
+            {/* 1. Sticky Header */}
+            <div className="h-16 px-5 sm:px-6 border-b border-[#F3DEC8] flex items-center justify-between bg-white shrink-0 shadow-2xs z-10">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#D94A2A] animate-pulse" />
+                <span className="text-xs font-black text-[#1E122C] uppercase tracking-wider">
+                  Contact Profile Detail
+                </span>
+              </div>
               <button 
                 onClick={() => setContactDetailOpen(false)}
-                className="p-1.5 hover:bg-[#FAF5F0] rounded-xl text-[#6B5E77] cursor-pointer transition-colors"
+                className="w-8 h-8 rounded-xl bg-[#FAF5F0] hover:bg-[#FFF8F5] text-[#6B5E77] hover:text-[#1E122C] border border-[#F3DEC8] flex items-center justify-center cursor-pointer transition-all shadow-3xs"
+                title="Close Drawer"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Profile Drawer Body */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            {/* 2. Scrollable Body */}
+            <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-5 space-y-4">
               
-              {/* Stepper progress stages */}
-              <div className="space-y-3 bg-[#FFF8F5] border border-[#F3DEC8] p-4.5 rounded-2xl">
-                <span className="text-[9px] font-black text-[#4B1D6B] uppercase tracking-widest block pl-0.5">Lifecycle Progress Tracker</span>
+              {/* Avatar Summary Header Card */}
+              <div className="bg-white border border-[#F3DEC8] p-5 rounded-2xl text-center space-y-2.5 shadow-2xs">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-[#2B0847] via-[#48115B] to-[#801B48] text-white flex items-center justify-center text-xl font-black mx-auto shadow-md ring-4 ring-[#FAF5F0]">
+                  {activeContact.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-[#1E122C] leading-tight">{activeContact.name}</h3>
+                  <p className="text-xs font-bold text-[#6B5E77] mt-0.5">
+                    {activeContact.jobTitle || 'Customer'} {activeContact.company ? `• ${activeContact.company}` : ''}
+                  </p>
+                </div>
+              </div>
+
+              {/* Lifecycle Progress Tracker Card */}
+              <div className="bg-white border border-[#F3DEC8] p-4 rounded-2xl space-y-3 shadow-2xs">
+                <div className="flex items-center justify-between border-b border-[#F3DEC8]/60 pb-2">
+                  <span className="text-[10px] font-black text-[#4B1D6B] uppercase tracking-wider">
+                    Lifecycle Progress
+                  </span>
+                  <span className="text-[9.5px] font-bold text-[#D94A2A] capitalize bg-[#FFF4EE] border border-[#FAD8C7] px-2.5 py-0.5 rounded-full">
+                    {activeContact.lifecycleStage}
+                  </span>
+                </div>
+
                 <div className="flex items-center justify-between pt-1">
                   {(['lead', 'mql', 'sql', 'customer'] as const).map((stage, idx) => {
                     const stageIndex = ['lead', 'mql', 'sql', 'customer'].indexOf(activeContact.lifecycleStage);
                     const isPassed = idx <= stageIndex;
                     return (
                       <React.Fragment key={stage}>
-                        <div className="flex flex-col items-center gap-1.5 flex-1 relative">
-                          <div className={`w-6 h-6 rounded-full border flex items-center justify-center text-[10px] font-black transition-all ${
+                        <div className="flex flex-col items-center gap-1 flex-1 relative">
+                          <div className={`w-7 h-7 rounded-full border flex items-center justify-center text-[10px] font-black transition-all ${
                             isPassed 
-                              ? 'bg-[#4B1D6B] border-[#4B1D6B] text-white shadow-xs' 
-                              : 'bg-white border-[#F3DEC8] text-[#6B5E77]/50'
+                              ? 'bg-gradient-to-r from-[#2B0847] to-[#48115B] border-[#4B1D6B] text-white shadow-xs' 
+                              : 'bg-[#FAF5F0] border-[#F3DEC8] text-[#6B5E77]/50'
                           }`}>
                             {isPassed ? <Check className="w-3.5 h-3.5 stroke-[2.5]" /> : idx + 1}
                           </div>
-                          <span className={`text-[9px] font-black uppercase tracking-wider ${isPassed ? 'text-[#1E122C]' : 'text-[#6B5E77]/60'}`}>{stage}</span>
+                          <span className={`text-[9px] font-black uppercase tracking-wider ${isPassed ? 'text-[#1E122C]' : 'text-[#6B5E77]/60'}`}>
+                            {stage}
+                          </span>
                         </div>
                         {idx < 3 && (
                           <div className={`h-[2px] flex-1 -mt-4 transition-colors ${
@@ -1076,30 +1130,20 @@ export const Contacts: React.FC = () => {
                 </div>
               </div>
 
-              {/* Avatar Summary Header */}
-              <div className="text-center space-y-2">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-[#2B0847] to-[#801B48] text-white flex items-center justify-center text-xl font-black mx-auto shadow-md">
-                  {activeContact.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
-                </div>
-                <div>
-                  <h3 className="text-lg font-black text-[#1E122C]">{activeContact.name}</h3>
-                  {activeContact.jobTitle && (
-                    <span className="text-xs font-bold text-[#6B5E77] mt-0.5 block">{activeContact.jobTitle} &bull; {activeContact.company || 'Retailer'}</span>
-                  )}
-                </div>
-              </div>
+              {/* Attributes 2-Column Grid */}
+              <div className="space-y-3">
+                <span className="text-[10px] font-black text-[#6B5E77] uppercase tracking-widest block pl-1">
+                  Contact Attributes
+                </span>
 
-              {/* 15 Fields Detailed Cards */}
-              <div className="space-y-4 pt-2">
-                <h4 className="text-[10px] font-black text-[#6B5E77] uppercase tracking-widest pb-1 border-b border-[#F3DEC8]">Profile Attributes details</h4>
-                
-                <div className="grid grid-cols-2 gap-3.5">
-                  {/* Lead Score */}
-                  <div className="bg-[#FAF5F0] border border-[#F3DEC8] rounded-xl p-3">
-                    <span className="text-[8px] font-black text-[#6B5E77] uppercase block">Lead score (0-100)</span>
+                <div className="grid grid-cols-2 gap-2.5">
+                  
+                  {/* Lead Score Card */}
+                  <div className="bg-white border border-[#F3DEC8] rounded-xl p-3 shadow-3xs">
+                    <span className="text-[8.5px] font-black text-[#6B5E77] uppercase block">Lead score (0-100)</span>
                     <div className="flex items-center gap-2 mt-1.5">
                       <span className="text-lg font-black text-[#1E122C] leading-none">{activeContact.leadScore}</span>
-                      <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${
+                      <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
                         activeContact.leadScore >= 80 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : activeContact.leadScore >= 40 ? 'bg-[#FFF1EB] text-[#D94A2A] border border-[#FAD8C7]' : 'bg-rose-50 text-rose-600 border border-rose-200'
                       }`}>
                         {activeContact.leadScore >= 80 ? 'Hot' : activeContact.leadScore >= 40 ? 'Warm' : 'Cold'}
@@ -1107,75 +1151,75 @@ export const Contacts: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Priority */}
-                  <div className="bg-[#FAF5F0] border border-[#F3DEC8] rounded-xl p-3">
-                    <span className="text-[8px] font-black text-[#6B5E77] uppercase block">Priority Level</span>
-                    <div className="mt-1">
-                      <span className={`inline-block px-2 py-0.5 text-[9px] font-black uppercase rounded-md border ${getPriorityColor(activeContact.priority)}`}>
+                  {/* Priority Card */}
+                  <div className="bg-white border border-[#F3DEC8] rounded-xl p-3 shadow-3xs">
+                    <span className="text-[8.5px] font-black text-[#6B5E77] uppercase block">Priority Level</span>
+                    <div className="mt-1.5">
+                      <span className={`inline-block px-2.5 py-0.5 text-[9px] font-black uppercase rounded-full border ${getPriorityColor(activeContact.priority)}`}>
                         {activeContact.priority}
                       </span>
                     </div>
                   </div>
 
-                  {/* Email */}
-                  <div className="col-span-2 bg-[#FAF5F0] border border-[#F3DEC8] rounded-xl p-3 space-y-1">
-                    <span className="text-[8px] font-black text-[#6B5E77] uppercase block flex items-center gap-1">
+                  {/* Email Card */}
+                  <div className="col-span-2 bg-white border border-[#F3DEC8] rounded-xl p-3 space-y-1 shadow-3xs">
+                    <span className="text-[8.5px] font-black text-[#6B5E77] uppercase flex items-center gap-1">
                       <Mail className="w-3 h-3 text-[#D94A2A]" />
                       Email Address
                     </span>
                     <span className="text-xs font-bold text-[#1E122C] select-all block break-all">{activeContact.email}</span>
                   </div>
 
-                  {/* Phone */}
-                  <div className="col-span-2 bg-[#FAF5F0] border border-[#F3DEC8] rounded-xl p-3 space-y-1">
-                    <span className="text-[8px] font-black text-[#6B5E77] uppercase block flex items-center gap-1">
+                  {/* Phone Card */}
+                  <div className="col-span-2 bg-white border border-[#F3DEC8] rounded-xl p-3 space-y-1 shadow-3xs">
+                    <span className="text-[8.5px] font-black text-[#6B5E77] uppercase flex items-center gap-1">
                       <Phone className="w-3 h-3 text-[#D94A2A]" />
                       Phone Number
                     </span>
                     <span className="text-xs font-bold text-[#1E122C] select-all block">{activeContact.phone}</span>
                   </div>
 
-                  {/* Location */}
-                  <div className="bg-[#FAF5F0] border border-[#F3DEC8] rounded-xl p-3">
-                    <span className="text-[8px] font-black text-[#6B5E77] uppercase block flex items-center gap-1">
+                  {/* Location Card */}
+                  <div className="bg-white border border-[#F3DEC8] rounded-xl p-3 shadow-3xs">
+                    <span className="text-[8.5px] font-black text-[#6B5E77] uppercase flex items-center gap-1">
                       <MapPin className="w-3 h-3 text-[#D94A2A]" />
                       Location
                     </span>
-                    <span className="text-xs font-bold text-[#1E122C] block mt-1">{activeContact.location || 'Unknown'}</span>
+                    <span className="text-xs font-bold text-[#1E122C] block mt-1 truncate">{activeContact.location || 'Unknown'}</span>
                   </div>
 
-                  {/* Source */}
-                  <div className="bg-[#FAF5F0] border border-[#F3DEC8] rounded-xl p-3">
-                    <span className="text-[8px] font-black text-[#6B5E77] uppercase block">Source channel</span>
-                    <span className="text-xs font-bold text-[#1E122C] block mt-1">{activeContact.source}</span>
+                  {/* Source Channel Card */}
+                  <div className="bg-white border border-[#F3DEC8] rounded-xl p-3 shadow-3xs">
+                    <span className="text-[8.5px] font-black text-[#6B5E77] uppercase block">Source channel</span>
+                    <span className="text-xs font-bold text-[#1E122C] block mt-1 truncate">{activeContact.source}</span>
                   </div>
 
-                  {/* Lead status */}
-                  <div className="bg-[#FAF5F0] border border-[#F3DEC8] rounded-xl p-3">
-                    <span className="text-[8px] font-black text-[#6B5E77] uppercase block">Lead Status</span>
-                    <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-black capitalize mt-1 ${getStatusColor(activeContact.leadStatus)}`}>
+                  {/* Lead Status Card */}
+                  <div className="bg-white border border-[#F3DEC8] rounded-xl p-3 shadow-3xs">
+                    <span className="text-[8.5px] font-black text-[#6B5E77] uppercase block">Lead Status</span>
+                    <span className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-black capitalize mt-1 ${getStatusColor(activeContact.leadStatus)}`}>
                       {activeContact.leadStatus}
                     </span>
                   </div>
 
-                  {/* Owner */}
-                  <div className="bg-[#FAF5F0] border border-[#F3DEC8] rounded-xl p-3">
-                    <span className="text-[8px] font-black text-[#6B5E77] uppercase block">Assigned Owner</span>
-                    <span className="text-xs font-bold text-[#1E122C] block mt-1">{activeContact.owner || 'AI Agent'}</span>
+                  {/* Assigned Owner Card */}
+                  <div className="bg-white border border-[#F3DEC8] rounded-xl p-3 shadow-3xs">
+                    <span className="text-[8.5px] font-black text-[#6B5E77] uppercase block">Assigned Owner</span>
+                    <span className="text-xs font-bold text-[#1E122C] block mt-1 truncate">{activeContact.owner || 'AI Agent'}</span>
                   </div>
 
-                  {/* Segment */}
-                  <div className="col-span-2 bg-[#FAF5F0] border border-[#F3DEC8] rounded-xl p-3">
-                    <span className="text-[8px] font-black text-[#6B5E77] uppercase block">Segment Group</span>
+                  {/* Segment Card */}
+                  <div className="col-span-2 bg-white border border-[#F3DEC8] rounded-xl p-3 shadow-3xs">
+                    <span className="text-[8.5px] font-black text-[#6B5E77] uppercase block">Segment Group</span>
                     <span className="text-xs font-bold text-[#1E122C] block mt-1">{activeContact.segment || 'Unsegmented'}</span>
                   </div>
 
-                  {/* Tags */}
-                  <div className="col-span-2 bg-[#FAF5F0] border border-[#F3DEC8] rounded-xl p-3">
-                    <span className="text-[8px] font-black text-[#6B5E77] uppercase block mb-1.5">Tags</span>
-                    <div className="flex flex-wrap gap-1">
+                  {/* Tags Card */}
+                  <div className="col-span-2 bg-white border border-[#F3DEC8] rounded-xl p-3 shadow-3xs">
+                    <span className="text-[8.5px] font-black text-[#6B5E77] uppercase block mb-1.5">Tags</span>
+                    <div className="flex flex-wrap gap-1.5">
                       {activeContact.tags.map((t, idx) => (
-                        <span key={idx} className="bg-[#FFF1EB] border border-[#FAD8C7] text-[10px] font-bold text-[#D94A2A] px-2 py-0.5 rounded-lg">
+                        <span key={idx} className="bg-[#FFF4EE] border border-[#FAD8C7] text-[10px] font-bold text-[#D94A2A] px-2 py-0.5 rounded-md">
                           {t}
                         </span>
                       ))}
@@ -1185,20 +1229,20 @@ export const Contacts: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Message Consent Status */}
-                  <div className="col-span-2 border border-[#F3DEC8] rounded-xl p-4 flex items-center justify-between gap-4 shadow-3xs bg-white">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                  {/* Messaging Consent Card */}
+                  <div className="col-span-2 border border-[#F3DEC8] rounded-xl p-3.5 flex items-center justify-between gap-4 bg-white shadow-3xs">
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
                         activeContact.consent ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-500 border border-rose-100'
                       }`}>
-                        {activeContact.consent ? <HeartHandshake className="w-4 h-4" /> : <ShieldAlert className="w-4 h-4" />}
+                        {activeContact.consent ? <HeartHandshake className="w-3.5 h-3.5" /> : <ShieldAlert className="w-3.5 h-3.5" />}
                       </div>
                       <div>
-                        <span className="text-xs font-extrabold text-[#1E122C] block">Messaging Consent</span>
-                        <span className="text-[9px] text-[#6B5E77] font-bold block mt-0.5">Permission to send SMS/WhatsApp updates</span>
+                        <span className="text-xs font-black text-[#1E122C] block">Messaging Consent</span>
+                        <span className="text-[9px] text-[#6B5E77] font-semibold block mt-0.5">Permission to send SMS/WhatsApp</span>
                       </div>
                     </div>
-                    <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
+                    <span className={`text-[9.5px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
                       activeContact.consent ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
                     }`}>
                       {activeContact.consent ? 'Granted' : 'Denied'}
@@ -1210,25 +1254,25 @@ export const Contacts: React.FC = () => {
 
             </div>
 
-            {/* Profile Drawer footer controls */}
-            <div className="p-4 border-t border-[#F3DEC8] bg-[#FFF8F5] flex gap-2.5">
+            {/* 3. Sticky Bottom Footer Controls */}
+            <div className="p-4 sm:px-5 sm:py-4 border-t border-[#F3DEC8] bg-white flex items-center gap-2.5 shrink-0 shadow-[0_-4px_20px_rgba(75,29,107,0.08)] z-20">
               <button 
                 onClick={() => { setContactDetailOpen(false); triggerEdit(activeContact); }}
-                className="flex-1 text-center py-2.5 bg-gradient-to-r from-[#2B0847] via-[#48115B] to-[#801B48] hover:opacity-95 text-white text-xs font-black rounded-xl shadow-xs cursor-pointer border-0 transition-opacity"
+                className="flex-1 h-11 bg-gradient-to-r from-[#2B0847] via-[#48115B] to-[#801B48] hover:opacity-95 text-white text-xs font-black rounded-xl shadow-xs cursor-pointer border-0 transition-opacity flex items-center justify-center gap-2 px-4"
               >
-                Edit Details
+                <span>Edit Details</span>
               </button>
               
               <button 
                 onClick={() => handleArchiveContact(activeContact.id)}
-                className="px-4 py-2.5 border border-[#F3DEC8] hover:border-[#D94A2A]/40 bg-white text-[#1E122C] hover:bg-[#FAF5F0] text-xs font-bold rounded-xl cursor-pointer transition-colors"
+                className="h-11 px-4 border border-[#F3DEC8] hover:border-[#D94A2A]/40 bg-[#FAF5F0] text-[#1E122C] hover:bg-white text-xs font-bold rounded-xl cursor-pointer transition-colors shadow-3xs flex items-center justify-center"
               >
                 Archive
               </button>
 
               <button 
                 onClick={() => handleDeleteContact(activeContact.id)}
-                className="px-3.5 py-2.5 border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl cursor-pointer transition-colors"
+                className="w-11 h-11 border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl cursor-pointer transition-colors shadow-3xs flex items-center justify-center shrink-0"
                 title="Delete Contact"
               >
                 <Trash2 className="w-4 h-4" />

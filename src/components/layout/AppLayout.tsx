@@ -16,12 +16,12 @@ export const AppLayout: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF5F0] flex selection:bg-[#D94A2A]/20">
+    <div className="min-h-screen bg-[#FAF5F0] flex selection:bg-[#D94A2A]/20 w-full relative overflow-x-hidden">
       {/* Sidebar - Desktop */}
       <Sidebar />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col lg:pl-64 min-h-screen">
+      <div className="flex-1 flex flex-col lg:pl-64 min-h-screen min-w-0 w-full max-w-full overflow-x-hidden">
         {/* Header */}
         <Header onMenuOpen={() => setMobileMenuOpen(true)} />
 
@@ -32,7 +32,7 @@ export const AppLayout: React.FC = () => {
         />
 
         {/* Dynamic Page Outlet */}
-        <main className="flex-grow p-4 sm:p-6 lg:p-8 max-w-[1400px] w-full mx-auto animate-in fade-in duration-200">
+        <main className="flex-grow p-4 sm:p-6 lg:p-8 max-w-[1400px] w-full min-w-0 mx-auto animate-in fade-in duration-200">
           <Outlet />
         </main>
       </div>

@@ -34,7 +34,7 @@ export const LandingIntro: React.FC = () => {
       y: 0,
       transition: {
         duration: 1.1,
-        ease: [0.16, 1, 0.3, 1] // smooth springy ease-out
+        ease: [0.16, 1, 0.3, 1] as const // smooth springy ease-out
       }
     }
   };
