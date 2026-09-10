@@ -32,6 +32,7 @@ import {
   X,
   Phone,
   ArrowRight,
+  ArrowLeft,
   ChevronRight,
   Flame,
   Award,
@@ -195,9 +196,14 @@ export const Onboarding: React.FC = () => {
   // =========================================================================
   // STEP 1: WORKSPACE & BUSINESS BASICS
   // =========================================================================
-  const [workspaceName, setWorkspaceName] = useState<string>(business?.name || 'Apex Marketing Studio');
-  const [websiteUrl, setWebsiteUrl] = useState<string>(business?.website || 'https://apexstudio.co');
+  const [workspaceName, setWorkspaceName] = useState<string>(business?.name || 'Encaptechno');
+  const [websiteUrl, setWebsiteUrl] = useState<string>(business?.website || 'https://encaptechno.com');
   const [category, setCategory] = useState<string>(business?.industry || 'E-commerce / Retail (D2C)');
+  const [country, setCountry] = useState<string>(business?.country || 'India');
+  const [timezone, setTimezone] = useState<string>(business?.timezone || 'Asia/Kolkata');
+  const [marketingFamiliarity, setMarketingFamiliarity] = useState<'new' | 'basics' | 'experienced'>(
+    business?.marketingFamiliarity || 'new'
+  );
   const [teamSize, setTeamSize] = useState<string>('2 - 10 Members');
   const [description, setDescription] = useState<string>(
     business?.description || 'Premium modern brand helping businesses scale customer acquisition with AI.'
@@ -236,7 +242,10 @@ export const Onboarding: React.FC = () => {
   const [linkedinContentStyle, setLinkedinContentStyle] = useState<'thought_leadership' | 'case_studies' | 'hiring_culture' | 'product_launches'>('thought_leadership');
 
   // 2. Email Strategy State
-  const [emailListSize, setEmailListSize] = useState<string>('2,500 - 10,000 subscribers');
+  const [emailFromName, setEmailFromName] = useState<string>(business?.email?.fromName || 'Encap');
+  const [emailFromAddress, setEmailFromAddress] = useState<string>(business?.email?.fromEmail || 'noreply@encaptechno.com');
+  const [emailReplyTo, setEmailReplyTo] = useState<string>(business?.email?.replyToEmail || 'hello@encaptechno.com');
+  const [emailListSize, setEmailListSize] = useState<string>(business?.email?.currentListSize || '2,500 - 10,000 subscribers');
   const [emailCampaignType, setEmailCampaignType] = useState<'weekly_newsletter' | 'drip_nurture' | 'cold_outreach' | 'ecommerce_promos'>('weekly_newsletter');
   const [emailESP, setEmailESP] = useState<string>('Klaviyo / Mailchimp');
   const [emailCadence, setEmailCadence] = useState<'daily' | 'weekly' | 'biweekly' | 'monthly'>('weekly');
@@ -374,10 +383,16 @@ export const Onboarding: React.FC = () => {
 
     if (selectedChannels.includes('email')) {
       details.email = {
+        fromName: emailFromName,
+        fromEmail: emailFromAddress,
+        replyToEmail: emailReplyTo,
         currentListSize: emailListSize,
         primaryCampaignType: emailCampaignType,
         currentESP: emailESP,
-        sendingCadence: emailCadence
+        sendingCadence: emailCadence,
+        spfVerified: true,
+        dkimVerified: true,
+        autonomyLevel: 'ask_every_time'
       };
     }
 
@@ -412,6 +427,9 @@ export const Onboarding: React.FC = () => {
         website: websiteUrl,
         industry: category,
         description: description,
+        country: country,
+        timezone: timezone,
+        marketingFamiliarity: marketingFamiliarity,
         growthGoal: growthGoal,
         location: location,
         targetMarket: location,
@@ -419,7 +437,9 @@ export const Onboarding: React.FC = () => {
         targetAudienceDesc: targetAudienceDesc,
         channels: selectedChannels,
         toneOfVoice: selectedTone as any,
-        channelStrategies
+        channelStrategies,
+        email: channelStrategies.email,
+        whatsapp: channelStrategies.whatsapp
       });
     }
 
@@ -644,7 +664,7 @@ export const Onboarding: React.FC = () => {
                           type="text"
                           value={workspaceName}
                           onChange={(e) => setWorkspaceName(e.target.value)}
-                          placeholder="e.g. Apex Marketing Studio"
+                          placeholder="e.g. Encaptechno"
                           className="w-full bg-transparent text-xs font-bold text-[#15111E] outline-none placeholder:text-slate-400 mt-0.5"
                         />
                       </div>
@@ -657,13 +677,13 @@ export const Onboarding: React.FC = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <label className="text-[8.5px] font-black text-[#8A8294] uppercase tracking-wider block">
-                          Website URL (Optional)
+                          Website URL
                         </label>
                         <input
                           type="url"
                           value={websiteUrl}
                           onChange={(e) => setWebsiteUrl(e.target.value)}
-                          placeholder="https://apexstudio.co"
+                          placeholder="https://encaptechno.com"
                           className="w-full bg-transparent text-xs font-bold text-[#15111E] outline-none placeholder:text-slate-400 mt-0.5"
                         />
                       </div>
@@ -692,29 +712,91 @@ export const Onboarding: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Field 4: Team Size */}
-                    <div className="bg-[#FFFDFB] border border-[#F5E4D5] rounded-xl p-2.5 sm:p-3 flex items-center gap-2.5 shadow-[0_2px_6px_rgba(0,0,0,0.02)] focus-within:border-[#EA580C] transition-all">
-                      <div className="w-8 h-8 rounded-lg bg-[#FFF0E5] text-[#EA580C] flex items-center justify-center shrink-0">
-                        <Users className="w-4 h-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
+                    {/* Field 4: Country & Timezone */}
+                    <div className="grid grid-cols-2 gap-2 bg-[#FFFDFB] border border-[#F5E4D5] rounded-xl p-2.5 sm:p-3 shadow-[0_2px_6px_rgba(0,0,0,0.02)] focus-within:border-[#EA580C] transition-all">
+                      <div className="min-w-0">
                         <label className="text-[8.5px] font-black text-[#8A8294] uppercase tracking-wider block">
-                          Team Size
+                          Country
                         </label>
-                        <select
-                          value={teamSize}
-                          onChange={(e) => setTeamSize(e.target.value)}
-                          className="w-full bg-transparent text-xs font-bold text-[#15111E] outline-none cursor-pointer mt-0.5"
-                        >
-                          {TEAM_SIZES.map((size) => (
-                            <option key={size} value={size}>
-                              {size}
-                            </option>
-                          ))}
-                        </select>
+                        <input
+                          type="text"
+                          value={country}
+                          onChange={(e) => setCountry(e.target.value)}
+                          placeholder="e.g. India"
+                          className="w-full bg-transparent text-xs font-bold text-[#15111E] outline-none placeholder:text-slate-400 mt-0.5"
+                        />
+                      </div>
+                      <div className="min-w-0 border-l border-[#F5E4D5] pl-2">
+                        <label className="text-[8.5px] font-black text-[#8A8294] uppercase tracking-wider block">
+                          Timezone
+                        </label>
+                        <input
+                          type="text"
+                          value={timezone}
+                          onChange={(e) => setTimezone(e.target.value)}
+                          placeholder="e.g. Asia/Kolkata"
+                          className="w-full bg-transparent text-xs font-bold text-[#15111E] outline-none placeholder:text-slate-400 mt-0.5"
+                        />
                       </div>
                     </div>
 
+                  </div>
+
+                  {/* Marketing Familiarity Selection */}
+                  <div className="space-y-1.5 pt-1">
+                    <div>
+                      <h3 className="text-xs font-black text-[#15111E]">How familiar are you with marketing?</h3>
+                      <p className="text-[10px] text-[#6B6375]">This helps us tailor the experience. You can change it later.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-0.5">
+                      {[
+                        {
+                          id: 'new',
+                          emoji: '🌿',
+                          title: "I'm new to marketing",
+                          desc: 'Show me explanations and guide me through each step. Recommend the best options for me.'
+                        },
+                        {
+                          id: 'basics',
+                          emoji: '📊',
+                          title: 'I know the basics',
+                          desc: 'Some guidance is helpful, but I can handle the details when needed.'
+                        },
+                        {
+                          id: 'experienced',
+                          emoji: '🚀',
+                          title: "I'm experienced",
+                          desc: 'Give me advanced controls and less hand-holding. I know what I want.'
+                        }
+                      ].map((lvl) => {
+                        const isSelected = marketingFamiliarity === lvl.id;
+                        return (
+                          <div
+                            key={lvl.id}
+                            onClick={() => setMarketingFamiliarity(lvl.id as any)}
+                            className={`p-3 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+                              isSelected 
+                                ? 'bg-[#FFF8F4] border-[#EA580C] ring-2 ring-[#EA580C]/20 shadow-xs' 
+                                : 'bg-[#FFFDFB] border-[#F5E4D5] hover:border-[#EA580C]/50 hover:bg-[#FFFDFC]'
+                            }`}
+                          >
+                            <div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-lg">{lvl.emoji}</span>
+                                <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
+                                  isSelected ? 'border-[#EA580C] bg-[#EA580C]' : 'border-slate-300'
+                                }`}>
+                                  {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                </div>
+                              </div>
+                              <h4 className="text-[11.5px] font-black text-[#15111E] mt-1.5">{lvl.title}</h4>
+                              <p className="text-[10px] text-[#6B6375] font-medium leading-relaxed mt-0.5">{lvl.desc}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   {/* Field 5: Short Description */}
@@ -897,45 +979,82 @@ export const Onboarding: React.FC = () => {
                   transition={{ duration: 0.3 }}
                   className="space-y-3.5 w-full text-left"
                 >
+                  {/* Step Header & Channel Progress Counter */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                     <div>
-                      <span className="text-[10.5px] font-black text-[#EA580C] block">
-                        Step 3 • Custom Channel Strategy
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10.5px] font-black text-[#EA580C]">
+                          Step 3 • Custom Channel Strategy
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-[#FFEFEA] text-[#EA580C] border border-[#FAD8C7]">
+                          Channel {Math.max(0, selectedChannels.indexOf(activeChannelTab)) + 1} of {selectedChannels.length}
+                        </span>
+                      </div>
                       <h2 className="text-xl sm:text-[22px] font-black text-[#15111E] tracking-tight mt-0.5">
                         Configure your channel requirements
                       </h2>
                     </div>
-                    <span className="text-[10.5px] font-bold text-[#6B5E77]">
-                      {selectedChannels.length} dynamic forms
-                    </span>
+                    <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#6B5E77]">
+                      <span>Progress:</span>
+                      <span className="font-black text-[#8C1F3D]">
+                        {Math.round(((Math.max(0, selectedChannels.indexOf(activeChannelTab)) + 1) / selectedChannels.length) * 100)}%
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Channel Tab Navigation Bar */}
-                  {selectedChannels.length > 1 && (
-                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-[#F3DEC8]">
-                      {selectedChannels.map((chId) => {
-                        const chMeta = MARKETING_CHANNELS.find(c => c.id === chId);
-                        const isTabActive = activeChannelTab === chId;
-                        const TabIcon = chMeta?.icon || Megaphone;
+                  {/* Visual Step Progress Bar */}
+                  <div className="w-full h-1.5 bg-[#FAF5F0] rounded-full overflow-hidden border border-[#F3DEC8]/70">
+                    <div 
+                      className="h-full bg-gradient-to-r from-[#8C1F3D] to-[#EA580C] transition-all duration-300 rounded-full"
+                      style={{
+                        width: `${((Math.max(0, selectedChannels.indexOf(activeChannelTab)) + 1) / selectedChannels.length) * 100}%`
+                      }}
+                    />
+                  </div>
 
-                        return (
-                          <button
-                            key={chId}
-                            type="button"
-                            onClick={() => setActiveChannelTab(chId)}
-                            className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
-                              isTabActive
-                                ? 'bg-[#2A0E2A] text-white shadow-xs'
-                                : 'bg-[#FFFDFB] border border-[#F3DEC8] text-[#6B5E77] hover:border-[#EA580C] hover:text-[#15111E]'
-                            }`}
-                          >
-                            <TabIcon className="w-3.5 h-3.5" />
-                            <span>{chMeta?.title.split(' ')[0] || chId}</span>
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#EA580C]" />
-                          </button>
-                        );
-                      })}
+                  {/* Guided Sequential Stepper Rail */}
+                  {selectedChannels.length > 1 && (
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 custom-scrollbar">
+                        {selectedChannels.map((chId, idx) => {
+                          const chMeta = MARKETING_CHANNELS.find(c => c.id === chId);
+                          const activeIdx = Math.max(0, selectedChannels.indexOf(activeChannelTab));
+                          const isTabActive = activeChannelTab === chId;
+                          const isCompleted = idx < activeIdx;
+                          const TabIcon = chMeta?.icon || Megaphone;
+
+                          return (
+                            <button
+                              key={chId}
+                              type="button"
+                              onClick={() => setActiveChannelTab(chId)}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-2 transition-all shrink-0 cursor-pointer border ${
+                                isTabActive
+                                  ? 'bg-[#2A0E2A] text-white border-[#2A0E2A] shadow-xs scale-102 ring-2 ring-[#EA580C]/30'
+                                  : isCompleted
+                                  ? 'bg-[#E6F8F0] border-[#A7F3D0] text-[#059669]'
+                                  : 'bg-[#FFFDFB] border-[#F3DEC8] text-[#6B5E77] hover:border-[#EA580C] hover:text-[#15111E]'
+                              }`}
+                            >
+                              <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black ${
+                                isTabActive ? 'bg-[#EA580C] text-white' : isCompleted ? 'bg-[#10B981] text-white' : 'bg-[#FAF5F0] text-[#6B5E77]'
+                              }`}>
+                                {isCompleted ? '✓' : idx + 1}
+                              </div>
+                              <TabIcon className="w-3.5 h-3.5" />
+                              <span>{chMeta?.title.split(' ')[0] || chId}</span>
+                              {isTabActive && (
+                                <span className="text-[8.5px] px-1.5 py-0.2 rounded bg-white/20 text-white font-bold">
+                                  Current
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <span className="text-[10px] text-[#8A8294] font-medium block">
+                        Complete each channel below or click "Next Channel" to proceed sequentially.
+                      </span>
                     </div>
                   )}
 
@@ -1097,17 +1216,59 @@ export const Onboarding: React.FC = () => {
                               <Mail className="w-4 h-4" />
                             </div>
                             <div>
-                              <h4 className="text-xs font-black text-[#15111E]">Email Marketing & Automation Setup</h4>
-                              <p className="text-[10px] text-[#6B6375]">Engage subscribers with newsletters, flows and promotional drops</p>
+                              <h4 className="text-xs font-black text-[#15111E]">Email Campaign Setup &amp; Sender Identity</h4>
+                              <p className="text-[10px] text-[#6B6375]">Configure how your emails appear to clients in their inbox</p>
                             </div>
                           </div>
                           <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-[#D94A2A]/10 text-[#D94A2A]">
-                            High LTV
+                            High ROI
                           </span>
                         </div>
 
+                        {/* From Name & From Email */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                          {/* List Size */}
+                          <div className="space-y-1">
+                            <label className="text-[8.5px] font-black text-[#8A8294] uppercase tracking-wider block">
+                              From Name (Sender Display Name)
+                            </label>
+                            <input
+                              type="text"
+                              value={emailFromName}
+                              onChange={(e) => setEmailFromName(e.target.value)}
+                              placeholder="e.g. Encap / Bloom Studio"
+                              className="w-full bg-[#FAF5F0]/60 border border-[#F3DEC8] rounded-xl px-3 py-1.5 text-xs font-bold text-[#15111E] outline-none"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[8.5px] font-black text-[#8A8294] uppercase tracking-wider block">
+                              From Email Address
+                            </label>
+                            <input
+                              type="email"
+                              value={emailFromAddress}
+                              onChange={(e) => setEmailFromAddress(e.target.value)}
+                              placeholder="noreply@encaptechno.com"
+                              className="w-full bg-[#FAF5F0]/60 border border-[#F3DEC8] rounded-xl px-3 py-1.5 text-xs font-bold text-[#15111E] outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Reply To & List Size */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          <div className="space-y-1">
+                            <label className="text-[8.5px] font-black text-[#8A8294] uppercase tracking-wider block">
+                              Reply-To Email Address (Optional)
+                            </label>
+                            <input
+                              type="email"
+                              value={emailReplyTo}
+                              onChange={(e) => setEmailReplyTo(e.target.value)}
+                              placeholder="founder@encaptechno.com"
+                              className="w-full bg-[#FAF5F0]/60 border border-[#F3DEC8] rounded-xl px-3 py-1.5 text-xs font-bold text-[#15111E] outline-none"
+                            />
+                          </div>
+
                           <div className="space-y-1">
                             <label className="text-[8.5px] font-black text-[#8A8294] uppercase tracking-wider block">
                               Active Subscriber List Size
@@ -1123,23 +1284,9 @@ export const Onboarding: React.FC = () => {
                               <option value="10,000+ subscribers">10,000+ Enterprise list</option>
                             </select>
                           </div>
-
-                          {/* Current ESP */}
-                          <div className="space-y-1">
-                            <label className="text-[8.5px] font-black text-[#8A8294] uppercase tracking-wider block">
-                              Current Email Provider (ESP)
-                            </label>
-                            <input
-                              type="text"
-                              value={emailESP}
-                              onChange={(e) => setEmailESP(e.target.value)}
-                              placeholder="e.g. Klaviyo, Mailchimp, Brevo, HubSpot"
-                              className="w-full bg-[#FAF5F0]/60 border border-[#F3DEC8] rounded-xl px-3 py-1.5 text-xs font-bold text-[#15111E] outline-none"
-                            />
-                          </div>
                         </div>
 
-                        {/* Primary Campaign Type */}
+                        {/* Primary Campaign Strategy */}
                         <div className="space-y-1 pt-1">
                           <label className="text-[8.5px] font-black text-[#8A8294] uppercase tracking-wider block">
                             Primary Email Campaign Strategy
@@ -1155,7 +1302,7 @@ export const Onboarding: React.FC = () => {
                                 key={item.id}
                                 type="button"
                                 onClick={() => setEmailCampaignType(item.id as any)}
-                                className={`p-2 rounded-xl text-[10px] font-bold transition-all ${
+                                className={`p-2 rounded-xl text-[10px] font-bold transition-all cursor-pointer ${
                                   emailCampaignType === item.id ? 'bg-[#D94A2A] text-white shadow-xs' : 'bg-white border border-[#F3DEC8] text-[#15111E] hover:border-[#D94A2A]'
                                 }`}
                               >
@@ -1165,25 +1312,15 @@ export const Onboarding: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* Sending Cadence */}
-                        <div className="space-y-1">
-                          <label className="text-[8.5px] font-black text-[#8A8294] uppercase tracking-wider block">
-                            Target Broadcast Cadence
-                          </label>
-                          <div className="grid grid-cols-4 gap-1.5">
-                            {(['daily', 'weekly', 'biweekly', 'monthly'] as const).map(c => (
-                              <button
-                                key={c}
-                                type="button"
-                                onClick={() => setEmailCadence(c)}
-                                className={`py-1.5 rounded-lg text-[10.5px] font-bold capitalize ${
-                                  emailCadence === c ? 'bg-[#2A0E2A] text-white' : 'bg-white border border-[#F3DEC8] text-[#6B5E77]'
-                                }`}
-                              >
-                                {c}
-                              </button>
-                            ))}
+                        {/* Fast Setup Notice */}
+                        <div className="p-2.5 rounded-xl bg-[#FFF8F4] border border-[#FAD8C7] flex items-center justify-between text-[10.5px]">
+                          <div className="flex items-center gap-2">
+                            <Sparkles className="w-3.5 h-3.5 text-[#EA580C] shrink-0" />
+                            <span className="text-[#6B6375] font-medium">
+                              Live DNS (SPF/DKIM) records and Contact CSV import are ready when you launch your campaign.
+                            </span>
                           </div>
+                          <span className="text-[9.5px] font-bold text-[#EA580C] shrink-0">Fast Onboarding</span>
                         </div>
                       </div>
                     )}
@@ -1639,6 +1776,56 @@ export const Onboarding: React.FC = () => {
                             ))}
                           </div>
                         </div>
+                      </div>
+                    )}
+
+                    {/* Step 3 Sub-Navigation Controls */}
+                    {selectedChannels.length > 1 && (
+                      <div className="flex items-center justify-between pt-2 border-t border-[#F5E4D5]/80">
+                        {(() => {
+                          const activeIdx = Math.max(0, selectedChannels.indexOf(activeChannelTab));
+                          const prevChId = activeIdx > 0 ? selectedChannels[activeIdx - 1] : null;
+                          const nextChId = activeIdx < selectedChannels.length - 1 ? selectedChannels[activeIdx + 1] : null;
+                          const prevMeta = prevChId ? MARKETING_CHANNELS.find(c => c.id === prevChId) : null;
+                          const nextMeta = nextChId ? MARKETING_CHANNELS.find(c => c.id === nextChId) : null;
+
+                          return (
+                            <>
+                              {prevChId ? (
+                                <button
+                                  type="button"
+                                  onClick={() => setActiveChannelTab(prevChId)}
+                                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-[#F3DEC8] hover:bg-[#FAF5F0] text-xs font-bold text-[#6B5E77] hover:text-[#15111E] cursor-pointer transition-all"
+                                >
+                                  <ArrowLeft className="w-3.5 h-3.5" />
+                                  <span>Previous: {prevMeta?.title.split(' ')[0] || prevChId}</span>
+                                </button>
+                              ) : (
+                                <div />
+                              )}
+
+                              {nextChId ? (
+                                <button
+                                  type="button"
+                                  onClick={() => setActiveChannelTab(nextChId)}
+                                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-[#8C1F3D] to-[#EA580C] hover:from-[#731831] hover:to-[#C03B1E] text-white text-xs font-black shadow-sm hover:shadow-md cursor-pointer transition-all"
+                                >
+                                  <span>Next Channel: {nextMeta?.title.split(' ')[0] || nextChId}</span>
+                                  <ArrowRight className="w-3.5 h-3.5" />
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={handleNextStep}
+                                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white text-xs font-black shadow-sm cursor-pointer transition-all"
+                                >
+                                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                  <span>All Channels Set • Next Step</span>
+                                </button>
+                              )}
+                            </>
+                          );
+                        })()}
                       </div>
                     )}
 

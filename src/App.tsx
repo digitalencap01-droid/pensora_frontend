@@ -21,6 +21,8 @@ import Recommendations from './pages/Recommendations';
 import Settings from './pages/Settings';
 import Contacts from './pages/Contacts';
 import Blog from './pages/Blog';
+import EmailCampaign from './pages/EmailCampaign';
+import WhatsappCampaign from './pages/WhatsappCampaign';
 
 export const App: React.FC = () => {
   return (
@@ -44,6 +46,8 @@ export const App: React.FC = () => {
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/blog" element={<Blog />} />
+            <Route path="/email" element={<EmailCampaign />} />
+            <Route path="/whatsapp" element={<WhatsappCampaign />} />
             <Route path="/discover" element={<Discover />} />
             <Route path="/plan" element={<Plan />} />
             <Route path="/actions" element={<Actions />} />

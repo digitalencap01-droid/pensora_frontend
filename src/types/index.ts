@@ -29,7 +29,12 @@ export interface Business {
   readinessScore?: number;
   aiSummary?: string;
   recommendedFirstAction?: string;
+  country?: string;
+  timezone?: string;
+  marketingFamiliarity?: 'new' | 'basics' | 'experienced';
   channelStrategies?: ChannelStrategyDetails;
+  whatsapp?: WhatsappStrategy;
+  email?: EmailStrategy;
 }
 
 export interface SeoStrategy {
@@ -63,10 +68,17 @@ export interface LinkedinStrategy {
 }
 
 export interface EmailStrategy {
+  fromName?: string;
+  fromEmail?: string;
+  replyToEmail?: string;
+  sendingDomain?: string;
+  spfVerified?: boolean;
+  dkimVerified?: boolean;
   currentListSize: string;
   primaryCampaignType: 'weekly_newsletter' | 'drip_nurture' | 'cold_outreach' | 'ecommerce_promos';
-  currentESP: string;
-  sendingCadence: 'daily' | 'weekly' | 'biweekly' | 'monthly';
+  currentESP?: string;
+  sendingCadence?: 'daily' | 'weekly' | 'biweekly' | 'monthly';
+  autonomyLevel?: 'fully_automatic' | 'ask_every_time';
 }
 
 export interface WhatsappStrategy {

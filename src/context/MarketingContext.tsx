@@ -143,7 +143,7 @@ export const MarketingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       productsServices: ['Linen dresses', 'Organic cotton tops', 'Handmade jewelry'],
       targetAudienceType: 'B2C',
       targetAudienceDesc: 'Millennial women looking for timeless, sustainable, and minimal apparel.',
-      channels: ['blog', 'linkedin', 'email', 'seo', 'social'],
+      channels: ['blog', 'linkedin', 'email', 'whatsapp', 'seo', 'social'],
       toneOfVoice: 'friendly',
       monthlyBudget: '$500 - $2,000',
       consentGranted: true,

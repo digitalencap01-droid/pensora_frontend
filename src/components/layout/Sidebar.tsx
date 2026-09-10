@@ -56,12 +56,12 @@ const ALL_CHANNEL_CONFIGS: Record<string, ChannelNavConfig> = {
     id: 'linkedin',
     title: 'LinkedIn',
     icon: Briefcase,
-    primaryRoute: '/contacts',
+    primaryRoute: '/content',
     badge: 'B2B',
     subItems: [
-      { to: '/contacts', label: 'Leads & Pipeline', icon: Users },
-      { to: '/blog?tab=write', label: 'Post Creator & Studio', icon: Sparkles },
-      { to: '/discover', label: 'Audience Insights', icon: Compass }
+      { to: '/content', label: 'Post Creator & Studio', icon: Sparkles },
+      { to: '/contacts?source=LinkedIn', label: 'LinkedIn Leads & Prospects', icon: Users },
+      { to: '/discover', label: 'Audience & Network Insights', icon: Compass }
     ]
   },
   seo: {
@@ -90,26 +90,29 @@ const ALL_CHANNEL_CONFIGS: Record<string, ChannelNavConfig> = {
   },
   email: {
     id: 'email',
-    title: 'Email Marketing',
+    title: 'Email Campaign',
     icon: Mail,
-    primaryRoute: '/contacts',
-    badge: 'Drip',
+    primaryRoute: '/email?tab=builder',
+    badge: 'Email',
     subItems: [
-      { to: '/contacts', label: 'Subscribers & Segments', icon: Users },
-      { to: '/content', label: 'Newsletter & Drip Flows', icon: Sparkles },
-      { to: '/results', label: 'Open & Click Rates', icon: BarChart3 }
+      { to: '/email?tab=builder', label: 'Email Studio & Campaigns', icon: Sparkles },
+      { to: '/email?tab=domain', label: 'Sender Domain & DNS', icon: Globe },
+      { to: '/email?tab=subscribers', label: 'Audience & Contacts', icon: Users },
+      { to: '/email?tab=analytics', label: 'Deliverability & Analytics', icon: BarChart3 }
     ]
   },
   whatsapp: {
     id: 'whatsapp',
-    title: 'WhatsApp Marketing',
+    title: 'WhatsApp Campaign',
     icon: MessageSquare,
-    primaryRoute: '/contacts',
+    primaryRoute: '/whatsapp?tab=broadcast',
     badge: 'Direct',
     subItems: [
-      { to: '/contacts', label: 'Broadcast Audiences', icon: Users },
-      { to: '/content', label: 'Message Templates', icon: Sparkles },
-      { to: '/actions', label: 'Automated Bot Alerts', icon: Zap }
+      { to: '/whatsapp?tab=broadcast', label: 'Broadcast Studio', icon: Sparkles },
+      { to: '/whatsapp?tab=templates', label: 'Message Templates', icon: BookOpen },
+      { to: '/whatsapp?tab=audiences', label: 'Audience Lists & Opt-ins', icon: Users },
+      { to: '/whatsapp?tab=automation', label: 'Automated Bot & Alerts', icon: Zap },
+      { to: '/whatsapp?tab=analytics', label: 'Delivery & Read Rates', icon: BarChart3 }
     ]
   },
   social: {
@@ -145,12 +148,18 @@ export const Sidebar: React.FC = () => {
     })
   )).filter(key => ALL_CHANNEL_CONFIGS[key]);
 
-  const displayChannelKeys = activeChannelKeys.length > 0 
-    ? activeChannelKeys 
-    : ['blog', 'linkedin', 'email', 'seo', 'social'];
+  // Campaign channels (Email & WhatsApp)
+  const campaignChannels = ['email', 'whatsapp'];
+
+  // Other channels (Blog, LinkedIn, SEO, SEM, Social, etc.)
+  const otherChannels = activeChannelKeys.length > 0 
+    ? activeChannelKeys.filter(k => !campaignChannels.includes(k))
+    : ['blog', 'linkedin', 'seo', 'social'];
 
   // Helper to determine which channel matches the current route
   const getActiveChannelForRoute = (pathname: string): string | null => {
+    if (pathname.startsWith('/email')) return 'email';
+    if (pathname.startsWith('/whatsapp')) return 'whatsapp';
     if (pathname.startsWith('/blog')) return 'blog';
     if (pathname.startsWith('/ads')) return 'sem';
     if (pathname.startsWith('/website')) return 'seo';
@@ -187,6 +196,96 @@ export const Sidebar: React.FC = () => {
     }));
   };
 
+  const renderChannelItem = (channelKey: string) => {
+    const config = ALL_CHANNEL_CONFIGS[channelKey];
+    if (!config) return null;
+
+    const isChannelActiveOnRoute = 
+      (channelKey === 'email' && location.pathname.startsWith('/email')) ||
+      (channelKey === 'whatsapp' && location.pathname.startsWith('/whatsapp')) ||
+      (channelKey === 'blog' && location.pathname.startsWith('/blog')) ||
+      (channelKey === 'sem' && location.pathname.startsWith('/ads')) ||
+      (channelKey === 'seo' && location.pathname.startsWith('/website'));
+
+    const isExpanded = !!expandedChannels[channelKey];
+    const ChannelIcon = config.icon;
+
+    return (
+      <div key={channelKey} className={`rounded-xl overflow-hidden transition-all ${
+        isChannelActiveOnRoute ? 'bg-white/90 border border-[#D94A2A]/40 shadow-3xs' : 'bg-white/40 border border-[#F3DEC8]/50 hover:bg-white/70'
+      }`}>
+        {/* Top-Level Channel Header */}
+        <div
+          onClick={() => handleChannelClick(channelKey, config.primaryRoute)}
+          className={`w-full flex items-center justify-between px-3 py-2 text-xs font-black transition-colors cursor-pointer group ${
+            isChannelActiveOnRoute ? 'text-[#D94A2A]' : 'text-[#1E122C]'
+          }`}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className={`w-6 h-6 rounded-lg border flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
+              isChannelActiveOnRoute ? 'bg-[#FFEFEA] border-[#FAD8C7] text-[#D94A2A]' : 'bg-[#FAF5F0] border-[#F3DEC8] text-[#8C1F3D]'
+            }`}>
+              <ChannelIcon className="w-3.5 h-3.5" />
+            </div>
+            <span className="truncate text-left">{config.title}</span>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            {config.badge && (
+              <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-md bg-[#FAF5F0] text-[#8C1F3D] border border-[#F3DEC8]/80">
+                {config.badge}
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={(e) => handleChevronToggle(e, channelKey)}
+              className="p-1 hover:bg-[#FAF5F0] rounded-md transition-colors"
+            >
+              {isExpanded ? (
+                <ChevronDown className="w-3.5 h-3.5 text-[#6B5E77]" />
+              ) : (
+                <ChevronRight className="w-3.5 h-3.5 text-[#6B5E77]" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Channel Submenus (Only shown when expanded) */}
+        {isExpanded && (
+          <div className="px-2 pb-2 pt-0.5 space-y-0.5 border-t border-[#F3DEC8]/40 bg-[#FAF5F0]/30 animate-in fade-in duration-200">
+            {config.subItems.map((subItem) => {
+              const SubIcon = subItem.icon;
+              const currentFull = location.pathname + location.search;
+              const isSubActive = currentFull === subItem.to || 
+                (subItem.to.includes('?tab=') && location.pathname === subItem.to.split('?')[0] && (
+                  location.search === subItem.to.slice(subItem.to.indexOf('?')) || 
+                  (!location.search && (subItem.to.includes('tab=builder') || subItem.to.includes('tab=broadcast') || subItem.to.includes('tab=write')))
+                ));
+
+              return (
+                <NavLink
+                  key={`${channelKey}-${subItem.to}-${subItem.label}`}
+                  to={subItem.to}
+                  className={`
+                    flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all
+                    ${isSubActive 
+                      ? 'bg-white text-[#D94A2A] font-black shadow-3xs border border-[#F3DEC8]' 
+                      : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/60'
+                    }
+                  `}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSubActive ? 'bg-[#D94A2A]' : 'bg-[#D94A2A]/40'}`} />
+                  <SubIcon className={`w-3 h-3 shrink-0 ${isSubActive ? 'text-[#D94A2A]' : 'text-[#6B5E77]'}`} />
+                  <span className="truncate">{subItem.label}</span>
+                </NavLink>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const pendingActionsCount = actions.filter(a => a.status === 'needs_approval' || a.status === 'working').length;
 
   return (
@@ -211,7 +310,7 @@ export const Sidebar: React.FC = () => {
       {/* 2. Scrollable Navigation Menu Area */}
       <nav className="flex-1 px-3.5 py-4 space-y-4 overflow-y-auto relative z-10 custom-scrollbar">
         
-        {/* Top Pinned: Home / Overview */}
+        {/* Top Pinned: Home / Overview & Leads CRM */}
         <div className="space-y-1">
           <NavLink
             to="/dashboard"
@@ -226,105 +325,63 @@ export const Sidebar: React.FC = () => {
             <Home className="w-4 h-4 shrink-0 text-[#D94A2A]" />
             <span>Home Overview</span>
           </NavLink>
+
+          <NavLink
+            to="/contacts"
+            className={({ isActive }) => `
+              flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold tracking-wide transition-all duration-200
+              ${isActive 
+                ? 'bg-[#FFEFEA] text-[#8C1F3D] font-black border-l-4 border-[#8C1F3D] rounded-l-none shadow-2xs' 
+                : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/70'
+              }
+            `}
+          >
+            <div className="flex items-center gap-3">
+              <Users className="w-4 h-4 shrink-0 text-[#8C1F3D]" />
+              <span>Leads &amp; Audience CRM</span>
+            </div>
+            <span className="text-[8.5px] font-bold px-1.5 py-0.5 rounded-md bg-[#FAF5F0] text-[#8C1F3D] border border-[#F3DEC8]">
+              All Leads
+            </span>
+          </NavLink>
         </div>
 
-        {/* Dynamic Channel Sections */}
+        {/* 1. Campaigns Group */}
         <div className="space-y-2">
           <div className="flex items-center justify-between px-3 pt-1">
-            <span className="text-[9.5px] font-black uppercase tracking-wider text-[#8C1F3D]">
-              Marketing Avenues
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[9.5px] font-black uppercase tracking-wider text-[#8C1F3D]">
+                Campaigns
+              </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#EA580C] animate-pulse" />
+            </div>
             <span className="text-[8.5px] font-bold text-[#EA580C] bg-[#FFF0E6] border border-[#FAD8C7] px-1.5 py-0.5 rounded-md">
-              {displayChannelKeys.length} Active
+              {campaignChannels.length} Channels
             </span>
           </div>
 
           <div className="space-y-1.5">
-            {displayChannelKeys.map((channelKey) => {
-              const config = ALL_CHANNEL_CONFIGS[channelKey];
-              if (!config) return null;
-
-              const isChannelActiveOnRoute = 
-                (channelKey === 'blog' && location.pathname.startsWith('/blog')) ||
-                (channelKey === 'sem' && location.pathname.startsWith('/ads')) ||
-                (channelKey === 'seo' && location.pathname.startsWith('/website'));
-
-              const isExpanded = !!expandedChannels[channelKey];
-              const ChannelIcon = config.icon;
-
-              return (
-                <div key={channelKey} className={`rounded-xl overflow-hidden transition-all ${
-                  isChannelActiveOnRoute ? 'bg-white/90 border border-[#D94A2A]/40 shadow-3xs' : 'bg-white/40 border border-[#F3DEC8]/50 hover:bg-white/70'
-                }`}>
-                  {/* Top-Level Channel Header */}
-                  <div
-                    onClick={() => handleChannelClick(channelKey, config.primaryRoute)}
-                    className={`w-full flex items-center justify-between px-3 py-2 text-xs font-black transition-colors cursor-pointer group ${
-                      isChannelActiveOnRoute ? 'text-[#D94A2A]' : 'text-[#1E122C]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className={`w-6 h-6 rounded-lg border flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
-                        isChannelActiveOnRoute ? 'bg-[#FFEFEA] border-[#FAD8C7] text-[#D94A2A]' : 'bg-[#FAF5F0] border-[#F3DEC8] text-[#8C1F3D]'
-                      }`}>
-                        <ChannelIcon className="w-3.5 h-3.5" />
-                      </div>
-                      <span className="truncate text-left">{config.title}</span>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {config.badge && (
-                        <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-md bg-[#FAF5F0] text-[#8C1F3D] border border-[#F3DEC8]/80">
-                          {config.badge}
-                        </span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={(e) => handleChevronToggle(e, channelKey)}
-                        className="p-1 hover:bg-[#FAF5F0] rounded-md transition-colors"
-                      >
-                        {isExpanded ? (
-                          <ChevronDown className="w-3.5 h-3.5 text-[#6B5E77]" />
-                        ) : (
-                          <ChevronRight className="w-3.5 h-3.5 text-[#6B5E77]" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Channel Submenus (Only shown when expanded) */}
-                  {isExpanded && (
-                    <div className="px-2 pb-2 pt-0.5 space-y-0.5 border-t border-[#F3DEC8]/40 bg-[#FAF5F0]/30 animate-in fade-in duration-200">
-                      {config.subItems.map((subItem) => {
-                        const SubIcon = subItem.icon;
-                        const currentFull = location.pathname + location.search;
-                        const isSubActive = currentFull === subItem.to || (subItem.to === '/blog?tab=write' && location.pathname === '/blog' && !location.search);
-
-                        return (
-                          <NavLink
-                            key={`${channelKey}-${subItem.to}-${subItem.label}`}
-                            to={subItem.to}
-                            className={`
-                              flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all
-                              ${isSubActive 
-                                ? 'bg-white text-[#D94A2A] font-black shadow-3xs border border-[#F3DEC8]' 
-                                : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/60'
-                              }
-                            `}
-                          >
-                            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSubActive ? 'bg-[#D94A2A]' : 'bg-[#D94A2A]/40'}`} />
-                            <SubIcon className={`w-3 h-3 shrink-0 ${isSubActive ? 'text-[#D94A2A]' : 'text-[#6B5E77]'}`} />
-                            <span className="truncate">{subItem.label}</span>
-                          </NavLink>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+            {campaignChannels.map((channelKey) => renderChannelItem(channelKey))}
           </div>
         </div>
+
+        {/* 2. Marketing Channels & Content Group */}
+        {otherChannels.length > 0 && (
+          <div className="space-y-2 pt-1 border-t border-[#F3DEC8]/50">
+            <div className="flex items-center justify-between px-3 pt-1">
+              <span className="text-[9.5px] font-black uppercase tracking-wider text-[#8A8294]">
+                Channels &amp; Content
+              </span>
+              <span className="text-[8.5px] font-bold text-[#6B5E77] bg-[#FAF5F0] border border-[#F3DEC8] px-1.5 py-0.5 rounded-md">
+                {otherChannels.length} Active
+              </span>
+            </div>
+
+            <div className="space-y-1.5">
+              {otherChannels.map((channelKey) => renderChannelItem(channelKey))}
+            </div>
+          </div>
+        )}
 
         {/* General Management Tools */}
         <div className="space-y-1 pt-1">
