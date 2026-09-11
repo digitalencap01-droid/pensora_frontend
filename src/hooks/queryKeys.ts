@@ -66,4 +66,11 @@ export const queryKeys = {
   aiTask: {
     status: (taskId: string | null) => ['ai-task', taskId] as const,
   },
+
+  // AI Blog Studio (real Pensora backend — /api/v1/content, /api/v1/projects)
+  blog: {
+    projects: (limit: number, offset: number) => ['blog', 'projects', limit, offset] as const,
+    artifacts: (projectId: string | null) => ['blog', 'artifacts', projectId] as const,
+    usageSummary: ['blog', 'usage-summary'] as const,
+  },
 };
