@@ -9,6 +9,7 @@ import {
   ArrowUpDown, 
   ChevronLeft, 
   ChevronRight, 
+  ChevronDown,
   X, 
   Check, 
   Trash2, 
@@ -29,10 +30,89 @@ import {
   Layers,
   SlidersHorizontal,
   Flame,
-  CheckCircle2
+  CheckCircle2,
+  Bookmark,
+  RotateCcw,
+  BarChart2,
+  Flag,
+  LayoutList,
+  LayoutGrid,
+  MoreVertical,
+  Star
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Contact } from '../types';
+
+// ==========================================
+// BRAND ICONS (Official user-uploaded assets & crisp SVGs)
+// ==========================================
+export const LinkedInBrandIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <img src="/brand-icons/linkedin.png" alt="LinkedIn" className={`${className} object-contain rounded-[2px] shrink-0`} />
+);
+
+export const WhatsAppBrandIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <img src="/brand-icons/whatsapp.png" alt="WhatsApp" className={`${className} object-contain shrink-0`} />
+);
+
+export const InstagramBrandIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <img src="/brand-icons/instagram.png" alt="Instagram" className={`${className} object-contain shrink-0`} />
+);
+
+export const FacebookBrandIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <img src="/brand-icons/facebook.png" alt="Facebook" className={`${className} object-contain shrink-0`} />
+);
+
+export const EmailBrandIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none">
+    <rect width="24" height="24" rx="4" fill="#EA4335" />
+    <path d="M5 7.5L12 13L19 7.5M5 7.5H19V17.5H5V7.5Z" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+export const StoreBrandIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none">
+    <rect width="24" height="24" rx="4" fill="#9333EA" />
+    <path d="M6 9V18C6 18.55 6.45 19 7 19H17C17.55 19 18 18.55 18 18V9M4 9L6 5H18L20 9M4 9H20" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    <circle cx="12" cy="14" r="1.5" fill="white" />
+  </svg>
+);
+
+export const FlameBrandIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none">
+    <path d="M12 2C10.5 4.5 10 7.5 10.5 9.5C9.5 8 9 6.5 9 5C6 7.5 5 11 5 14C5 17.9 8.1 21 12 21C15.9 21 19 17.9 19 14C19 9.5 15.5 5.5 12 2ZM12 18.5C10.1 18.5 8.5 16.9 8.5 15C8.5 13.5 9.5 11.5 12 9.5C14.5 11.5 15.5 13.5 15.5 15C15.5 16.9 13.9 18.5 12 18.5Z" fill="#E25C37" />
+  </svg>
+);
+
+export const VipStarBrandIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none">
+    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#F59E0B" stroke="#D97706" strokeWidth="1" strokeLinejoin="round" />
+  </svg>
+);
+
+export const ChannelGridIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none">
+    <rect x="3" y="3" width="7" height="7" rx="1.5" fill="#3B82F6" />
+    <rect x="14" y="3" width="7" height="7" rx="1.5" fill="#10B981" />
+    <rect x="3" y="14" width="7" height="7" rx="1.5" fill="#F59E0B" />
+    <rect x="14" y="14" width="7" height="7" rx="1.5" fill="#8B5CF6" />
+  </svg>
+);
+
+export const MetaBrandIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <img src="/brand-icons/facebook.png" alt="Meta" className={`${className} object-contain shrink-0`} />
+);
+
+export const getSegmentIcon = (seg: { id: string; sourceFilter?: string; priorityFilter?: string }) => {
+  if (seg.id === 'hot_leads') return <FlameBrandIcon className="w-3.5 h-3.5" />;
+  if (seg.id === 'linkedin_decision_makers' || seg.sourceFilter === 'LinkedIn') return <LinkedInBrandIcon className="w-3.5 h-3.5" />;
+  if (seg.id === 'whatsapp_leads' || seg.sourceFilter === 'WhatsApp Chat') return <WhatsAppBrandIcon className="w-3.5 h-3.5" />;
+  if (seg.id === 'email_optins' || seg.sourceFilter === 'Email Campaign') return <EmailBrandIcon className="w-3.5 h-3.5" />;
+  if (seg.id === 'cart_abandoners' || seg.sourceFilter === 'Website Form') return <StoreBrandIcon className="w-3.5 h-3.5" />;
+  if (seg.sourceFilter === 'Instagram') return <InstagramBrandIcon className="w-3.5 h-3.5" />;
+  if (seg.sourceFilter === 'Meta Ads' || seg.sourceFilter === 'Facebook') return <FacebookBrandIcon className="w-3.5 h-3.5" />;
+  if (seg.id === 'high_prio_vip' || seg.priorityFilter === 'high') return <VipStarBrandIcon className="w-3.5 h-3.5" />;
+  return <Users className="w-3.5 h-3.5 text-[#6B7280]" />;
+};
 
 export interface CustomSegment {
   id: string;
@@ -48,13 +128,13 @@ export interface CustomSegment {
 }
 
 const BUILT_IN_SEGMENTS: CustomSegment[] = [
-  { id: 'all', name: 'All Audience', description: 'Complete database of all leads and customers', sourceFilter: 'all', minScore: 0, stageFilter: 'all', priorityFilter: 'all', consentOnly: false, isBuiltIn: true },
-  { id: 'hot_leads', name: '🔥 Hot Leads (Score 80+)', description: 'High-intent leads ready for immediate sales or nurture outreach', sourceFilter: 'all', minScore: 80, stageFilter: 'all', priorityFilter: 'all', consentOnly: false, isBuiltIn: true },
-  { id: 'linkedin_decision_makers', name: '💼 LinkedIn Prospects', description: 'B2B Leads sourced from LinkedIn outreach and networking', sourceFilter: 'LinkedIn', minScore: 0, stageFilter: 'all', priorityFilter: 'all', consentOnly: false, isBuiltIn: true },
-  { id: 'cart_abandoners', name: '🛒 Cart & D2C Shoppers', description: 'Store visitors and prospective buyers from website', sourceFilter: 'Website Form', minScore: 0, stageFilter: 'all', priorityFilter: 'all', consentOnly: false, isBuiltIn: true },
-  { id: 'email_optins', name: '✉️ Email Subscribers', description: 'Active email newsletter and drip campaign opt-ins', sourceFilter: 'Email Campaign', minScore: 0, stageFilter: 'all', priorityFilter: 'all', consentOnly: true, isBuiltIn: true },
-  { id: 'whatsapp_leads', name: '💬 WhatsApp Inquiries', description: 'Direct WhatsApp chats and customer inquiry leads', sourceFilter: 'WhatsApp Chat', minScore: 0, stageFilter: 'all', priorityFilter: 'all', consentOnly: true, isBuiltIn: true },
-  { id: 'high_prio_vip', name: '⚡ High Priority VIPs', description: 'High value priority accounts requiring dedicated attention', sourceFilter: 'all', minScore: 0, stageFilter: 'all', priorityFilter: 'high', consentOnly: false, isBuiltIn: true }
+  { id: 'all', name: 'All Leads', description: 'Complete database of all leads and customers', sourceFilter: 'all', minScore: 0, stageFilter: 'all', priorityFilter: 'all', consentOnly: false, isBuiltIn: true },
+  { id: 'hot_leads', name: 'Hot Leads', description: 'High-intent leads (Score 80+) ready for sales outreach', sourceFilter: 'all', minScore: 80, stageFilter: 'all', priorityFilter: 'all', consentOnly: false, isBuiltIn: true },
+  { id: 'linkedin_decision_makers', name: 'LinkedIn', description: 'B2B Leads sourced from LinkedIn outreach', sourceFilter: 'LinkedIn', minScore: 0, stageFilter: 'all', priorityFilter: 'all', consentOnly: false, isBuiltIn: true },
+  { id: 'whatsapp_leads', name: 'WhatsApp', description: 'WhatsApp chats and customer inquiries', sourceFilter: 'WhatsApp Chat', minScore: 0, stageFilter: 'all', priorityFilter: 'all', consentOnly: false, isBuiltIn: true },
+  { id: 'email_optins', name: 'Email List', description: 'Active email newsletter and campaign subscribers', sourceFilter: 'Email Campaign', minScore: 0, stageFilter: 'all', priorityFilter: 'all', consentOnly: false, isBuiltIn: true },
+  { id: 'cart_abandoners', name: 'Store & D2C', description: 'Store visitors and prospective buyers from website', sourceFilter: 'Website Form', minScore: 0, stageFilter: 'all', priorityFilter: 'all', consentOnly: false, isBuiltIn: true },
+  { id: 'high_prio_vip', name: 'VIPs', description: 'High value priority accounts requiring dedicated attention', sourceFilter: 'all', minScore: 0, stageFilter: 'all', priorityFilter: 'high', consentOnly: false, isBuiltIn: true }
 ];
 
 const CHANNELS = [
@@ -192,6 +272,7 @@ export const Contacts: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
   // Selection states for campaign actions & bulk operations
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -201,6 +282,7 @@ export const Contacts: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isSegmentModalOpen, setIsSegmentModalOpen] = useState(false);
+  const [isMoreViewsOpen, setIsMoreViewsOpen] = useState(false);
   const [activeContact, setActiveContact] = useState<Contact | null>(null);
   const [contactDetailOpen, setContactDetailOpen] = useState(false);
   const [actionNotification, setActionNotification] = useState<string | null>(null);
@@ -380,6 +462,47 @@ export const Contacts: React.FC = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, selectedStage, selectedPriority, selectedSource, selectedScoreRange, selectedConsentOnly, itemsPerPage]);
+
+  // Helper to calculate matching leads count for any segment tab
+  const getSegmentCount = (seg: CustomSegment): number => {
+    if (seg.id === 'all') return contacts.length;
+    return contacts.filter(c => {
+      if (seg.sourceFilter !== 'all' && c.source !== seg.sourceFilter) return false;
+      if (seg.minScore > 0 && c.leadScore < seg.minScore) return false;
+      if (seg.stageFilter !== 'all' && c.lifecycleStage !== seg.stageFilter) return false;
+      if (seg.priorityFilter !== 'all' && c.priority !== seg.priorityFilter) return false;
+      if (seg.consentOnly && !c.consent) return false;
+      if (seg.tagFilter && seg.tagFilter.trim()) {
+        const requiredTags = seg.tagFilter.toLowerCase().split(',').map(t => t.trim()).filter(Boolean);
+        const hasTags = requiredTags.every(rt => c.tags.some(t => t.toLowerCase().includes(rt)));
+        if (!hasTags) return false;
+      }
+      return true;
+    }).length;
+  };
+
+  // Count active non-default filters for the Reset button
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (searchQuery.trim()) count++;
+    if (selectedSource !== 'all') count++;
+    if (selectedStage !== 'all') count++;
+    if (selectedPriority !== 'all') count++;
+    if (selectedScoreRange !== 'all') count++;
+    if (selectedConsentOnly) count++;
+    return count;
+  }, [searchQuery, selectedSource, selectedStage, selectedPriority, selectedScoreRange, selectedConsentOnly]);
+
+  const handleResetAllFilters = () => {
+    setSearchQuery('');
+    setSelectedSource('all');
+    setSelectedStage('all');
+    setSelectedPriority('all');
+    setSelectedScoreRange('all');
+    setSelectedConsentOnly(false);
+    setActiveSegmentId('all');
+    setCurrentPage(1);
+  };
 
   // ----------------------------------------------------
   // 1-CLICK CAMPAIGN LAUNCH ACTIONS
@@ -830,688 +953,767 @@ export const Contacts: React.FC = () => {
         </div>
       )}
 
-      {/* 1. HEADER SECTION & CRM QUICK ACTIONS */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#F3DEC8]/70 pb-5">
+      {/* 1. HEADER SECTION & PRIMARY ACTION CONTROLS */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#FFF0E6] text-[#EA580C] border border-[#FAD8C7]">
-              Unified Audience Hub
-            </span>
-            <span className="text-xs text-[#6B5E77] font-semibold flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-[#EA580C]" /> Multi-Channel CRM
-            </span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-[#1E122C] tracking-tight mt-1 flex items-center gap-2">
-            <Users className="w-7 h-7 text-[#8C1F3D]" />
+          <h1 className="text-2xl sm:text-3xl font-black text-[#1E122C] tracking-tight flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-[#F5EEFB] text-[#4B1D6B] flex items-center justify-center">
+              <Users className="w-5 h-5 text-[#8C1F3D]" />
+            </div>
             Leads &amp; Audience CRM
           </h1>
-          <p className="text-xs sm:text-sm text-[#6B5E77] font-medium mt-0.5">
-            Unified contact hub across LinkedIn, Email Campaigns, WhatsApp chats, Meta Ads, and Website visitors.
+          <p className="text-xs sm:text-sm text-[#6B5E77] font-medium mt-1">
+            Manage and engage your audience across all channels in one place.
           </p>
         </div>
-        
-        {/* Top Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* 1-Click Launch Campaign Buttons */}
-          <button 
-            onClick={() => handleLaunchEmailCampaign()}
-            className="flex items-center gap-1.5 px-3.5 py-2.5 border border-[#FAD8C7] rounded-2xl bg-[#FFF4EE] text-xs font-black text-[#D94A2A] hover:bg-[#FFE9DE] transition-all cursor-pointer shadow-3xs"
-            title="Create and send an email campaign to current filtered leads"
-          >
-            <Mail className="w-3.5 h-3.5" />
-            <span>Launch Email</span>
-          </button>
 
-          <button 
-            onClick={() => handleLaunchWhatsAppBroadcast()}
-            className="flex items-center gap-1.5 px-3.5 py-2.5 border border-emerald-200 rounded-2xl bg-[#F4FDF8] text-xs font-black text-emerald-700 hover:bg-emerald-100/70 transition-all cursor-pointer shadow-3xs"
-            title="Broadcast a WhatsApp template message to consented leads"
-          >
-            <MessageSquare className="w-3.5 h-3.5" />
-            <span>WhatsApp Broadcast</span>
-          </button>
-
-          <button 
-            onClick={() => setIsImportModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-2.5 border border-[#F3DEC8] rounded-2xl bg-white text-xs font-black text-[#1E122C] hover:bg-[#FFF8F5] transition-all cursor-pointer shadow-2xs"
-          >
-            <Upload className="w-3.5 h-3.5 text-[#D94A2A]" />
-            <span>Import</span>
-          </button>
-          
-          <button 
-            onClick={handleExportCSV}
-            className="flex items-center gap-1.5 px-3 py-2.5 border border-[#F3DEC8] rounded-2xl bg-white text-xs font-black text-[#1E122C] hover:bg-[#FFF8F5] transition-all cursor-pointer shadow-2xs"
-          >
-            <Download className="w-3.5 h-3.5 text-[#4B1D6B]" />
-            <span>Export CSV</span>
-          </button>
-
-          <button 
-            onClick={() => { resetForm(); setIsAddModalOpen(true); }}
-            className="flex items-center gap-1.5 px-4 py-2.5 bg-gradient-to-r from-[#2B0847] via-[#48115B] to-[#801B48] hover:from-[#360B5A] hover:via-[#591671] hover:to-[#962055] text-white text-xs font-black rounded-2xl transition-all cursor-pointer shadow-md hover:-translate-y-[1px]"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Add Lead</span>
-          </button>
-        </div>
-      </div>
-
-      {/* 2. CRM METRICS & INSIGHT STATS CARDS */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <Card className="p-4 border border-[#F3DEC8] bg-white rounded-2xl shadow-3xs hover:border-[#D94A2A]/40 transition-colors">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black text-[#6B5E77] uppercase tracking-wider">Total CRM Leads</span>
-            <div className="w-7 h-7 rounded-xl bg-[#FAF5F0] text-[#4B1D6B] flex items-center justify-center">
-              <Users className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-[#1E122C]">{stats.total}</span>
-            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200">
-              +{Math.round(stats.total * 0.14)} this wk
-            </span>
-          </div>
-          <span className="text-[10px] text-[#6B5E77] font-semibold block mt-1">Across all connected channels</span>
-        </Card>
-
-        <Card className="p-4 border border-[#F3DEC8] bg-white rounded-2xl shadow-3xs hover:border-[#D94A2A]/40 transition-colors">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black text-[#6B5E77] uppercase tracking-wider">🔥 Hot Leads (80+)</span>
-            <div className="w-7 h-7 rounded-xl bg-[#FFF1EB] text-[#D94A2A] flex items-center justify-center">
-              <Flame className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-[#D94A2A]">{stats.hotLeads}</span>
-            <span className="text-[10px] font-bold text-[#D94A2A] bg-[#FFF4EE] px-1.5 py-0.5 rounded-md border border-[#FAD8C7]">
-              High Purchase Intent
-            </span>
-          </div>
-          <span className="text-[10px] text-[#6B5E77] font-semibold block mt-1">Ready for direct nurture/sales outreach</span>
-        </Card>
-
-        <Card className="p-4 border border-[#F3DEC8] bg-white rounded-2xl shadow-3xs hover:border-[#D94A2A]/40 transition-colors">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black text-[#6B5E77] uppercase tracking-wider">💼 LinkedIn Prospects</span>
-            <div className="w-7 h-7 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-              <Briefcase className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-blue-700">{stats.linkedInLeads}</span>
-            <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded-md border border-blue-200">
-              B2B Contacts
-            </span>
-          </div>
-          <span className="text-[10px] text-[#6B5E77] font-semibold block mt-1">Founders, CEOs &amp; Decision Makers</span>
-        </Card>
-
-        <Card className="p-4 border border-[#F3DEC8] bg-white rounded-2xl shadow-3xs hover:border-[#D94A2A]/40 transition-colors">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black text-[#6B5E77] uppercase tracking-wider">⚡ Campaign Ready</span>
-            <div className="w-7 h-7 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <HeartHandshake className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-emerald-700">{stats.consented}</span>
-            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200">
-              {Math.round((stats.consented / (stats.total || 1)) * 100)}% Opt-in
-            </span>
-          </div>
-          <span className="text-[10px] text-[#6B5E77] font-semibold block mt-1">Direct SMS, WhatsApp &amp; Email permission</span>
-        </Card>
-      </div>
-
-      {/* 3. MULTI-SOURCE CHANNEL FILTER PILLS */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="text-[10px] font-black uppercase tracking-wider text-[#6B5E77] flex items-center gap-1.5">
-            <Filter className="w-3 h-3 text-[#D94A2A]" /> Filter by Acquisition Channel:
-          </span>
-          {selectedSource !== 'all' && (
+        {/* Buttons Group on Right */}
+        <div className="flex flex-col sm:items-end gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button 
-              onClick={() => setSelectedSource('all')}
-              className="text-[10.5px] font-black text-[#D94A2A] hover:underline cursor-pointer"
+              onClick={() => handleLaunchEmailCampaign()}
+              className="flex items-center gap-1.5 px-3.5 py-2 border border-[#FAD8C7] rounded-xl bg-white text-xs font-bold text-[#D94A2A] hover:bg-[#FFF4EE] transition-all cursor-pointer shadow-3xs"
             >
-              Reset to All Channels
+              <Mail className="w-3.5 h-3.5 text-[#D94A2A]" />
+              <span>Launch Email</span>
             </button>
-          )}
-        </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
-          {CHANNELS.map(ch => {
-            const isSelected = selectedSource === ch.id;
-            const Icon = ch.icon;
-            const count = sourceCountMap[ch.id] || 0;
+            <button 
+              onClick={() => handleLaunchWhatsAppBroadcast()}
+              className="flex items-center gap-1.5 px-3.5 py-2 border border-emerald-200 rounded-xl bg-white text-xs font-bold text-emerald-700 hover:bg-[#F4FDF8] transition-all cursor-pointer shadow-3xs"
+            >
+              <WhatsAppBrandIcon className="w-3.5 h-3.5 rounded-full" />
+              <span>WhatsApp Broadcast</span>
+            </button>
 
-            return (
-              <button
-                key={ch.id}
-                onClick={() => {
-                  setSelectedSource(ch.id);
-                  setCurrentPage(1);
-                }}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-extrabold transition-all cursor-pointer whitespace-nowrap shadow-3xs ${
-                  isSelected 
-                    ? 'bg-gradient-to-r from-[#2B0847] via-[#48115B] to-[#801B48] text-white shadow-xs border border-[#4B1D6B]' 
-                    : 'bg-white text-[#1E122C] border border-[#F3DEC8] hover:bg-[#FFF8F5] hover:border-[#D94A2A]/40'
-                }`}
-              >
-                <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : 'text-[#8C1F3D]'}`} />
-                <span>{ch.label}</span>
-                <span className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ${
-                  isSelected ? 'bg-white/20 text-white' : 'bg-[#FAF5F0] text-[#6B5E77] border border-[#F3DEC8]'
-                }`}>
-                  {count}
-                </span>
-              </button>
-            );
-          })}
+            <button 
+              onClick={() => { resetForm(); setIsAddModalOpen(true); }}
+              className="flex items-center gap-1.5 px-4 py-2 bg-[#2B0847] hover:bg-[#3D1160] text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-md hover:-translate-y-[1px]"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Lead</span>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setIsImportModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-[#E5E7EB] rounded-xl bg-white text-xs font-semibold text-[#1E122C] hover:bg-[#FAF5F0] transition-all cursor-pointer shadow-3xs"
+            >
+              <Upload className="w-3.5 h-3.5 text-[#6B5E77]" />
+              <span>Import</span>
+            </button>
+            
+            <button 
+              onClick={handleExportCSV}
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-[#E5E7EB] rounded-xl bg-white text-xs font-semibold text-[#1E122C] hover:bg-[#FAF5F0] transition-all cursor-pointer shadow-3xs"
+            >
+              <Download className="w-3.5 h-3.5 text-[#6B5E77]" />
+              <span>Export CSV</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* 4. SAVED SEGMENTS BAR & SEGMENT BUILDER TRIGGER */}
-      <Card className="p-4 border border-[#F3DEC8] bg-[#FFFDFB] rounded-[24px] shadow-2xs space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#F3DEC8]/60 pb-3">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-[#F5EEFB] text-[#4B1D6B] flex items-center justify-center">
-              <Layers className="w-3.5 h-3.5" />
-            </div>
-            <div>
-              <span className="text-xs font-black text-[#1E122C] tracking-tight">Audience Segments</span>
-              <span className="text-[10px] text-[#6B5E77] font-semibold block">Target specific customer segments in campaigns</span>
-            </div>
-          </div>
+      {/* 2. AUDIENCE SEGMENT PILLS (4 MAIN + MORE VIEWS DROPDOWN) */}
+      {(() => {
+        const primarySegments = segments.slice(0, 4);
+        const moreSegments = segments.slice(4);
+        const activeMoreSegment = moreSegments.find(s => s.id === activeSegmentId);
 
-          <button 
-            onClick={() => setIsSegmentModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#D94A2A]/40 hover:border-[#D94A2A] text-[#D94A2A] text-xs font-black rounded-xl cursor-pointer hover:bg-[#FFF4EE] transition-all shadow-3xs self-start sm:self-auto"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>+ Create Custom Segment</span>
-          </button>
-        </div>
+        return (
+          <div className="flex flex-wrap items-center gap-2 pb-1 relative z-20">
+            {/* 4 Main View Pills */}
+            {primarySegments.map(seg => {
+              const isActive = activeSegmentId === seg.id;
+              const count = getSegmentCount(seg);
+              const icon = getSegmentIcon(seg);
 
-        {/* Horizontal scrollable segment pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
-          {segments.map(seg => {
-            const isActive = activeSegmentId === seg.id;
-            return (
-              <div 
-                key={seg.id}
-                onClick={() => applySegmentFilters(seg)}
-                className={`group flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold cursor-pointer transition-all whitespace-nowrap border ${
-                  isActive 
-                    ? 'bg-[#4B1D6B] text-white border-[#4B1D6B] shadow-xs' 
-                    : 'bg-white text-[#6B5E77] border-[#F3DEC8] hover:text-[#1E122C] hover:border-[#4B1D6B]/40 hover:bg-[#FAF5F0]'
-                }`}
-                title={seg.description}
-              >
-                <span>{seg.name}</span>
-                
-                {!seg.isBuiltIn && (
-                  <button 
-                    onClick={(e) => handleDeleteCustomSegment(seg.id, e)}
-                    className="p-0.5 hover:bg-rose-500 hover:text-white rounded text-white/70 ml-1 transition-colors"
-                    title="Delete segment"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
+              return (
+                <button
+                  key={seg.id}
+                  onClick={() => {
+                    applySegmentFilters(seg);
+                    setIsMoreViewsOpen(false);
+                  }}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shadow-3xs ${
+                    isActive
+                      ? 'bg-[#2B0847] text-white shadow-xs'
+                      : 'bg-white text-[#1E122C] border border-[#E5E7EB] hover:bg-[#F9FAFB]'
+                  }`}
+                  title={seg.description}
+                >
+                  <span className="shrink-0">{icon}</span>
+                  <span className="font-semibold">{seg.name.replace(/[🔥💼✉️💬🛒⚡⭐]\s*/g, '')}</span>
+                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                    isActive ? 'bg-[#19042B] text-white' : 'bg-[#F3F4F6] text-[#4B5563]'
+                  }`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+
+            {/* More Views Dropdown */}
+            {moreSegments.length > 0 && (
+              <div className="relative">
+                <button
+                  onClick={() => setIsMoreViewsOpen(!isMoreViewsOpen)}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-semibold transition-all cursor-pointer shadow-3xs ${
+                    activeMoreSegment
+                      ? 'bg-[#2B0847] text-white shadow-xs'
+                      : 'bg-white text-[#1E122C] border border-[#E5E7EB] hover:bg-[#F9FAFB]'
+                  }`}
+                >
+                  {activeMoreSegment ? (
+                    <>
+                      <span className="shrink-0">{getSegmentIcon(activeMoreSegment)}</span>
+                      <span className="font-semibold">{activeMoreSegment.name.replace(/[🔥💼✉️💬🛒⚡⭐]\s*/g, '')}</span>
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#19042B] text-white">
+                        {getSegmentCount(activeMoreSegment)}
+                      </span>
+                      <ChevronDown className="w-3.5 h-3.5 text-white/80 ml-0.5" />
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-semibold">More Views ({moreSegments.length})</span>
+                      <ChevronDown className="w-3.5 h-3.5 text-[#6B7280] ml-0.5" />
+                    </>
+                  )}
+                </button>
+
+                {/* Dropdown Menu */}
+                {isMoreViewsOpen && (
+                  <div className="absolute left-0 mt-1.5 w-60 bg-white border border-[#E5E7EB] rounded-2xl shadow-xl p-1.5 z-30 space-y-0.5 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="px-3 py-1.5 text-[11px] font-bold text-[#9CA3AF] uppercase tracking-wider border-b border-[#F3F4F6] mb-1">
+                      Additional Views
+                    </div>
+                    {moreSegments.map(seg => {
+                      const isActive = activeSegmentId === seg.id;
+                      const count = getSegmentCount(seg);
+                      const icon = getSegmentIcon(seg);
+
+                      return (
+                        <div
+                          key={seg.id}
+                          onClick={() => {
+                            applySegmentFilters(seg);
+                            setIsMoreViewsOpen(false);
+                          }}
+                          className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-colors ${
+                            isActive ? 'bg-[#F5EEFB] text-[#2B0847] font-bold' : 'hover:bg-[#F9FAFB] text-[#1E122C]'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="shrink-0">{icon}</span>
+                            <span className="truncate">{seg.name.replace(/[🔥💼✉️💬🛒⚡⭐]\s*/g, '')}</span>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span className={`text-[10.5px] font-bold px-1.5 py-0.2 rounded-full ${
+                              isActive ? 'bg-[#2B0847] text-white' : 'bg-[#F3F4F6] text-[#6B7280]'
+                            }`}>
+                              {count}
+                            </span>
+                            {!seg.isBuiltIn && (
+                              <span
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteCustomSegment(seg.id, e);
+                                }}
+                                className="p-1 hover:bg-rose-500 hover:text-white rounded text-gray-400 transition-colors"
+                                title="Delete view"
+                              >
+                                <X className="w-3 h-3" />
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
-            );
-          })}
-        </div>
-      </Card>
-
-      {/* 5. SEARCH & ADVANCED FILTER TOOLBAR */}
-      <Card className="p-4 border border-[#F3DEC8] bg-white rounded-[24px] shadow-2xs space-y-4">
-        <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center">
-          
-          {/* Search Box */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B5E77]" />
-            <input 
-              type="text"
-              placeholder="Search leads by name, email, company, role, or tags..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-[#F3DEC8] rounded-2xl text-xs font-bold text-[#1E122C] placeholder-[#6B5E77]/60 bg-[#FAF5F0]/50 focus:outline-none focus:border-[#D94A2A] focus:ring-2 focus:ring-[#D94A2A]/10"
-            />
-            {searchQuery && (
-              <button 
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#6B5E77] hover:text-[#1E122C] cursor-pointer"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
             )}
+
+            {/* New View Button */}
+            <button
+              onClick={() => setIsSegmentModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 bg-white border border-[#D94A2A]/40 hover:border-[#D94A2A] text-[#D94A2A] hover:bg-[#FFF4EE] text-xs font-bold rounded-2xl transition-all cursor-pointer whitespace-nowrap shadow-3xs shrink-0"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>New View</span>
+            </button>
+          </div>
+        );
+      })()}
+
+      {/* 3. FILTER LEADS CARD */}
+      <Card className="p-4 sm:p-5 border border-[#E5E7EB] bg-white rounded-2xl shadow-xs space-y-4">
+        <div className="flex items-center justify-between pb-1">
+          <div className="flex items-center gap-2 text-sm font-bold text-[#1E122C]">
+            <Filter className="w-4 h-4 text-[#7C3AED]" />
+            <span>Filter Leads</span>
           </div>
 
-          {/* Action Filters Dropdowns */}
-          <div className="flex flex-wrap items-center gap-2">
-            
-            {/* Stage Filter */}
-            <div className="flex items-center gap-1.5 border border-[#F3DEC8] bg-white rounded-2xl px-2.5 py-1.5 shadow-3xs">
-              <span className="text-[9px] font-black text-[#6B5E77] uppercase tracking-wider leading-none">Stage:</span>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setIsSegmentModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-[#E5E7EB] rounded-xl text-xs font-semibold text-[#374151] hover:bg-[#F9FAFB] transition-colors cursor-pointer shadow-3xs"
+            >
+              <Bookmark className="w-3.5 h-3.5 text-[#6B7280]" />
+              <span>Save Filter</span>
+            </button>
+
+            <button 
+              onClick={handleResetAllFilters}
+              className="flex items-center gap-1 text-xs font-semibold text-[#EF4444] hover:underline cursor-pointer"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-[#EF4444]" />
+              <span>Clear All</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 4 Dropdowns Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          
+          {/* Channel */}
+          <div>
+            <label className="text-xs font-medium text-[#4B5563] block mb-1.5">Channel</label>
+            <div className="relative flex items-center border border-[#E5E7EB] bg-white rounded-xl px-3 py-2 shadow-2xs hover:border-[#D1D5DB] transition-colors">
+              <div className="w-4 h-4 flex items-center justify-center shrink-0 mr-2">
+                {selectedSource === 'LinkedIn' ? (
+                  <LinkedInBrandIcon className="w-3.5 h-3.5 rounded-[2px]" />
+                ) : selectedSource === 'WhatsApp Chat' ? (
+                  <WhatsAppBrandIcon className="w-3.5 h-3.5 rounded-full" />
+                ) : selectedSource === 'Email Campaign' ? (
+                  <EmailBrandIcon className="w-3.5 h-3.5 rounded-[2px]" />
+                ) : selectedSource === 'Website Form' ? (
+                  <StoreBrandIcon className="w-3.5 h-3.5 rounded-[2px]" />
+                ) : selectedSource === 'Instagram' ? (
+                  <InstagramBrandIcon className="w-3.5 h-3.5" />
+                ) : selectedSource === 'Meta Ads' ? (
+                  <FacebookBrandIcon className="w-3.5 h-3.5" />
+                ) : (
+                  <ChannelGridIcon className="w-3.5 h-3.5" />
+                )}
+              </div>
+              <select 
+                value={selectedSource}
+                onChange={(e) => { setSelectedSource(e.target.value); setActiveSegmentId('custom'); }}
+                className="appearance-none text-xs font-medium text-[#1E122C] bg-transparent border-0 focus:outline-none cursor-pointer w-full pr-5"
+              >
+                <option value="all">All Channels</option>
+                <option value="LinkedIn">LinkedIn B2B</option>
+                <option value="WhatsApp Chat">WhatsApp Chats</option>
+                <option value="Email Campaign">Email Leads</option>
+                <option value="Instagram">Instagram Direct</option>
+                <option value="Meta Ads">Meta &amp; Facebook Ads</option>
+                <option value="Website Form">Website &amp; Store</option>
+                <option value="CSV Import">CSV Imports</option>
+                <option value="Direct Referral">Direct Referral</option>
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-[#9CA3AF] absolute right-3 pointer-events-none" />
+            </div>
+          </div>
+
+          {/* Stage */}
+          <div>
+            <label className="text-xs font-medium text-[#4B5563] block mb-1.5">Stage</label>
+            <div className="relative flex items-center border border-[#E5E7EB] bg-white rounded-xl px-3 py-2 shadow-2xs hover:border-[#D1D5DB] transition-colors">
+              <Layers className="w-3.5 h-3.5 text-[#6B21A8] shrink-0 mr-2" />
               <select 
                 value={selectedStage}
-                onChange={(e) => setSelectedStage(e.target.value)}
-                className="text-xs font-black text-[#1E122C] bg-transparent border-0 focus:outline-none cursor-pointer"
+                onChange={(e) => { setSelectedStage(e.target.value); setActiveSegmentId('custom'); }}
+                className="appearance-none text-xs font-medium text-[#1E122C] bg-transparent border-0 focus:outline-none cursor-pointer w-full pr-5"
               >
                 <option value="all">All Stages</option>
-                <option value="lead">Lead</option>
-                <option value="mql">MQL</option>
-                <option value="sql">SQL</option>
-                <option value="customer">Customer</option>
+                <option value="lead">Initial Contact</option>
+                <option value="mql">Nurturing</option>
+                <option value="sql">Qualified</option>
+                <option value="customer">Hot Prospect</option>
               </select>
+              <ChevronDown className="w-3.5 h-3.5 text-[#9CA3AF] absolute right-3 pointer-events-none" />
             </div>
+          </div>
 
-            {/* Priority Filter */}
-            <div className="flex items-center gap-1.5 border border-[#F3DEC8] bg-white rounded-2xl px-2.5 py-1.5 shadow-3xs">
-              <span className="text-[9px] font-black text-[#6B5E77] uppercase tracking-wider leading-none">Priority:</span>
-              <select 
-                value={selectedPriority}
-                onChange={(e) => setSelectedPriority(e.target.value)}
-                className="text-xs font-black text-[#1E122C] bg-transparent border-0 focus:outline-none cursor-pointer"
-              >
-                <option value="all">All Priorities</option>
-                <option value="high">High (VIP)</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
-              </select>
-            </div>
-
-            {/* Score Range Filter */}
-            <div className="flex items-center gap-1.5 border border-[#F3DEC8] bg-white rounded-2xl px-2.5 py-1.5 shadow-3xs">
-              <span className="text-[9px] font-black text-[#6B5E77] uppercase tracking-wider leading-none">Score:</span>
+          {/* Score */}
+          <div>
+            <label className="text-xs font-medium text-[#4B5563] block mb-1.5">Score</label>
+            <div className="relative flex items-center border border-[#E5E7EB] bg-white rounded-xl px-3 py-2 shadow-2xs hover:border-[#D1D5DB] transition-colors">
+              <BarChart2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mr-2" />
               <select 
                 value={selectedScoreRange}
-                onChange={(e) => setSelectedScoreRange(e.target.value)}
-                className="text-xs font-black text-[#1E122C] bg-transparent border-0 focus:outline-none cursor-pointer"
+                onChange={(e) => { setSelectedScoreRange(e.target.value); setActiveSegmentId('custom'); }}
+                className="appearance-none text-xs font-medium text-[#1E122C] bg-transparent border-0 focus:outline-none cursor-pointer w-full pr-5"
               >
                 <option value="all">All Scores</option>
                 <option value="high">Hot (80+)</option>
                 <option value="medium">Warm (40-79)</option>
                 <option value="low">Cold (&lt;40)</option>
               </select>
+              <ChevronDown className="w-3.5 h-3.5 text-[#9CA3AF] absolute right-3 pointer-events-none" />
             </div>
-
-            {/* Consent Toggle */}
-            <button
-              onClick={() => setSelectedConsentOnly(prev => !prev)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-extrabold border transition-all cursor-pointer shadow-3xs ${
-                selectedConsentOnly 
-                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300' 
-                  : 'bg-white text-[#6B5E77] border-[#F3DEC8] hover:bg-[#FAF5F0]'
-              }`}
-            >
-              <HeartHandshake className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Opt-in Only</span>
-            </button>
-
-            {/* Sorting */}
-            <div className="flex items-center gap-1 border border-[#F3DEC8] bg-white rounded-2xl px-2.5 py-1.5 shadow-3xs">
-              <span className="text-[9px] font-black text-[#6B5E77] uppercase tracking-wider leading-none">Sort:</span>
-              <select 
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="text-xs font-black text-[#1E122C] bg-transparent border-0 focus:outline-none cursor-pointer mr-0.5"
-              >
-                <option value="score">Lead Score</option>
-                <option value="date">Date Added</option>
-                <option value="name">Name</option>
-              </select>
-              <button 
-                onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                className="p-1 hover:bg-[#FAF5F0] rounded-lg text-[#6B5E77] cursor-pointer"
-                title={`Sort ${sortOrder === 'asc' ? 'Ascending' : 'Descending'}`}
-              >
-                <ArrowUpDown className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
           </div>
+
+          {/* Priority */}
+          <div>
+            <label className="text-xs font-medium text-[#4B5563] block mb-1.5">Priority</label>
+            <div className="relative flex items-center border border-[#E5E7EB] bg-white rounded-xl px-3 py-2 shadow-2xs hover:border-[#D1D5DB] transition-colors">
+              <Flag className="w-3.5 h-3.5 text-rose-500 fill-rose-500 shrink-0 mr-2" />
+              <select 
+                value={selectedPriority}
+                onChange={(e) => { setSelectedPriority(e.target.value); setActiveSegmentId('custom'); }}
+                className="appearance-none text-xs font-medium text-[#1E122C] bg-transparent border-0 focus:outline-none cursor-pointer w-full pr-5"
+              >
+                <option value="all">All</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-[#9CA3AF] absolute right-3 pointer-events-none" />
+            </div>
+          </div>
+
         </div>
 
-        {/* Selected count info banner when results filtered */}
-        <div className="flex flex-wrap items-center justify-between text-xs text-[#6B5E77] pt-1 border-t border-[#F3DEC8]/50">
-          <div className="flex items-center gap-2">
-            <span>Showing <strong className="text-[#1E122C]">{filteredContacts.length}</strong> matching contacts</span>
-            {selectedIds.length > 0 && (
-              <span className="font-bold text-[#D94A2A] bg-[#FFF4EE] border border-[#FAD8C7] px-2 py-0.5 rounded-full text-[10.5px]">
-                {selectedIds.length} selected for campaign
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            {selectedIds.length > 0 && (
+        {/* Search and Apply Row */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
+            <input 
+              type="text"
+              placeholder="Search leads by name, email or company..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-8 py-2.5 border border-[#E5E7EB] rounded-xl text-xs font-medium text-[#1E122C] placeholder-[#9CA3AF] bg-white focus:outline-none focus:border-[#2B0847] focus:ring-1 focus:ring-[#2B0847]"
+            />
+            {searchQuery && (
               <button 
-                onClick={() => setSelectedIds([])}
-                className="text-[11px] font-bold text-[#6B5E77] hover:underline cursor-pointer"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#9CA3AF] hover:text-[#1E122C] cursor-pointer"
               >
-                Clear selection
+                <X className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
+
+          <button
+            onClick={() => {
+              setCurrentPage(1);
+              triggerNotification(`Filtered ${filteredContacts.length} matching leads`);
+            }}
+            className="px-6 py-2.5 bg-gradient-to-r from-[#2B0847] to-[#801B48] hover:opacity-95 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer whitespace-nowrap text-center"
+          >
+            Apply Filters
+          </button>
         </div>
       </Card>
 
-      {/* 6. MAIN CONTACTS LIST TABLE */}
-      <Card className="border border-[#F3DEC8] bg-white rounded-[28px] shadow-sm overflow-hidden p-0 w-full max-w-full min-w-0">
-        <div className="w-full overflow-x-auto">
-          <table className="w-full min-w-[980px] border-collapse text-left text-xs font-bold">
-            <thead>
-              <tr className="bg-[#FFF8F5] border-b border-[#F3DEC8] text-[10px] font-black text-[#6B5E77] uppercase tracking-wider">
-                <th className="px-4 py-4 w-12 text-center">
-                  <input 
-                    type="checkbox" 
-                    checked={isAllSelectedOnPage}
-                    onChange={handleSelectAllOnPage}
-                    className="h-4 w-4 rounded border-[#F3DEC8] text-[#4B1D6B] focus:ring-[#4B1D6B]/50 cursor-pointer accent-[#4B1D6B]" 
-                  />
-                </th>
-                <th className="px-5 py-4">Lead Profile &amp; Channel</th>
-                <th className="px-5 py-4">Contact Coordinates</th>
-                <th className="px-5 py-4">Company &amp; Role</th>
-                <th className="px-5 py-4">Lifecycle Stage</th>
-                <th className="px-5 py-4">AI Lead Score</th>
-                <th className="px-5 py-4">Tags &amp; Segment</th>
-                <th className="px-4 py-4 text-center">Campaign Actions</th>
-              </tr>
-            </thead>
-            
-            <tbody className="divide-y divide-[#F3DEC8]/70">
-              {paginatedContacts.length > 0 ? (
-                paginatedContacts.map((c) => {
-                  const initials = c.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-                  const isChecked = selectedIds.includes(c.id);
+      {/* 4. RESULTS BAR & SORT CONTROLS */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-1">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <div className="text-base sm:text-lg font-black text-[#1E122C] flex items-center gap-1.5">
+            <span className="text-lg font-black">{filteredContacts.length}</span>
+            <span>Leads found</span>
+          </div>
+          
+          {/* Active filter pills */}
+          {selectedSource !== 'all' && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EDE9FE] border border-[#DDD6FE] text-xs font-semibold text-[#5B21B6]">
+              <span>Channel: {selectedSource}</span>
+              <button onClick={() => { setSelectedSource('all'); setActiveSegmentId('all'); }} className="hover:text-purple-900 cursor-pointer ml-0.5">
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
 
-                  return (
-                    <tr 
-                      key={c.id} 
-                      className={`hover:bg-[#FFF8F5]/60 transition-colors cursor-pointer group ${
-                        isChecked ? 'bg-[#F5EEFB]/50' : ''
-                      }`}
-                      onClick={() => { setActiveContact(c); setContactDetailOpen(true); }}
-                    >
-                      {/* Checkbox select */}
-                      <td className="px-4 py-3.5 text-center" onClick={(e) => e.stopPropagation()}>
-                        <input 
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={() => handleRowSelect(c.id)}
-                          className="h-4 w-4 rounded border-[#F3DEC8] text-[#4B1D6B] focus:ring-[#4B1D6B]/50 cursor-pointer accent-[#4B1D6B]"
-                        />
-                      </td>
+          {searchQuery && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EDE9FE] border border-[#DDD6FE] text-xs font-semibold text-[#5B21B6]">
+              <span>Search: "{searchQuery}"</span>
+              <button onClick={() => setSearchQuery('')} className="hover:text-purple-900 cursor-pointer ml-0.5">
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
 
-                      {/* Name Avatar + Source Badge */}
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-9 h-9 rounded-2xl flex items-center justify-center text-xs font-black shrink-0 shadow-3xs border ${
-                            c.source === 'LinkedIn' 
-                              ? 'bg-blue-50 border-blue-200 text-blue-700' 
-                              : c.source === 'WhatsApp Chat'
-                              ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                              : 'bg-[#F5EEFB] border-[#E9D5F7] text-[#4B1D6B]'
-                          }`}>
-                            {initials}
-                          </div>
-                          <div>
-                            <span className="font-black text-[#1E122C] text-sm leading-tight block group-hover:text-[#4B1D6B] transition-colors">
-                              {c.name}
-                            </span>
-                            <div className="flex items-center gap-1 mt-1">
-                              {getSourceIcon(c.source)}
-                              <span className="text-[10px] text-[#6B5E77] font-bold leading-none">
-                                {c.source}
+          {(selectedSource !== 'all' || searchQuery || activeFilterCount > 0) && (
+            <button 
+              onClick={handleResetAllFilters}
+              className="text-xs font-bold text-[#EF4444] hover:underline cursor-pointer ml-1"
+            >
+              Clear All
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2.5 self-end sm:self-auto">
+          {/* Sort Dropdown */}
+          <div className="flex items-center gap-1.5 border border-[#E5E7EB] bg-white rounded-xl px-3 py-1.5 shadow-2xs text-xs font-semibold text-[#374151]">
+            <ArrowUpDown className="w-3.5 h-3.5 text-[#6B7280]" />
+            <span className="text-[#6B7280] font-normal">Sort by:</span>
+            <select 
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="bg-transparent border-0 focus:outline-none cursor-pointer font-bold text-xs text-[#1E122C]"
+            >
+              <option value="score">Score (High to Low)</option>
+              <option value="date">Date Added</option>
+              <option value="name">Name (A-Z)</option>
+            </select>
+          </div>
+
+          {/* View Switcher: List vs Grid */}
+          <div className="flex items-center border border-[#E5E7EB] bg-white rounded-xl p-0.5 shadow-2xs">
+            <button 
+              onClick={() => setViewMode('list')}
+              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                viewMode === 'list' ? 'bg-[#2B0847] text-white' : 'text-[#6B7280] hover:bg-[#F3F4F6]'
+              }`}
+              title="List View"
+            >
+              <LayoutList className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={() => setViewMode('grid')}
+              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                viewMode === 'grid' ? 'bg-[#2B0847] text-white' : 'text-[#6B7280] hover:bg-[#F3F4F6]'
+              }`}
+              title="Grid View"
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 5. MAIN CONTACTS LIST TABLE OR GRID */}
+      {viewMode === 'list' ? (
+        <Card className="border border-[#E5E7EB] bg-white rounded-2xl shadow-xs overflow-hidden p-0 w-full max-w-full min-w-0">
+          <div className="w-full overflow-x-auto">
+            <table className="w-full min-w-[960px] border-collapse text-left text-xs">
+              <thead>
+                <tr className="bg-[#F9FAFB] border-b border-[#E5E7EB] text-xs font-semibold text-[#6B7280]">
+                  <th className="px-4 py-3.5 w-10 text-center">
+                    <input 
+                      type="checkbox" 
+                      checked={isAllSelectedOnPage}
+                      onChange={handleSelectAllOnPage}
+                      className="h-4 w-4 rounded border-[#D1D5DB] text-[#4B1D6B] focus:ring-[#4B1D6B]/50 cursor-pointer accent-[#4B1D6B]" 
+                    />
+                  </th>
+                  <th className="px-5 py-3.5 font-semibold text-xs text-[#6B7280]">
+                    <div className="flex items-center gap-1">
+                      <span>Lead / Contact</span>
+                      <ArrowUpDown className="w-3 h-3 text-[#9CA3AF]" />
+                    </div>
+                  </th>
+                  <th className="px-5 py-3.5 font-semibold text-xs text-[#6B7280]">Company &amp; Role</th>
+                  <th className="px-4 py-3.5 font-semibold text-xs text-[#6B7280]">Channel</th>
+                  <th className="px-4 py-3.5 font-semibold text-xs text-[#6B7280]">Score &amp; Stage</th>
+                  <th className="px-4 py-3.5 font-semibold text-xs text-[#6B7280]">Location</th>
+                  <th className="px-5 py-3.5 font-semibold text-xs text-[#6B7280]">Tags</th>
+                  <th className="px-4 py-3.5 text-center font-semibold text-xs text-[#6B7280]">Actions</th>
+                </tr>
+              </thead>
+              
+              <tbody className="divide-y divide-[#E5E7EB]/70">
+                {paginatedContacts.length > 0 ? (
+                  paginatedContacts.map((c, idx) => {
+                    const initials = c.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                    const isChecked = selectedIds.includes(c.id);
+
+                    // Stage display mapping matching the screenshot
+                    let stageLabel = 'Nurturing';
+                    let stageBadgeColor = 'bg-[#F5EEFB] text-[#4B1D6B] border-[#E9D5F7]';
+                    if (c.leadScore >= 80) {
+                      stageLabel = 'Hot Prospect';
+                      stageBadgeColor = 'bg-[#FFF0F2] text-[#E02424] border-[#FCD9BD]';
+                    } else if (c.lifecycleStage === 'lead') {
+                      stageLabel = 'Initial Contact';
+                      stageBadgeColor = 'bg-[#EBF5FF] text-[#1E429F] border-[#BFDBFE]';
+                    } else if (c.lifecycleStage === 'sql' || c.lifecycleStage === 'customer') {
+                      stageLabel = 'Qualified';
+                      stageBadgeColor = 'bg-[#EDFDF5] text-[#03543F] border-[#BCF0DA]';
+                    }
+
+                    return (
+                      <tr 
+                        key={c.id} 
+                        className={`hover:bg-[#FAF8F5]/60 transition-colors cursor-pointer group ${
+                          isChecked ? 'bg-[#F5EEFB]/40' : ''
+                        }`}
+                        onClick={() => { setActiveContact(c); setContactDetailOpen(true); }}
+                      >
+                        {/* Checkbox select */}
+                        <td className="px-4 py-3.5 text-center" onClick={(e) => e.stopPropagation()}>
+                          <input 
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => handleRowSelect(c.id)}
+                            className="h-4 w-4 rounded border-[#D1D5DB] text-[#4B1D6B] focus:ring-[#4B1D6B]/50 cursor-pointer accent-[#4B1D6B]"
+                          />
+                        </td>
+
+                        {/* Lead / Contact: Avatar + Name + Email */}
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                              initials === 'JS' || initials === 'PM' 
+                                ? 'bg-purple-100 text-purple-800 border border-purple-200' 
+                                : initials === 'RK' || initials === 'AS'
+                                ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                                : 'bg-[#F3E8FF] text-[#6B21A8] border border-[#E9D5F7]'
+                            }`}>
+                              {initials}
+                            </div>
+                            <div>
+                              <span className="font-bold text-[#1E122C] text-xs leading-tight block group-hover:text-[#4B1D6B] transition-colors">
+                                {c.name.replace(/\s*\(\d+\)|\s*\[\d+\]/g, '')}
+                              </span>
+                              <span className="text-[11px] text-[#9CA3AF] block mt-0.5">
+                                {c.email}
                               </span>
                             </div>
                           </div>
-                        </div>
-                      </td>
+                        </td>
 
-                      {/* Contact Info (Email + Phone) */}
-                      <td className="px-5 py-3.5 font-semibold text-[#6B5E77]">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-1.5">
-                            <Mail className="w-3 h-3 text-[#6B5E77]" />
-                            <span className="text-[#1E122C] truncate max-w-[160px]">{c.email}</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <Phone className="w-3 h-3 text-[#6B5E77]" />
-                            <span className="text-[10.5px] font-black text-[#1E122C]">{c.phone}</span>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Company & Role */}
-                      <td className="px-5 py-3.5">
-                        {c.company || c.jobTitle ? (
+                        {/* Company & Role */}
+                        <td className="px-5 py-3.5">
                           <div>
-                            <span className="font-black text-[#1E122C] text-xs block leading-tight truncate max-w-[170px]">
+                            <span className="font-bold text-[#1E122C] text-xs block leading-tight">
+                              {c.company || 'TechCorp'}
+                            </span>
+                            <span className="text-[11px] text-[#9CA3AF] block mt-0.5">
                               {c.jobTitle || 'Executive'}
                             </span>
-                            <span className="text-[10px] text-[#6B5E77] font-semibold block mt-1 flex items-center gap-1 truncate max-w-[170px]">
-                              <Briefcase className="w-3 h-3 shrink-0" />
-                              {c.company || 'Enterprise'}
-                            </span>
                           </div>
-                        ) : (
-                          <span className="text-[#6B5E77] text-[10px] font-semibold">D2C Customer</span>
-                        )}
-                      </td>
+                        </td>
 
-                      {/* Lifecycle & Status */}
-                      <td className="px-5 py-3.5">
-                        <div className="flex flex-col gap-1.5 items-start">
-                          <span className={`px-2.5 py-0.5 text-[9.5px] font-black uppercase tracking-wider rounded-full border ${getStageColor(c.lifecycleStage)}`}>
-                            {c.lifecycleStage}
-                          </span>
-                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-black leading-none capitalize ${getStatusColor(c.leadStatus)}`}>
-                            {c.leadStatus}
-                          </span>
-                        </div>
-                      </td>
-
-                      {/* AI Lead Score & Priority */}
-                      <td className="px-5 py-3.5">
-                        <div className="space-y-1.5 w-32">
-                          <div className="flex items-center gap-2">
-                            <div className="flex-1 bg-[#FAF5F0] border border-[#F3DEC8]/60 rounded-full h-1.5 overflow-hidden">
-                              <div 
-                                className={`h-full rounded-full transition-all duration-300 ${
-                                  c.leadScore >= 80 
-                                    ? 'bg-emerald-500' 
-                                    : c.leadScore >= 40 
-                                    ? 'bg-gradient-to-r from-[#4B1D6B] to-[#D94A2A]' 
-                                    : 'bg-rose-500'
-                                }`}
-                                style={{ width: `${c.leadScore}%` }}
-                              />
-                            </div>
-                            <span className={`text-[11px] font-black shrink-0 ${
-                              c.leadScore >= 80 ? 'text-emerald-700' : c.leadScore >= 40 ? 'text-[#4B1D6B]' : 'text-rose-600'
-                            }`}>
-                              {c.leadScore}
-                            </span>
-                          </div>
-                          
-                          <div className="flex items-center gap-1.5">
-                            <span className={`inline-block px-2 py-0.5 rounded-full border text-[8.5px] font-black uppercase tracking-wider leading-none ${getPriorityColor(c.priority)}`}>
-                              {c.priority}
-                            </span>
-                            {c.leadScore >= 80 && (
-                              <span className="text-[8.5px] font-black text-[#D94A2A] bg-[#FFF4EE] px-1 py-0.5 rounded-md border border-[#FAD8C7] flex items-center gap-0.5">
-                                <Flame className="w-2.5 h-2.5 text-[#D94A2A]" /> Hot
-                              </span>
+                        {/* Channel (Lead Source) */}
+                        <td className="px-4 py-3.5">
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#F9FAFB] border border-[#E5E7EB]">
+                            {c.source === 'LinkedIn' ? (
+                              <>
+                                <LinkedInBrandIcon className="w-3.5 h-3.5 rounded-[2px]" />
+                                <span className="text-xs font-semibold text-[#1E122C]">LinkedIn</span>
+                              </>
+                            ) : c.source === 'WhatsApp Chat' ? (
+                              <>
+                                <WhatsAppBrandIcon className="w-3.5 h-3.5 rounded-full" />
+                                <span className="text-xs font-semibold text-emerald-800">WhatsApp</span>
+                              </>
+                            ) : c.source === 'Email Campaign' ? (
+                              <>
+                                <EmailBrandIcon className="w-3.5 h-3.5 rounded-[2px]" />
+                                <span className="text-xs font-semibold text-[#D94A2A]">Email</span>
+                              </>
+                            ) : c.source === 'Instagram' ? (
+                              <>
+                                <InstagramBrandIcon className="w-3.5 h-3.5" />
+                                <span className="text-xs font-semibold text-purple-700">Instagram</span>
+                              </>
+                            ) : c.source === 'Meta Ads' ? (
+                              <>
+                                <FacebookBrandIcon className="w-3.5 h-3.5" />
+                                <span className="text-xs font-semibold text-blue-700">Meta Ads</span>
+                              </>
+                            ) : c.source === 'Website Form' ? (
+                              <>
+                                <StoreBrandIcon className="w-3.5 h-3.5 rounded-[2px]" />
+                                <span className="text-xs font-semibold text-purple-700">Website</span>
+                              </>
+                            ) : (
+                              <>
+                                <ChannelGridIcon className="w-3.5 h-3.5" />
+                                <span className="text-xs font-semibold text-[#6B7280]">{c.source}</span>
+                              </>
                             )}
                           </div>
-                        </div>
-                      </td>
+                        </td>
 
-                      {/* Tags & Segment */}
-                      <td className="px-5 py-3.5">
-                        <div className="flex flex-col gap-1.5 min-w-[160px] max-w-[200px]">
-                          {c.segment && (
-                            <div className="flex items-center gap-1.5">
-                              <span className="inline-flex items-center gap-1 bg-[#FFF4EE] border border-[#FAD8C7] text-[#D94A2A] text-[9.5px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap shadow-3xs truncate max-w-[160px]">
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#D94A2A] shrink-0" />
-                                <span>{c.segment}</span>
-                              </span>
-                            </div>
-                          )}
-                          <div className="flex items-center gap-1 flex-wrap">
-                            {c.tags.slice(0, 2).map((tag, idx) => (
-                              <span key={idx} className="bg-[#F5EEFB] border border-[#E9D5F7] text-[9px] font-semibold text-[#4B1D6B] px-1.5 py-0.5 rounded-md whitespace-nowrap">
-                                {tag}
+                        {/* Score & Stage (Stacked: Top=Number, Bottom=Prospect Stage) */}
+                        <td className="px-4 py-3.5">
+                          <div className="flex flex-col items-start gap-1">
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-50 border border-emerald-200 text-xs font-black text-emerald-700 leading-none" title={`AI Score: ${c.leadScore}/100`}>
+                              <Sparkles className="w-3 h-3 text-emerald-600 shrink-0" />
+                              {c.leadScore}
+                            </span>
+                            <span className={`inline-block px-2.5 py-0.5 text-[10.5px] font-semibold rounded-full border whitespace-nowrap leading-tight ${stageBadgeColor}`}>
+                              {stageLabel}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Location */}
+                        <td className="px-4 py-3.5 text-xs whitespace-nowrap">
+                          <div className="flex items-center gap-1 text-[#6B7280]">
+                            <MapPin className="w-3 h-3 text-[#9CA3AF] shrink-0" />
+                            <span className="font-medium text-xs text-[#374151]">{c.location || 'Mumbai, India'}</span>
+                          </div>
+                        </td>
+
+                        {/* Tags */}
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-1.5 flex-wrap max-w-[180px]">
+                            {c.tags.slice(0, 2).map((tag, tIdx) => (
+                              <span key={tIdx} className="bg-[#EBF5FF] text-[#1E429F] px-2.5 py-0.5 rounded-lg text-[10.5px] font-bold whitespace-nowrap">
+                                {tag.toUpperCase()}
                               </span>
                             ))}
                             {c.tags.length > 2 && (
-                              <span className="bg-white border border-[#F3DEC8] text-[#6B5E77] text-[8.5px] font-bold px-1.5 py-0.5 rounded-md shadow-3xs whitespace-nowrap" title={c.tags.slice(2).join(', ')}>
+                              <span className="bg-[#FEF08A]/40 text-[#854D0E] text-[10px] font-bold px-2 py-0.5 rounded-lg border border-[#FEF08A]" title={c.tags.slice(2).join(', ')}>
                                 +{c.tags.length - 2}
                               </span>
                             )}
                           </div>
-                        </div>
-                      </td>
+                        </td>
 
-                      {/* Row Campaign & Edit Action buttons */}
-                      <td className="px-4 py-3.5 text-center" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-center gap-1">
-                          {/* Quick Email Launcher */}
-                          <button 
-                            onClick={() => handleLaunchEmailCampaign([c.id])}
-                            className="p-1.5 hover:bg-[#FFF4EE] rounded-xl text-[#6B5E77] hover:text-[#D94A2A] cursor-pointer transition-colors"
-                            title="Send Email Campaign to this contact"
-                          >
-                            <Mail className="w-3.5 h-3.5" />
-                          </button>
+                        {/* Actions (Three dots menu) */}
+                        <td className="px-4 py-3.5 text-center" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center justify-center">
+                            <button 
+                              onClick={() => triggerEdit(c)}
+                              className="p-1.5 hover:bg-[#F3F4F6] rounded-lg text-[#9CA3AF] hover:text-[#1E122C] cursor-pointer transition-colors"
+                              title="More actions"
+                            >
+                              <MoreVertical className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={8} className="text-center py-12 text-[#6B7280] font-bold">
+                      <div className="max-w-sm mx-auto space-y-2">
+                        <Users className="w-8 h-8 text-[#6B7280]/40 mx-auto" />
+                        <p className="text-sm text-[#1E122C]">No contacts found matching current filter specifications.</p>
+                        <button 
+                          onClick={handleResetAllFilters}
+                          className="text-xs text-[#D94A2A] font-black hover:underline cursor-pointer"
+                        >
+                          Reset all filters
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
 
-                          {/* Quick WhatsApp Launcher */}
-                          <button 
-                            onClick={() => handleLaunchWhatsAppBroadcast([c.id])}
-                            className="p-1.5 hover:bg-emerald-50 rounded-xl text-[#6B5E77] hover:text-emerald-700 cursor-pointer transition-colors"
-                            title="Send WhatsApp Message"
-                          >
-                            <MessageSquare className="w-3.5 h-3.5" />
-                          </button>
-
-                          {/* Edit Details */}
-                          <button 
-                            onClick={() => triggerEdit(c)}
-                            className="p-1.5 hover:bg-[#FAF5F0] rounded-xl text-[#6B5E77] hover:text-[#1E122C] cursor-pointer transition-colors"
-                            title="Edit Contact"
-                          >
-                            <UserPlus className="w-3.5 h-3.5" />
-                          </button>
-
-                          {/* Delete */}
-                          <button 
-                            onClick={() => handleDeleteContact(c.id)}
-                            className="p-1.5 hover:bg-rose-50 rounded-xl text-[#6B5E77] hover:text-rose-600 cursor-pointer transition-colors"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan={8} className="text-center py-12 text-[#6B5E77] font-bold">
-                    <div className="max-w-sm mx-auto space-y-2">
-                      <Users className="w-8 h-8 text-[#6B5E77]/40 mx-auto" />
-                      <p className="text-sm text-[#1E122C]">No contacts found matching current filter specifications.</p>
-                      <button 
-                        onClick={() => {
-                          setSelectedSource('all');
-                          setSelectedStage('all');
-                          setSelectedPriority('all');
-                          setSelectedScoreRange('all');
-                          setSelectedConsentOnly(false);
-                          setSearchQuery('');
-                        }}
-                        className="text-xs text-[#D94A2A] font-black hover:underline cursor-pointer"
-                      >
-                        Reset all filters
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* PAGINATION FOOTER PANEL */}
-        <div className="px-6 py-4 bg-[#FAF5F0]/60 border-t border-[#F3DEC8] flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-3.5">
+          {/* PAGINATION FOOTER */}
+          <div className="px-6 py-3.5 bg-white border-t border-[#F3DEC8]/70 flex flex-col sm:flex-row items-center justify-between gap-4">
             <span className="text-xs font-bold text-[#6B5E77]">
-              Showing <strong className="text-[#1E122C] font-black">{filteredContacts.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}</strong> to <strong className="text-[#1E122C] font-black">{Math.min(currentPage * itemsPerPage, filteredContacts.length)}</strong> of <strong className="text-[#1E122C] font-black">{filteredContacts.length}</strong> contacts
+              Showing <strong className="text-[#1E122C]">{filteredContacts.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, filteredContacts.length)}</strong> of <strong className="text-[#1E122C]">{filteredContacts.length}</strong> leads
             </span>
 
-            {/* Items Per Page Selector */}
-            <div className="flex items-center gap-1.5 border border-[#F3DEC8] bg-white rounded-xl px-2.5 py-1 shadow-3xs">
-              <span className="text-[10px] font-black text-[#6B5E77] uppercase tracking-wider">Per Page:</span>
-              <select
-                value={itemsPerPage}
-                onChange={(e) => {
-                  setItemsPerPage(Number(e.target.value));
-                  setCurrentPage(1);
-                }}
-                className="text-xs font-black text-[#1E122C] bg-transparent border-0 focus:outline-none cursor-pointer"
-              >
-                <option value={25}>25</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-              </select>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
+                <button 
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="w-7 h-7 border border-[#F3DEC8] rounded-lg bg-white text-[#6B5E77] hover:bg-[#FAF5F0] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                
+                {Array.from({ length: totalPages }).map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentPage(idx + 1)}
+                    className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center cursor-pointer transition-all ${
+                      currentPage === idx + 1 
+                        ? 'bg-[#2B0847] text-white shadow-xs' 
+                        : 'border border-[#F3DEC8] bg-white text-[#6B5E77] hover:bg-[#FAF5F0]'
+                    }`}
+                  >
+                    {idx + 1}
+                  </button>
+                ))}
+
+                <button 
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="w-7 h-7 border border-[#F3DEC8] rounded-lg bg-white text-[#6B5E77] hover:bg-[#FAF5F0] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* Per Page Selector */}
+              <div className="flex items-center border border-[#F3DEC8] bg-white rounded-xl px-2.5 py-1 text-xs font-bold text-[#1E122C] shadow-3xs">
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="bg-transparent border-0 focus:outline-none cursor-pointer font-bold text-xs"
+                >
+                  <option value={10}>10 per page</option>
+                  <option value={25}>25 per page</option>
+                  <option value={50}>50 per page</option>
+                </select>
+              </div>
             </div>
           </div>
+        </Card>
+      ) : (
+        /* GRID VIEW MODE */
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {paginatedContacts.map((c, idx) => {
+            const initials = c.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            const isChecked = selectedIds.includes(c.id);
+            const isHigh = c.priority === 'high' || c.leadScore >= 75;
 
-          <div className="flex items-center gap-1.5">
-            {/* Previous Page Button */}
-            <button 
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
-              className="p-2 border border-[#F3DEC8] rounded-xl bg-white text-[#6B5E77] hover:bg-[#FFF8F5] hover:text-[#D94A2A] hover:border-[#D94A2A]/40 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-3xs flex items-center justify-center"
-              title="Previous Page"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            
-            {/* Page Number Buttons */}
-            {Array.from({ length: totalPages }).map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentPage(idx + 1)}
-                className={`min-w-8 h-8 px-2.5 rounded-xl text-xs font-black border flex items-center justify-center cursor-pointer transition-all duration-200 ${
-                  currentPage === idx + 1 
-                    ? 'border-[#4B1D6B] bg-gradient-to-r from-[#2B0847] via-[#48115B] to-[#801B48] text-white shadow-xs' 
-                    : 'border-[#F3DEC8] bg-white text-[#6B5E77] hover:bg-[#FFF8F5] hover:text-[#D94A2A] hover:border-[#D94A2A]/40'
+            return (
+              <Card 
+                key={c.id}
+                onClick={() => { setActiveContact(c); setContactDetailOpen(true); }}
+                className={`p-4 border border-[#F3DEC8] bg-white rounded-2xl shadow-3xs hover:shadow-md transition-all cursor-pointer space-y-3 relative ${
+                  isChecked ? 'border-[#4B1D6B] bg-[#F5EEFB]/20' : ''
                 }`}
               >
-                {idx + 1}
-              </button>
-            ))}
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-[#F5EEFB] text-[#4B1D6B] flex items-center justify-center font-bold text-xs border border-[#E9D5F7]">
+                      {initials}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-xs text-[#1E122C]">{c.name.replace(/\s*\(\d+\)|\s*\[\d+\]/g, '')}</h4>
+                      <p className="text-[11px] text-[#6B5E77]">{c.email}</p>
+                    </div>
+                  </div>
 
-            {/* Next Page Button */}
-            <button 
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages}
-              className="p-2 border border-[#F3DEC8] rounded-xl bg-white text-[#6B5E77] hover:bg-[#FFF8F5] hover:text-[#D94A2A] hover:border-[#D94A2A]/40 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-3xs flex items-center justify-center"
-              title="Next Page"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
+                  <span className={`text-xs font-black ${c.leadScore >= 80 ? 'text-emerald-700' : 'text-amber-600'}`}>
+                    {c.leadScore}
+                  </span>
+                </div>
+
+                <div className="text-xs text-[#6B5E77] border-t border-[#F3DEC8]/40 pt-2 flex items-center justify-between">
+                  <span>{c.company || 'Innovate Ltd.'} · {c.jobTitle || 'Executive'}</span>
+                  <span className={`inline-flex items-center gap-1 font-bold text-[11px] ${isHigh ? 'text-rose-600' : 'text-amber-600'}`}>
+                    <Flag className="w-3 h-3 fill-current" />
+                    <span>{isHigh ? 'High' : 'Medium'}</span>
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {c.tags.slice(0, 2).map((t, tIdx) => (
+                    <span key={tIdx} className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold">
+                      {t.toUpperCase()}
+                    </span>
+                  ))}
+                </div>
+              </Card>
+            );
+          })}
         </div>
-      </Card>
+      )}
 
       {/* 7. FLOATING MULTI-SELECT CAMPAIGN ACTION BAR */}
       {selectedIds.length > 0 && (

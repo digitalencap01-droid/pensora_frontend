@@ -60,34 +60,45 @@ export const EmailCampaign: React.FC = () => {
   };
 
   // =========================================================================
-  // GUIDED CAMPAIGN WIZARD STATE (Domain Setup -> Audience -> AI Autonomy -> Goal -> Message -> Review)
+  // GUIDED CAMPAIGN WIZARD STATE (Goal & Audience -> Message -> Launch & Autonomy)
+  // Domain is 1st-time only & persistent; AI autonomy is saved once & toggleable
   // =========================================================================
   const [isCreatorOpen, setIsCreatorOpen] = useState<boolean>(false);
   const [creatorStep, setCreatorStep] = useState<number>(1); 
-  // Step 1: Domain & Sender Setup
-  // Step 2: Audience & Contact Import
-  // Step 3: AI Autonomy Level (Autonomous vs Copilot)
-  // Step 4: Campaign Goal & Objective
-  // Step 5: Message Composition & Visual Templates
-  // Step 6: Review, Deliverability & Schedule/Send
+  // Step 1: Goal & Audience
+  // Step 2: Message & Template Composition
+  // Step 3: Launch, AI Autonomy & Dispatch
 
-  // STEP 1: DOMAIN & SENDER SETUP STATE
-  const [senderName, setSenderName] = useState<string>(brandName);
-  const [senderEmail, setSenderEmail] = useState<string>(`hello@${cleanDomain}`);
-  const [replyToEmail, setReplyToEmail] = useState<string>(`support@${cleanDomain}`);
-  const [isDnsVerified, setIsDnsVerified] = useState<boolean>(true);
+  // DOMAIN & SENDER PRE-FILLED IDENTITY STATE (From Onboarding / Active Workspace)
+  const [isDomainSettingsOpen, setIsDomainSettingsOpen] = useState<boolean>(false);
+  const [senderName, setSenderName] = useState<string>(
+    activeWorkspace?.email?.fromName || activeWorkspace?.name || 'Bloom Boutique'
+  );
+  const [senderEmail, setSenderEmail] = useState<string>(
+    activeWorkspace?.email?.fromEmail || (activeWorkspace?.website ? `hello@${cleanDomain}` : 'hello@bloomboutique.shop')
+  );
+  const [replyToEmail, setReplyToEmail] = useState<string>(
+    activeWorkspace?.email?.replyToEmail || (activeWorkspace?.website ? `support@${cleanDomain}` : 'support@bloomboutique.shop')
+  );
+  const [isDnsVerified, setIsDnsVerified] = useState<boolean>(() => {
+    const saved = localStorage.getItem('growwise_email_dns_verified');
+    return saved !== null ? saved === 'true' : true;
+  });
   const [isVerifyingDns, setIsVerifyingDns] = useState<boolean>(false);
 
-  // STEP 2: AUDIENCE & CONTACTS STATE
+  // AUDIENCE & CONTACTS STATE
   const [importMethod, setImportMethod] = useState<'synced' | 'csv' | 'paste'>('synced');
-  const [cohortName, setCohortName] = useState<string>('All Active Customers');
+  const [cohortName, setCohortName] = useState<string>('VIP Engaged (High LTV)');
   const [selectedPreset, setSelectedPreset] = useState<string>('vip_engaged');
   const [cohortCount, setCohortCount] = useState<number>(2450);
 
-  // STEP 3: AI AUTONOMY LEVEL STATE
-  const [autonomyLevel, setAutonomyLevel] = useState<'copilot' | 'autonomous'>('copilot');
+  // AI AUTONOMY LEVEL (1-Time Selection / Persisted in localStorage)
+  const [autonomyLevel, setAutonomyLevel] = useState<'copilot' | 'autonomous'>(() => {
+    const saved = localStorage.getItem('growwise_email_autonomy_level');
+    return (saved === 'autonomous' || saved === 'copilot') ? saved : 'copilot';
+  });
 
-  // STEP 4: GOAL & STRATEGY STATE
+  // GOAL & STRATEGY STATE
   const [campaignGoal, setCampaignGoal] = useState<string>(
     'Announce seasonal new collection with a 20% early access VIP coupon'
   );
@@ -179,32 +190,47 @@ Thanks,
     }, 900);
   };
 
-  // Step 4 AI Synthesizing simulation
+  // Step 1 -> 2 AI Synthesizing simulation
   const handleSynthesizeGoal = () => {
     setIsSynthesizing(true);
     setTimeout(() => {
       setIsSynthesizing(false);
-      setCreatorStep(5);
+      setCreatorStep(2);
     }, 800);
   };
 
-  // Step 6 AI Auto-fix deliverability
-  const handleAutoFixDeliverability = () => {
-    setIsAutoFixing(true);
+  // LIVE TEST EMAIL MODAL STATE
+  const [isTestEmailModalOpen, setIsTestEmailModalOpen] = useState<boolean>(false);
+  const [testRecipientEmail, setTestRecipientEmail] = useState<string>(
+    activeWorkspace?.email?.fromEmail || 'hello@bloomboutique.shop'
+  );
+  const [testRecipientName, setTestRecipientName] = useState<string>('Shristy');
+  const [testPrefixSubject, setTestPrefixSubject] = useState<boolean>(true);
+  const [testIncludeSampleData, setTestIncludeSampleData] = useState<boolean>(true);
+  const [testSendingState, setTestSendingState] = useState<'idle' | 'sending' | 'success'>('idle');
+  const [testSuccessMessage, setTestSuccessMessage] = useState<string>('');
+
+  // Step 3 Deliverability Test simulation via Popup Modal
+  const handleExecuteSendTest = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!testRecipientEmail.trim()) return;
+    setTestSendingState('sending');
     setTimeout(() => {
-      setDeliverabilityScore(98);
-      setIsAutoFixing(false);
-    }, 700);
+      setTestSendingState('success');
+      setTestEmailSent(true);
+      setTestSuccessMessage(`Test email rendered & delivered to ${testRecipientEmail}`);
+      setTimeout(() => {
+        setTestSendingState('idle');
+        setIsTestEmailModalOpen(false);
+      }, 1600);
+    }, 1000);
   };
 
-  // Step 6 Test email simulation
-  const handleSendTestEmail = () => {
-    setTestEmailSent(true);
-    setTimeout(() => setTestEmailSent(false), 3000);
-  };
-
-  // Complete & Launch Campaign
+  // Complete & Launch Campaign (Step 3)
   const handleFinalLaunch = () => {
+    localStorage.setItem('growwise_email_autonomy_level', autonomyLevel);
+    localStorage.setItem('growwise_email_dns_verified', String(isDnsVerified));
+
     const newCamp = {
       id: `em-${Date.now()}`,
       name: cohortName || 'AI Synthesized Broadcast',
@@ -737,7 +763,9 @@ Thanks,
       )}
 
       {/* =========================================================================
-          4. GUIDED CAMPAIGN CREATION WIZARD (All Steps: Domain -> Audience -> Autonomy -> Goal -> Message -> Review)
+          4. STREAMLINED 3-STEP CAMPAIGN CREATION WIZARD
+          (Step 1: Goal & Audience -> Step 2: Message & Template -> Step 3: Launch & Autonomy)
+          Domain connection is 1st-time only & persistent; AI autonomy is saved once & toggleable
           ========================================================================= */}
       {isCreatorOpen && (
         <div className="fixed inset-0 z-50 bg-[#1E122C]/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
@@ -749,42 +777,63 @@ Thanks,
                 <span className="w-2.5 h-2.5 rounded-full bg-[#EA580C] animate-pulse" />
                 <h3 className="text-sm font-black text-[#1E122C]">Email Marketing &amp; Campaign Wizard</h3>
                 <span className="text-[10px] text-[#8C1F3D] font-bold bg-white px-2 py-0.5 rounded-md border border-[#F3DEC8]">
-                  Step {creatorStep} of 6
+                  Step {creatorStep} of 3
                 </span>
               </div>
 
-              <button
-                onClick={() => setIsCreatorOpen(false)}
-                className="p-1.5 rounded-xl hover:bg-white text-[#6B5E77] hover:text-[#1E122C] transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-3">
+                {/* Live Domain Status Pill (Clickable to Reconnect/Manage) */}
+                <div className={`hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+                  isDnsVerified 
+                    ? 'bg-[#ECFDF5] border border-[#A7F3D0] text-[#065F46]' 
+                    : 'bg-[#FFF0F2] border border-[#FECACA] text-[#991B1B]'
+                }`}>
+                  <ShieldCheck className={`w-3.5 h-3.5 ${isDnsVerified ? 'text-[#10B981]' : 'text-[#EF4444]'}`} />
+                  <span>{cleanDomain}</span>
+                  <span className={`w-1.5 h-1.5 rounded-full ${isDnsVerified ? 'bg-[#10B981]' : 'bg-[#EF4444]'}`} />
+                  <span className="text-[10px] font-semibold">{isDnsVerified ? 'Connected' : 'Disconnected'}</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsDomainSettingsOpen(true)}
+                    className="ml-1 text-[10px] text-[#065F46] font-extrabold underline hover:opacity-80 cursor-pointer"
+                    title="Manage sending domain & DNS records"
+                  >
+                    Manage
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => setIsCreatorOpen(false)}
+                  className="p-1.5 rounded-xl hover:bg-white text-[#6B5E77] hover:text-[#1E122C] transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
-            {/* 6-Step Stepper Rail */}
-            <div className="px-6 py-2.5 border-b border-[#F3DEC8] bg-white flex items-center justify-between overflow-x-auto text-xs font-black">
+            {/* 3-Step Compact Connected Stepper Rail (No Giant Gaps) */}
+            <div className="px-6 py-2.5 border-b border-[#F3DEC8] bg-[#FAF5F0]/50 flex items-center gap-2 overflow-x-auto text-xs font-black">
               {[
-                { step: 1, label: '01 Domain & Sender' },
-                { step: 2, label: '02 Audience' },
-                { step: 3, label: '03 AI Autonomy' },
-                { step: 4, label: '04 Goal' },
-                { step: 5, label: '05 Message' },
-                { step: 6, label: '06 Launch' }
-              ].map((s) => (
-                <button
-                  key={s.step}
-                  onClick={() => setCreatorStep(s.step)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg whitespace-nowrap cursor-pointer transition-all ${
-                    creatorStep === s.step
-                      ? 'bg-[#8C1F3D] text-white shadow-xs'
-                      : creatorStep > s.step
-                      ? 'text-[#10B981] bg-[#ECFDF5]'
-                      : 'text-[#6B5E77] hover:text-[#1E122C]'
-                  }`}
-                >
-                  {creatorStep > s.step ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : null}
-                  <span>{s.label}</span>
-                </button>
+                { step: 1, label: '01 Goal & Audience' },
+                { step: 2, label: '02 Message & Template' },
+                { step: 3, label: '03 Review & Launch' }
+              ].map((s, sIdx) => (
+                <React.Fragment key={s.step}>
+                  <button
+                    onClick={() => setCreatorStep(s.step)}
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl whitespace-nowrap cursor-pointer transition-all ${
+                      creatorStep === s.step
+                        ? 'bg-[#8C1F3D] text-white shadow-xs'
+                        : creatorStep > s.step
+                        ? 'text-[#10B981] bg-[#ECFDF5] border border-[#A7F3D0]'
+                        : 'text-[#6B5E77] bg-white border border-[#F3DEC8] hover:text-[#1E122C] hover:bg-[#FAF5F0]'
+                    }`}
+                  >
+                    {creatorStep > s.step ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : null}
+                    <span>{s.label}</span>
+                  </button>
+                  {sIdx < 2 && <span className="text-[#D4C3B3] text-xs font-bold shrink-0">➔</span>}
+                </React.Fragment>
               ))}
             </div>
 
@@ -792,241 +841,45 @@ Thanks,
             <div className="p-6 overflow-y-auto flex-1 space-y-6">
 
               {/* -------------------------------------------------------------
-                  STEP 1: SENDER DOMAIN & IDENTITY SETUP (Asked here as requested)
+                  STEP 1: GOAL & AUDIENCE (Goal is Step 1 for all campaigns)
                   ------------------------------------------------------------- */}
               {creatorStep === 1 && (
-                <div className="space-y-4 animate-in fade-in">
-                  <div className="space-y-1">
-                    <h2 className="text-base font-black text-[#1E122C]">Step 1: Sender Identity &amp; Domain Authentication</h2>
-                    <p className="text-xs text-[#6B5E77]">
-                      Configure the email address your subscribers will see in their inboxes. We verify SPF and DKIM records to prevent spam filters.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-black text-[#1E122C]">From Sender Name</label>
-                      <input
-                        type="text"
-                        value={senderName}
-                        onChange={(e) => setSenderName(e.target.value)}
-                        placeholder="e.g. Bloom Boutique"
-                        className="w-full px-3.5 py-2 text-xs bg-white border border-[#F3DEC8] rounded-xl font-bold outline-none text-[#1E122C]"
-                      />
+                <div className="space-y-5 animate-in fade-in">
+                  
+                  {/* Prefilled Sender Identity & Domain Summary Bar */}
+                  <div className="p-3 bg-[#FAF5F0] border border-[#F3DEC8] rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-[#8C1F3D]" />
+                      <span>Sender: <strong className="text-[#1E122C]">{senderName}</strong> &lt;{senderEmail}&gt;</span>
                     </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-black text-[#1E122C]">Sender Email Address</label>
-                      <input
-                        type="email"
-                        value={senderEmail}
-                        onChange={(e) => setSenderEmail(e.target.value)}
-                        placeholder="e.g. hello@bloomboutique.shop"
-                        className="w-full px-3.5 py-2 text-xs bg-white border border-[#F3DEC8] rounded-xl font-bold outline-none text-[#1E122C]"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Live DNS Authentication Box */}
-                  <div className="p-4 rounded-2xl bg-[#FAF5F0] border border-[#F3DEC8] space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <ShieldCheck className="w-4 h-4 text-[#10B981]" />
-                        <span className="text-xs font-black text-[#1E122C]">DNS Deliverability &amp; SPF/DKIM Authentication</span>
-                      </div>
-                      <span className="text-[10px] font-bold text-[#10B981] bg-[#ECFDF5] px-2.5 py-0.5 rounded-full border border-[#A7F3D0]">
-                        Verified Safe Sender
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10.5px] text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                        <ShieldCheck className="w-3 h-3 text-emerald-600" /> Domain Connected ({cleanDomain})
                       </span>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-2 text-[11px] text-[#6B5E77]">
-                      <div className="p-2.5 bg-white rounded-xl border border-[#F3DEC8]">
-                        <strong className="text-[#1E122C] block">SPF Record</strong>
-                        <span className="font-mono text-[10px]">v=spf1 include:amazonses.com</span>
-                      </div>
-                      <div className="p-2.5 bg-white rounded-xl border border-[#F3DEC8]">
-                        <strong className="text-[#1E122C] block">DKIM Key</strong>
-                        <span className="font-mono text-[10px]">resend._domainkey 2048-bit</span>
-                      </div>
-                      <div className="p-2.5 bg-white rounded-xl border border-[#F3DEC8]">
-                        <strong className="text-[#1E122C] block">DMARC Policy</strong>
-                        <span className="font-mono text-[10px]">p=none; rua=mailto:...</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-1">
-                      <span className="text-[11px] text-[#6B5E77]">Connected domain: <strong>{cleanDomain}</strong></span>
                       <button
                         type="button"
-                        onClick={handleVerifyDns}
-                        disabled={isVerifyingDns}
-                        className="px-3 py-1.5 bg-white border border-[#F3DEC8] hover:bg-[#FAF5F0] text-xs font-bold text-[#8C1F3D] rounded-xl cursor-pointer flex items-center gap-1 shadow-3xs"
+                        onClick={() => setIsDomainSettingsOpen(true)}
+                        className="text-[10.5px] text-[#8C1F3D] font-bold hover:underline cursor-pointer"
                       >
-                        <RefreshCw className={`w-3 h-3 ${isVerifyingDns ? 'animate-spin' : ''}`} />
-                        <span>{isVerifyingDns ? 'Validating...' : 'Re-check DNS'}</span>
+                        Edit Identity
                       </button>
                     </div>
                   </div>
-                </div>
-              )}
 
-              {/* -------------------------------------------------------------
-                  STEP 2: AUDIENCE & CONTACT IMPORT
-                  ------------------------------------------------------------- */}
-              {creatorStep === 2 && (
-                <div className="space-y-4 animate-in fade-in">
                   <div className="space-y-1">
-                    <h2 className="text-base font-black text-[#1E122C]">Step 2: Audience Cohort &amp; Contacts</h2>
+                    <h2 className="text-base font-black text-[#1E122C]">Campaign Goal &amp; Objective</h2>
                     <p className="text-xs text-[#6B5E77]">
-                      Choose who will receive this email broadcast. Filter active customer segments or upload fresh lists.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-3">
-                    {[
-                      { id: 'synced', label: '👥 Store Customers', desc: '2,450 Synced & Cleaned' },
-                      { id: 'csv', label: '📄 Upload CSV / Sheet', desc: 'Import external leads' },
-                      { id: 'paste', label: '✍️ Paste Emails', desc: 'Quick batch entry' }
-                    ].map((m) => (
-                      <button
-                        key={m.id}
-                        type="button"
-                        onClick={() => setImportMethod(m.id as any)}
-                        className={`p-3 rounded-2xl text-left border transition-all cursor-pointer ${
-                          importMethod === m.id
-                            ? 'bg-[#FFEFEA] border-[#8C1F3D] text-[#8C1F3D]'
-                            : 'bg-white border-[#F3DEC8] text-[#6B5E77] hover:bg-[#FAF5F0]'
-                        }`}
-                      >
-                        <span className="text-xs font-black block text-[#1E122C]">{m.label}</span>
-                        <span className="text-[10.5px] opacity-80">{m.desc}</span>
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Target Segment Presets */}
-                  <div className="space-y-2 p-4 rounded-2xl bg-[#FCFAF8] border border-[#F3DEC8]">
-                    <span className="text-xs font-black text-[#1E122C] block">Target Segment Preset</span>
-                    <div className="flex flex-wrap gap-2">
-                      {[
-                        { id: 'vip_engaged', label: 'VIP Engaged (High LTV)', count: 2450 },
-                        { id: 'promo_consented', label: 'Promo Consented Only', count: 1890 },
-                        { id: 'cart_abandoners', label: 'Recent Cart Abandoners', count: 612 },
-                        { id: 'all', label: 'All Verified Subscribers', count: 8420 }
-                      ].map((preset) => (
-                        <button
-                          key={preset.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedPreset(preset.id);
-                            setCohortCount(preset.count);
-                          }}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                            selectedPreset === preset.id
-                              ? 'bg-[#8C1F3D] text-white shadow-xs'
-                              : 'bg-white text-[#1E122C] border border-[#F3DEC8] hover:bg-[#FAF5F0]'
-                          }`}
-                        >
-                          {preset.label} ({preset.count.toLocaleString()})
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="p-3 bg-[#FAF5F0] rounded-xl border border-[#F3DEC8] flex items-center justify-between text-xs">
-                    <span>Verified Safe Recipients: <strong className="text-[#10B981]">{cohortCount.toLocaleString()}</strong></span>
-                    <span className="text-[#6B5E77]">0 suppressed • 0 invalid</span>
-                  </div>
-                </div>
-              )}
-
-              {/* -------------------------------------------------------------
-                  STEP 3: AI AUTONOMY & CONTROL LEVEL (As requested by user!)
-                  ------------------------------------------------------------- */}
-              {creatorStep === 3 && (
-                <div className="space-y-4 animate-in fade-in">
-                  <div className="space-y-1">
-                    <h2 className="text-base font-black text-[#1E122C]">Step 3: AI Autonomy &amp; Decision Control</h2>
-                    <p className="text-xs text-[#6B5E77]">
-                      Decide how much independent authority you want to delegate to GrowWise AI for this marketing channel.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Copilot Option */}
-                    <div 
-                      onClick={() => setAutonomyLevel('copilot')}
-                      className={`p-5 rounded-2xl border-2 transition-all cursor-pointer space-y-2.5 ${
-                        autonomyLevel === 'copilot'
-                          ? 'border-[#8C1F3D] bg-[#FFFDFB] shadow-md'
-                          : 'border-[#F3DEC8] bg-white hover:border-[#8C1F3D]/40'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-black uppercase tracking-wider text-[#8C1F3D] bg-[#FFEFEA] px-2.5 py-0.5 rounded-md border border-[#FAD8C7]">
-                          Recommended
-                        </span>
-                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                          autonomyLevel === 'copilot' ? 'border-[#8C1F3D] bg-[#8C1F3D]' : 'border-slate-300'
-                        }`}>
-                          {autonomyLevel === 'copilot' && <Check className="w-2.5 h-2.5 text-white stroke-[3]" />}
-                        </div>
-                      </div>
-
-                      <h3 className="text-sm font-black text-[#1E122C]">🛡️ Copilot (Ask Every Time)</h3>
-                      <p className="text-xs text-[#6B5E77] leading-relaxed">
-                        AI analyzes recipient activity, generates subject lines, and drafts templates, but <strong>always requests your 1-click approval</strong> before any email is dispatched.
-                      </p>
-                    </div>
-
-                    {/* Fully Autonomous Option */}
-                    <div 
-                      onClick={() => setAutonomyLevel('autonomous')}
-                      className={`p-5 rounded-2xl border-2 transition-all cursor-pointer space-y-2.5 ${
-                        autonomyLevel === 'autonomous'
-                          ? 'border-[#8C1F3D] bg-[#FFFDFB] shadow-md'
-                          : 'border-[#F3DEC8] bg-white hover:border-[#8C1F3D]/40'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-black uppercase tracking-wider text-[#EA580C] bg-[#FFF0E6] px-2.5 py-0.5 rounded-md border border-[#FAD8C7]">
-                          Full Autopilot
-                        </span>
-                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                          autonomyLevel === 'autonomous' ? 'border-[#8C1F3D] bg-[#8C1F3D]' : 'border-slate-300'
-                        }`}>
-                          {autonomyLevel === 'autonomous' && <Check className="w-2.5 h-2.5 text-white stroke-[3]" />}
-                        </div>
-                      </div>
-
-                      <h3 className="text-sm font-black text-[#1E122C]">🚀 Fully Autonomous (Hands-Free)</h3>
-                      <p className="text-xs text-[#6B5E77] leading-relaxed">
-                        AI automatically schedules broadcasts at the subscriber's predicted peak engagement hour and executes A/B test rollouts without requiring manual review.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* -------------------------------------------------------------
-                  STEP 4: CAMPAIGN OBJECTIVE & GOAL
-                  ------------------------------------------------------------- */}
-              {creatorStep === 4 && (
-                <div className="space-y-4 animate-in fade-in">
-                  <div className="space-y-1">
-                    <h2 className="text-base font-black text-[#1E122C]">Step 4: Campaign Objective &amp; Goal</h2>
-                    <p className="text-xs text-[#6B5E77]">
-                      Describe what this campaign aims to achieve. AI will use this to synthesize the subject line and body copy.
+                      Describe what this broadcast should accomplish. AI will automatically draft your email subject and body copy in Step 2.
                     </p>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-black text-[#1E122C]">Marketing Objective</label>
+                    <label className="text-xs font-black text-[#1E122C]">Marketing Objective &amp; Offer</label>
                     <textarea
                       rows={3}
                       value={campaignGoal}
                       onChange={(e) => setCampaignGoal(e.target.value)}
-                      className="w-full p-3.5 text-xs bg-white border border-[#F3DEC8] rounded-xl outline-none font-medium leading-relaxed"
+                      className="w-full p-3.5 text-xs bg-white border border-[#F3DEC8] rounded-xl outline-none font-medium leading-relaxed focus:border-[#8C1F3D]"
                       placeholder="e.g., Promote 48-hour flash sale for summer organic linen collection with 20% discount..."
                     />
                   </div>
@@ -1052,13 +905,58 @@ Thanks,
                       ))}
                     </div>
                   </div>
+
+                  {/* Target Audience Cohort */}
+                  <div className="space-y-3 pt-2 border-t border-[#F3DEC8]/70">
+                    <div className="space-y-1">
+                      <h3 className="text-xs font-black uppercase text-[#1E122C] tracking-wider">Target Audience Cohort</h3>
+                      <p className="text-[11px] text-[#6B5E77]">Select which verified subscribers will receive this campaign.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
+                      {[
+                        { id: 'vip_engaged', label: 'VIP Engaged', count: 2450, tag: 'High LTV' },
+                        { id: 'promo_consented', label: 'Promo Consented', count: 1890, tag: 'Active' },
+                        { id: 'cart_abandoners', label: 'Cart Abandoners', count: 612, tag: 'Urgent' },
+                        { id: 'all', label: 'All Subscribers', count: 8420, tag: 'Full List' }
+                      ].map((preset) => (
+                        <button
+                          key={preset.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedPreset(preset.id);
+                            setCohortCount(preset.count);
+                            setCohortName(preset.label);
+                          }}
+                          className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
+                            selectedPreset === preset.id
+                              ? 'bg-[#FFEFEA] border-[#8C1F3D] text-[#8C1F3D] shadow-xs'
+                              : 'bg-white border-[#F3DEC8] text-[#6B5E77] hover:bg-[#FAF5F0]'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[9.5px] font-black uppercase px-1.5 py-0.5 rounded bg-white/80 border border-[#F3DEC8]">
+                              {preset.tag}
+                            </span>
+                            <span className="text-xs font-black text-[#1E122C]">{preset.count.toLocaleString()}</span>
+                          </div>
+                          <span className="text-xs font-bold block text-[#1E122C]">{preset.label}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="p-3 bg-[#FAF5F0] rounded-xl border border-[#F3DEC8] flex items-center justify-between text-xs">
+                      <span>Verified Recipients: <strong className="text-[#10B981]">{cohortCount.toLocaleString()}</strong></span>
+                      <span className="text-[#6B5E77]">0 suppressed • 0 invalid • Synced CRM list</span>
+                    </div>
+                  </div>
                 </div>
               )}
 
               {/* -------------------------------------------------------------
-                  STEP 5: MESSAGE COMPOSITION & VISUAL TEMPLATES
+                  STEP 2: MESSAGE COMPOSITION & VISUAL TEMPLATES
                   ------------------------------------------------------------- */}
-              {creatorStep === 5 && (
+              {creatorStep === 2 && (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-in fade-in">
                   
                   {/* Left Column: Copy Synthesis & AI Refiner */}
@@ -1286,19 +1184,19 @@ Thanks,
               )}
 
               {/* -------------------------------------------------------------
-                  STEP 6: REVIEW, DELIVERABILITY & SCHEDULE / SEND
+                  STEP 3: REVIEW, DELIVERABILITY, AI AUTONOMY & DISPATCH
                   ------------------------------------------------------------- */}
-              {creatorStep === 6 && (
-                <div className="space-y-4 animate-in fade-in">
+              {creatorStep === 3 && (
+                <div className="space-y-5 animate-in fade-in">
                   <div className="space-y-1">
-                    <h2 className="text-base font-black text-[#1E122C]">Step 6: Pre-Flight Review &amp; Dispatch</h2>
+                    <h2 className="text-base font-black text-[#1E122C]">Step 3: Pre-Flight Review &amp; Dispatch</h2>
                     <p className="text-xs text-[#6B5E77]">
-                      Review compliance safeguards, inspect deliverability grade, and choose instant dispatch or automated scheduling.
+                      Inspect deliverability score, confirm your AI automation preference, and choose instant dispatch or automated scheduling.
                     </p>
                   </div>
 
                   {/* Deliverability Inspector */}
-                  <div className="p-4 rounded-2xl bg-white border border-[#F3DEC8] flex items-center justify-between shadow-xs">
+                  <div className="p-4 rounded-2xl bg-white border border-[#F3DEC8] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-2xl bg-[#ECFDF5] border border-[#A7F3D0] flex items-center justify-center text-lg font-black text-[#059669]">
                         {deliverabilityScore}%
@@ -1311,14 +1209,89 @@ Thanks,
 
                     <button
                       type="button"
-                      onClick={handleSendTestEmail}
-                      className="px-3 py-1.5 bg-[#FAF5F0] hover:bg-[#FFEFEA] text-xs font-bold text-[#8C1F3D] border border-[#F3DEC8] rounded-xl cursor-pointer"
+                      onClick={() => setIsTestEmailModalOpen(true)}
+                      className="px-3.5 py-2 bg-[#FAF5F0] hover:bg-[#FFEFEA] text-xs font-bold text-[#8C1F3D] border border-[#F3DEC8] rounded-xl cursor-pointer shadow-3xs flex items-center gap-1.5"
                     >
-                      {testEmailSent ? '✓ Test Sent to You!' : 'Send Live Test Email'}
+                      <Send className="w-3.5 h-3.5" />
+                      <span>{testEmailSent ? '✓ Test Sent (Send Another)' : 'Send Live Test Email'}</span>
                     </button>
                   </div>
 
-                  {/* Send Options */}
+                  {/* AI Autonomy & Execution Mode (1-Time Selection / Persisted) */}
+                  <div className="p-4 rounded-2xl bg-[#FCFAF8] border border-[#F3DEC8] space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-xs font-black text-[#1E122C] flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-[#8C1F3D]" />
+                          AI Execution Mode (1-Time Setting)
+                        </span>
+                        <p className="text-[10.5px] text-[#6B5E77]">Choose how much autonomy GrowWise AI has for future campaign dispatches.</p>
+                      </div>
+                      <span className="text-[9.5px] font-bold text-[#8C1F3D] bg-[#FFEFEA] px-2 py-0.5 rounded-full border border-[#FAD8C7]">
+                        Preference Saved
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {/* Copilot Option */}
+                      <div 
+                        onClick={() => {
+                          setAutonomyLevel('copilot');
+                          localStorage.setItem('growwise_email_autonomy_level', 'copilot');
+                        }}
+                        className={`p-3.5 rounded-xl border-2 transition-all cursor-pointer space-y-1.5 ${
+                          autonomyLevel === 'copilot'
+                            ? 'border-[#8C1F3D] bg-[#FFFDFB] shadow-xs'
+                            : 'border-[#F3DEC8] bg-white hover:border-[#8C1F3D]/40'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9.5px] font-black uppercase text-[#8C1F3D] bg-[#FFEFEA] px-2 py-0.5 rounded border border-[#FAD8C7]">
+                            Recommended
+                          </span>
+                          <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
+                            autonomyLevel === 'copilot' ? 'border-[#8C1F3D] bg-[#8C1F3D]' : 'border-slate-300'
+                          }`}>
+                            {autonomyLevel === 'copilot' && <Check className="w-2 h-2 text-white stroke-[3]" />}
+                          </div>
+                        </div>
+                        <h5 className="text-xs font-black text-[#1E122C]">🛡️ Copilot (Ask for Approval)</h5>
+                        <p className="text-[10.5px] text-[#6B5E77] leading-relaxed">
+                          AI generates copy &amp; templates, but <strong>always requests your 1-click approval</strong> before sending.
+                        </p>
+                      </div>
+
+                      {/* Fully Autonomous Option */}
+                      <div 
+                        onClick={() => {
+                          setAutonomyLevel('autonomous');
+                          localStorage.setItem('growwise_email_autonomy_level', 'autonomous');
+                        }}
+                        className={`p-3.5 rounded-xl border-2 transition-all cursor-pointer space-y-1.5 ${
+                          autonomyLevel === 'autonomous'
+                            ? 'border-[#8C1F3D] bg-[#FFFDFB] shadow-xs'
+                            : 'border-[#F3DEC8] bg-white hover:border-[#8C1F3D]/40'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9.5px] font-black uppercase text-[#EA580C] bg-[#FFF0E6] px-2 py-0.5 rounded border border-[#FAD8C7]">
+                            Full Autopilot
+                          </span>
+                          <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
+                            autonomyLevel === 'autonomous' ? 'border-[#8C1F3D] bg-[#8C1F3D]' : 'border-slate-300'
+                          }`}>
+                            {autonomyLevel === 'autonomous' && <Check className="w-2 h-2 text-white stroke-[3]" />}
+                          </div>
+                        </div>
+                        <h5 className="text-xs font-black text-[#1E122C]">🚀 Fully Autonomous (Hands-Free)</h5>
+                        <p className="text-[10.5px] text-[#6B5E77] leading-relaxed">
+                          AI automatically predicts peak engagement hours and runs scheduled broadcasts hands-free.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Dispatch Timing */}
                   <div className="p-4 rounded-2xl bg-[#FCFAF8] border border-[#F3DEC8] space-y-3">
                     <span className="text-xs font-black text-[#1E122C] block">Dispatch Timing</span>
                     <div className="grid grid-cols-2 gap-3">
@@ -1368,16 +1341,23 @@ Thanks,
                 <div />
               )}
 
-              {creatorStep < 6 ? (
+              {creatorStep === 1 ? (
                 <button
                   type="button"
-                  onClick={() => {
-                    if (creatorStep === 4) handleSynthesizeGoal();
-                    else setCreatorStep(creatorStep + 1);
-                  }}
+                  onClick={handleSynthesizeGoal}
+                  disabled={isSynthesizing}
+                  className="px-6 py-2.5 bg-[#8C1F3D] hover:bg-[#731831] text-white rounded-xl text-xs font-black shadow-md cursor-pointer transition-all flex items-center gap-1.5"
+                >
+                  {isSynthesizing && <Sparkles className="w-3.5 h-3.5 animate-spin" />}
+                  <span>{isSynthesizing ? 'Synthesizing...' : 'Synthesize Campaign ➔'}</span>
+                </button>
+              ) : creatorStep === 2 ? (
+                <button
+                  type="button"
+                  onClick={() => setCreatorStep(3)}
                   className="px-6 py-2.5 bg-[#8C1F3D] hover:bg-[#731831] text-white rounded-xl text-xs font-black shadow-md cursor-pointer transition-all"
                 >
-                  {creatorStep === 4 ? (isSynthesizing ? 'Synthesizing...' : 'Synthesize Campaign ➔') : 'Continue ➔'}
+                  Review &amp; Launch ➔
                 </button>
               ) : (
                 <button
@@ -1389,6 +1369,251 @@ Thanks,
                 </button>
               )}
             </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          5. DEDICATED DOMAIN & SENDER SETTINGS MODAL (1-Click Reconnect & Manage)
+          ========================================================================= */}
+      {isDomainSettingsOpen && (
+        <div className="fixed inset-0 z-50 bg-[#1E122C]/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+          <div className="bg-[#FFFDFC] border border-[#F3DEC8] rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+            
+            <div className="px-6 py-4 border-b border-[#F3DEC8] bg-[#FAF5F0]/80 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-[#10B981]" />
+                <h3 className="text-sm font-black text-[#1E122C]">Sender Identity &amp; Domain Authentication</h3>
+              </div>
+              <button
+                onClick={() => setIsDomainSettingsOpen(false)}
+                className="p-1.5 rounded-xl hover:bg-white text-[#6B5E77] hover:text-[#1E122C] cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <p className="text-xs text-[#6B5E77]">
+                Your sending identity was imported during onboarding. Manage your authenticated domain and SPF/DKIM DNS records below.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-black text-[#1E122C]">From Sender Name</label>
+                  <input
+                    type="text"
+                    value={senderName}
+                    onChange={(e) => setSenderName(e.target.value)}
+                    className="w-full px-3.5 py-2 text-xs bg-white border border-[#F3DEC8] rounded-xl font-bold outline-none text-[#1E122C]"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-black text-[#1E122C]">From Email Address</label>
+                  <input
+                    type="email"
+                    value={senderEmail}
+                    onChange={(e) => setSenderEmail(e.target.value)}
+                    className="w-full px-3.5 py-2 text-xs bg-white border border-[#F3DEC8] rounded-xl font-bold outline-none text-[#1E122C]"
+                  />
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#FAF5F0] border border-[#F3DEC8] space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-[#1E122C]">Live DNS Authentication Status</span>
+                  <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                    isDnsVerified 
+                      ? 'text-[#10B981] bg-[#ECFDF5] border-[#A7F3D0]' 
+                      : 'text-[#DC2626] bg-[#FEF2F2] border-[#FECACA]'
+                  }`}>
+                    {isDnsVerified ? '✓ Verified Safe Sender' : '⚠️ Pending Verification'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-[11px]">
+                  <div className="p-2.5 bg-white rounded-xl border border-[#F3DEC8]">
+                    <strong className="text-[#1E122C] block">SPF Record</strong>
+                    <span className="font-mono text-[10px] text-[#6B5E77]">v=spf1 include:amazonses.com</span>
+                  </div>
+                  <div className="p-2.5 bg-white rounded-xl border border-[#F3DEC8]">
+                    <strong className="text-[#1E122C] block">DKIM Key</strong>
+                    <span className="font-mono text-[10px] text-[#6B5E77]">resend._domainkey</span>
+                  </div>
+                  <div className="p-2.5 bg-white rounded-xl border border-[#F3DEC8]">
+                    <strong className="text-[#1E122C] block">DMARC Policy</strong>
+                    <span className="font-mono text-[10px] text-[#6B5E77]">p=none; rua=mailto:...</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[11px] text-[#6B5E77]">Domain: <strong>{cleanDomain}</strong></span>
+                  <button
+                    type="button"
+                    onClick={handleVerifyDns}
+                    disabled={isVerifyingDns}
+                    className="px-3 py-1.5 bg-white border border-[#F3DEC8] hover:bg-[#FAF5F0] text-xs font-bold text-[#8C1F3D] rounded-xl cursor-pointer flex items-center gap-1.5 shadow-3xs"
+                  >
+                    <RefreshCw className={`w-3 h-3 ${isVerifyingDns ? 'animate-spin' : ''}`} />
+                    <span>{isVerifyingDns ? 'Validating...' : 'Re-check DNS'}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 border-t border-[#F3DEC8] bg-[#FAF5F0]/80 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setIsDomainSettingsOpen(false)}
+                className="px-5 py-2 bg-[#8C1F3D] hover:bg-[#731831] text-white rounded-xl text-xs font-black shadow-xs cursor-pointer"
+              >
+                Save &amp; Close
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          6. DEDICATED LIVE TEST EMAIL POPUP MODAL (User Form for Destination & Token preview)
+          ========================================================================= */}
+      {isTestEmailModalOpen && (
+        <div className="fixed inset-0 z-60 bg-[#1E122C]/75 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+          <div className="bg-[#FFFDFC] border border-[#F3DEC8] rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+            
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-[#F3DEC8] bg-[#FAF5F0]/90 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-[#FFEFEA] border border-[#FAD8C7] flex items-center justify-center text-[#8C1F3D]">
+                  <Send className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-[#1E122C]">Send Live Test Email</h3>
+                  <span className="text-[10.5px] text-[#6B5E77]">Preview real rendering in your inbox</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setIsTestEmailModalOpen(false); setTestSendingState('idle'); }}
+                className="p-1.5 rounded-xl hover:bg-white text-[#6B5E77] hover:text-[#1E122C] cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleExecuteSendTest} className="p-6 space-y-4">
+              {testSendingState === 'success' ? (
+                <div className="p-6 rounded-2xl bg-[#ECFDF5] border border-[#A7F3D0] text-center space-y-2.5 animate-in fade-in">
+                  <CheckCircle2 className="w-10 h-10 text-[#10B981] mx-auto animate-bounce" />
+                  <h4 className="text-sm font-black text-[#065F46]">Test Email Dispatched!</h4>
+                  <p className="text-xs text-[#047857]">{testSuccessMessage}</p>
+                  <div className="text-[10px] text-[#059669] pt-1 font-semibold">
+                    Deliverability Grade: <strong>A+ (99.4%)</strong> • SPF/DKIM: <strong>Verified</strong>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <p className="text-xs text-[#6B5E77]">
+                    Specify the test recipient address and personalized test values to inspect email rendering before broad dispatch.
+                  </p>
+
+                  {/* Recipient Email */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-black text-[#1E122C]">
+                      Target Test Email Address <span className="text-[#EF4444]">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={testRecipientEmail}
+                      onChange={(e) => setTestRecipientEmail(e.target.value)}
+                      placeholder="e.g. yourname@gmail.com"
+                      className="w-full px-3.5 py-2.5 text-xs bg-white border border-[#F3DEC8] rounded-xl font-bold text-[#1E122C] outline-none focus:border-[#8C1F3D]"
+                    />
+                  </div>
+
+                  {/* Preview Recipient Name (For merge tags) */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-black text-[#1E122C]">
+                      Recipient First Name <span className="text-[10px] font-normal text-[#8A8294]">(Tests &#123;&#123;first_name&#125;&#125; token)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={testRecipientName}
+                      onChange={(e) => setTestRecipientName(e.target.value)}
+                      placeholder="e.g. Shristy"
+                      className="w-full px-3.5 py-2 text-xs bg-white border border-[#F3DEC8] rounded-xl font-bold text-[#1E122C] outline-none focus:border-[#8C1F3D]"
+                    />
+                  </div>
+
+                  {/* Test Configuration Options */}
+                  <div className="p-3.5 rounded-2xl bg-[#FAF5F0] border border-[#F3DEC8] space-y-2">
+                    <span className="text-[10px] font-black uppercase text-[#8A8294] tracking-wider block">Test Options:</span>
+                    
+                    <label className="flex items-center gap-2 text-xs font-bold text-[#1E122C] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={testPrefixSubject}
+                        onChange={(e) => setTestPrefixSubject(e.target.checked)}
+                        className="rounded border-[#F3DEC8] text-[#8C1F3D] accent-[#8C1F3D] cursor-pointer"
+                      />
+                      <span>Prefix Subject line with <code>[TEST]</code></span>
+                    </label>
+
+                    <label className="flex items-center gap-2 text-xs font-bold text-[#1E122C] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={testIncludeSampleData}
+                        onChange={(e) => setTestIncludeSampleData(e.target.checked)}
+                        className="rounded border-[#F3DEC8] text-[#8C1F3D] accent-[#8C1F3D] cursor-pointer"
+                      />
+                      <span>Include active VIP promo code ({activeDiscountCode || 'EARLYVIP20'})</span>
+                    </label>
+                  </div>
+
+                  {/* Live Subject Preview Box */}
+                  <div className="p-3 bg-white border border-[#F3DEC8] rounded-xl space-y-1 text-xs">
+                    <div className="text-[10px] font-bold text-[#8A8294]">PREVIEW EMAIL SUBJECT:</div>
+                    <div className="font-bold text-[#1E122C] truncate">
+                      {testPrefixSubject ? '[TEST] ' : ''}{subjectLine.replace(/\{\{first_name\}\}/g, testRecipientName || 'Subscriber')}
+                    </div>
+                    <div className="text-[10px] text-[#6B5E77]">From: {senderName} &lt;{senderEmail}&gt;</div>
+                  </div>
+
+                  {/* Modal Actions */}
+                  <div className="flex items-center justify-end gap-2.5 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsTestEmailModalOpen(false)}
+                      className="px-4 py-2 bg-white border border-[#F3DEC8] hover:bg-[#FAF5F0] text-xs font-bold text-[#1E122C] rounded-xl cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      type="submit"
+                      disabled={testSendingState === 'sending' || !testRecipientEmail.trim()}
+                      className="px-5 py-2.5 bg-[#8C1F3D] hover:bg-[#731831] disabled:opacity-50 text-white rounded-xl text-xs font-black shadow-md cursor-pointer transition-all flex items-center gap-1.5"
+                    >
+                      {testSendingState === 'sending' ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <span>Sending Live Test...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-3.5 h-3.5" />
+                          <span>Send Test Email Now</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </>
+              )}
+            </form>
 
           </div>
         </div>
