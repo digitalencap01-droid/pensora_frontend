@@ -250,7 +250,7 @@ export const TemplateLibraryModal: React.FC<TemplateLibraryModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#1E122C]/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+    <div className="fixed inset-0 z-[75] bg-[#1E122C]/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
       <div className="bg-[#FFFDFC] border border-[#F3DEC8] rounded-3xl max-w-5xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200">
         
         {/* Modal Top Header */}
@@ -739,7 +739,7 @@ export const TemplateLibraryModal: React.FC<TemplateLibraryModalProps> = ({
 
         {/* Modal Fullscreen Preview Sub-Modal (if clicked preview) */}
         {selectedPreviewTemplate && (
-          <div className="fixed inset-0 z-60 bg-[#1E122C]/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[85] bg-[#1E122C]/80 backdrop-blur-xs flex items-center justify-center p-4">
             <div className="bg-white border border-[#F3DEC8] rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
               <div className="flex items-center justify-between pb-3 border-b border-[#F3DEC8]">
                 <div>

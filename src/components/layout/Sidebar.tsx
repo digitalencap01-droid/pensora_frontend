@@ -97,7 +97,6 @@ const ALL_CHANNEL_CONFIGS: Record<string, ChannelNavConfig> = {
     subItems: [
       { to: '/email?tab=builder', label: 'Email Studio & Campaigns', icon: Sparkles },
       { to: '/email?tab=domain', label: 'Sender Domain & DNS', icon: Globe },
-      { to: '/email?tab=subscribers', label: 'Audience & Contacts', icon: Users },
       { to: '/email?tab=analytics', label: 'Deliverability & Analytics', icon: BarChart3 }
     ]
   },
@@ -110,7 +109,6 @@ const ALL_CHANNEL_CONFIGS: Record<string, ChannelNavConfig> = {
     subItems: [
       { to: '/whatsapp?tab=broadcast', label: 'Broadcast Studio', icon: Sparkles },
       { to: '/whatsapp?tab=templates', label: 'Message Templates', icon: BookOpen },
-      { to: '/whatsapp?tab=audiences', label: 'Audience Lists & Opt-ins', icon: Users },
       { to: '/whatsapp?tab=automation', label: 'Automated Bot & Alerts', icon: Zap },
       { to: '/whatsapp?tab=analytics', label: 'Delivery & Read Rates', icon: BarChart3 }
     ]
