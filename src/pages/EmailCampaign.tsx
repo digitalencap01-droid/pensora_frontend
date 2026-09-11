@@ -1,39 +1,39 @@
 import React, { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { 
-  Mail, 
-  Sparkles, 
-  Users, 
-  BarChart3, 
-  Send, 
-  CheckCircle2, 
-  Plus, 
-  Eye, 
-  Search, 
-  ShieldCheck, 
-  RefreshCw, 
-  Copy, 
-  Check, 
-  ArrowRight, 
-  ArrowLeft, 
-  X, 
-  Upload, 
-  Bot, 
-  Zap, 
-  Lock, 
-  Globe, 
-  HelpCircle, 
-  FileText, 
-  Calendar, 
-  Clock, 
-  Sliders, 
-  Filter, 
-  Layers, 
-  CheckCheck, 
-  Layout, 
-  Palette, 
-  Flame, 
-  Wand2, 
+import {
+  Mail,
+  Sparkles,
+  Users,
+  BarChart3,
+  Send,
+  CheckCircle2,
+  Plus,
+  Eye,
+  Search,
+  ShieldCheck,
+  RefreshCw,
+  Copy,
+  Check,
+  ArrowRight,
+  ArrowLeft,
+  X,
+  Upload,
+  Bot,
+  Zap,
+  Lock,
+  Globe,
+  HelpCircle,
+  FileText,
+  Calendar,
+  Clock,
+  Sliders,
+  Filter,
+  Layers,
+  CheckCheck,
+  Layout,
+  Palette,
+  Flame,
+  Wand2,
   Tag,
   AlertCircle,
   Settings,
@@ -51,8 +51,8 @@ export const EmailCampaign: React.FC = () => {
   const activeTab = searchParams.get('tab') || 'campaigns';
 
   const brandName = activeWorkspace?.name || 'Bloom Boutique';
-  const cleanDomain = activeWorkspace?.website 
-    ? activeWorkspace.website.replace(/^https?:\/\//, '').replace(/\/.*$/, '') 
+  const cleanDomain = activeWorkspace?.website
+    ? activeWorkspace.website.replace(/^https?:\/\//, '').replace(/\/.*$/, '')
     : 'bloomboutique.shop';
 
   const handleTabChange = (tabId: string) => {
@@ -63,7 +63,7 @@ export const EmailCampaign: React.FC = () => {
   // GUIDED CAMPAIGN WIZARD STATE (Domain Setup -> Audience -> AI Autonomy -> Goal -> Message -> Review)
   // =========================================================================
   const [isCreatorOpen, setIsCreatorOpen] = useState<boolean>(false);
-  const [creatorStep, setCreatorStep] = useState<number>(1); 
+  const [creatorStep, setCreatorStep] = useState<number>(1);
   // Step 1: Domain & Sender Setup
   // Step 2: Audience & Contact Import
   // Step 3: AI Autonomy Level (Autonomous vs Copilot)
@@ -101,7 +101,7 @@ export const EmailCampaign: React.FC = () => {
     'Handcrafted luxury designed to elevate your everyday routine.'
   );
   const [emailBodyText, setEmailBodyText] = useState<string>(
-`Hi {{first_name}},
+    `Hi {{first_name}},
 
 We are thrilled to unveil our new limited-run capsule collection. Handcrafted from premium materials designed to elevate your everyday routine with timeless comfort.
 
@@ -306,7 +306,7 @@ Thanks,
 
   return (
     <div className="space-y-6 pb-12 animate-in fade-in duration-300">
-      
+
       {/* 1. Clean Top Header */}
       <div className="bg-[#FAF5F0] border border-[#F3DEC8] rounded-2xl p-5 md:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
@@ -376,50 +376,46 @@ Thanks,
       <div className="flex items-center gap-1.5 border-b border-[#F3DEC8] pb-1 overflow-x-auto">
         <button
           onClick={() => handleTabChange('builder')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-            activeTab === 'builder' || activeTab === 'campaigns' || !['domain', 'subscribers', 'analytics'].includes(activeTab)
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${activeTab === 'builder' || activeTab === 'campaigns' || !['domain', 'subscribers', 'analytics'].includes(activeTab)
               ? 'bg-[#FFEFEA] text-[#8C1F3D] border-b-2 border-[#8C1F3D] font-black shadow-3xs'
               : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/60'
-          }`}
+            }`}
         >
           <Mail className="w-3.5 h-3.5" />
-          <span>Email Studio &amp; Campaigns ({campaignsList.length})</span>
+          <span>Email Studio ({campaignsList.length})</span>
         </button>
 
         <button
           onClick={() => handleTabChange('domain')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-            activeTab === 'domain'
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${activeTab === 'domain'
               ? 'bg-[#FFEFEA] text-[#8C1F3D] border-b-2 border-[#8C1F3D] font-black shadow-3xs'
               : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/60'
-          }`}
+            }`}
         >
           <Globe className="w-3.5 h-3.5" />
-          <span>Sender Domain &amp; DNS Setup</span>
+          <span>Domain Setup</span>
         </button>
 
         <button
           onClick={() => handleTabChange('subscribers')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-            activeTab === 'subscribers'
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${activeTab === 'subscribers'
               ? 'bg-[#FFEFEA] text-[#8C1F3D] border-b-2 border-[#8C1F3D] font-black shadow-3xs'
               : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/60'
-          }`}
+            }`}
         >
           <Users className="w-3.5 h-3.5" />
-          <span>Audience &amp; Contacts</span>
+          <span>Audience</span>
         </button>
 
         <button
           onClick={() => handleTabChange('analytics')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-            activeTab === 'analytics'
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${activeTab === 'analytics'
               ? 'bg-[#FFEFEA] text-[#8C1F3D] border-b-2 border-[#8C1F3D] font-black shadow-3xs'
               : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/60'
-          }`}
+            }`}
         >
           <BarChart3 className="w-3.5 h-3.5" />
-          <span>Deliverability &amp; Analytics</span>
+          <span>Analytics</span>
         </button>
       </div>
 
@@ -428,7 +424,7 @@ Thanks,
           ========================================================================= */}
       {(activeTab === 'builder' || activeTab === 'campaigns' || !['domain', 'subscribers', 'analytics'].includes(activeTab)) && (
         <div className="space-y-4">
-          
+
           {/* Quick Launch Action Banner */}
           <Card className="p-5 border-[#F3DEC8] bg-linear-to-r from-[#FFFDFB] via-[#FAF5F0] to-[#FFEFEA] shadow-xs relative overflow-hidden">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -485,10 +481,9 @@ Thanks,
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="space-y-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase ${
-                          c.status === 'sent' ? 'bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0]' :
-                          'bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]'
-                        }`}>
+                        <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase ${c.status === 'sent' ? 'bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0]' :
+                            'bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]'
+                          }`}>
                           {c.status}
                         </span>
                         <span className="text-[10px] font-bold text-[#8C1F3D] bg-[#FAF5F0] px-2 py-0.5 rounded-md border border-[#F3DEC8]">
@@ -672,8 +667,8 @@ Thanks,
               { name: 'Recent Cart Abandoners', count: '612 contacts', tag: 'Urgent Retention', segment: 'cart_abandoners' },
               { name: 'Newsletter Subscribers', count: '5,358 contacts', tag: 'Active Digest', segment: 'email_optins' }
             ].map((cohort, i) => (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 onClick={() => navigate(`/contacts?segment=${cohort.segment}`)}
                 className="p-4 rounded-2xl border border-[#F3DEC8] bg-[#FAF5F0]/50 hover:bg-white hover:border-[#D94A2A]/40 transition-all cursor-pointer space-y-2 group shadow-3xs"
               >
@@ -742,7 +737,7 @@ Thanks,
       {isCreatorOpen && (
         <div className="fixed inset-0 z-50 bg-[#1E122C]/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
           <div className="bg-[#FFFDFC] border border-[#F3DEC8] rounded-3xl max-w-4xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200">
-            
+
             {/* Modal Top Bar */}
             <div className="px-6 py-4 border-b border-[#F3DEC8] bg-[#FAF5F0]/80 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
@@ -774,13 +769,12 @@ Thanks,
                 <button
                   key={s.step}
                   onClick={() => setCreatorStep(s.step)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg whitespace-nowrap cursor-pointer transition-all ${
-                    creatorStep === s.step
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg whitespace-nowrap cursor-pointer transition-all ${creatorStep === s.step
                       ? 'bg-[#8C1F3D] text-white shadow-xs'
                       : creatorStep > s.step
-                      ? 'text-[#10B981] bg-[#ECFDF5]'
-                      : 'text-[#6B5E77] hover:text-[#1E122C]'
-                  }`}
+                        ? 'text-[#10B981] bg-[#ECFDF5]'
+                        : 'text-[#6B5E77] hover:text-[#1E122C]'
+                    }`}
                 >
                   {creatorStep > s.step ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : null}
                   <span>{s.label}</span>
@@ -892,11 +886,10 @@ Thanks,
                         key={m.id}
                         type="button"
                         onClick={() => setImportMethod(m.id as any)}
-                        className={`p-3 rounded-2xl text-left border transition-all cursor-pointer ${
-                          importMethod === m.id
+                        className={`p-3 rounded-2xl text-left border transition-all cursor-pointer ${importMethod === m.id
                             ? 'bg-[#FFEFEA] border-[#8C1F3D] text-[#8C1F3D]'
                             : 'bg-white border-[#F3DEC8] text-[#6B5E77] hover:bg-[#FAF5F0]'
-                        }`}
+                          }`}
                       >
                         <span className="text-xs font-black block text-[#1E122C]">{m.label}</span>
                         <span className="text-[10.5px] opacity-80">{m.desc}</span>
@@ -921,11 +914,10 @@ Thanks,
                             setSelectedPreset(preset.id);
                             setCohortCount(preset.count);
                           }}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                            selectedPreset === preset.id
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${selectedPreset === preset.id
                               ? 'bg-[#8C1F3D] text-white shadow-xs'
                               : 'bg-white text-[#1E122C] border border-[#F3DEC8] hover:bg-[#FAF5F0]'
-                          }`}
+                            }`}
                         >
                           {preset.label} ({preset.count.toLocaleString()})
                         </button>
@@ -954,21 +946,19 @@ Thanks,
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Copilot Option */}
-                    <div 
+                    <div
                       onClick={() => setAutonomyLevel('copilot')}
-                      className={`p-5 rounded-2xl border-2 transition-all cursor-pointer space-y-2.5 ${
-                        autonomyLevel === 'copilot'
+                      className={`p-5 rounded-2xl border-2 transition-all cursor-pointer space-y-2.5 ${autonomyLevel === 'copilot'
                           ? 'border-[#8C1F3D] bg-[#FFFDFB] shadow-md'
                           : 'border-[#F3DEC8] bg-white hover:border-[#8C1F3D]/40'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-black uppercase tracking-wider text-[#8C1F3D] bg-[#FFEFEA] px-2.5 py-0.5 rounded-md border border-[#FAD8C7]">
                           Recommended
                         </span>
-                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                          autonomyLevel === 'copilot' ? 'border-[#8C1F3D] bg-[#8C1F3D]' : 'border-slate-300'
-                        }`}>
+                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${autonomyLevel === 'copilot' ? 'border-[#8C1F3D] bg-[#8C1F3D]' : 'border-slate-300'
+                          }`}>
                           {autonomyLevel === 'copilot' && <Check className="w-2.5 h-2.5 text-white stroke-[3]" />}
                         </div>
                       </div>
@@ -980,21 +970,19 @@ Thanks,
                     </div>
 
                     {/* Fully Autonomous Option */}
-                    <div 
+                    <div
                       onClick={() => setAutonomyLevel('autonomous')}
-                      className={`p-5 rounded-2xl border-2 transition-all cursor-pointer space-y-2.5 ${
-                        autonomyLevel === 'autonomous'
+                      className={`p-5 rounded-2xl border-2 transition-all cursor-pointer space-y-2.5 ${autonomyLevel === 'autonomous'
                           ? 'border-[#8C1F3D] bg-[#FFFDFB] shadow-md'
                           : 'border-[#F3DEC8] bg-white hover:border-[#8C1F3D]/40'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-black uppercase tracking-wider text-[#EA580C] bg-[#FFF0E6] px-2.5 py-0.5 rounded-md border border-[#FAD8C7]">
                           Full Autopilot
                         </span>
-                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                          autonomyLevel === 'autonomous' ? 'border-[#8C1F3D] bg-[#8C1F3D]' : 'border-slate-300'
-                        }`}>
+                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${autonomyLevel === 'autonomous' ? 'border-[#8C1F3D] bg-[#8C1F3D]' : 'border-slate-300'
+                          }`}>
                           {autonomyLevel === 'autonomous' && <Check className="w-2.5 h-2.5 text-white stroke-[3]" />}
                         </div>
                       </div>
@@ -1060,7 +1048,7 @@ Thanks,
                   ------------------------------------------------------------- */}
               {creatorStep === 5 && (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-in fade-in">
-                  
+
                   {/* Left Column: Copy Synthesis & AI Refiner */}
                   <div className="lg:col-span-6 space-y-4">
                     <div className="flex items-center justify-between">
@@ -1219,11 +1207,10 @@ Thanks,
                             key={theme.id}
                             type="button"
                             onClick={() => setActiveThemePreset(theme.id as any)}
-                            className={`px-2 py-1 rounded-lg text-[10px] font-bold cursor-pointer ${
-                              activeThemePreset === theme.id
+                            className={`px-2 py-1 rounded-lg text-[10px] font-bold cursor-pointer ${activeThemePreset === theme.id
                                 ? 'bg-[#8C1F3D] text-white'
                                 : 'bg-[#FAF5F0] text-[#6B5E77] border border-[#F3DEC8]'
-                            }`}
+                              }`}
                           >
                             {theme.label}
                           </button>
@@ -1325,11 +1312,10 @@ Thanks,
                       <button
                         type="button"
                         onClick={() => setSendMode('now')}
-                        className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
-                          sendMode === 'now'
+                        className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${sendMode === 'now'
                             ? 'bg-[#FFEFEA] border-[#8C1F3D] text-[#8C1F3D]'
                             : 'bg-white border-[#F3DEC8] text-[#6B5E77]'
-                        }`}
+                          }`}
                       >
                         <span className="text-xs font-black block text-[#1E122C]">🚀 Send Immediately</span>
                         <span className="text-[10px]">Dispatch to {cohortCount.toLocaleString()} recipients now</span>
@@ -1338,11 +1324,10 @@ Thanks,
                       <button
                         type="button"
                         onClick={() => setSendMode('scheduled')}
-                        className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
-                          sendMode === 'scheduled'
+                        className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${sendMode === 'scheduled'
                             ? 'bg-[#FFEFEA] border-[#8C1F3D] text-[#8C1F3D]'
                             : 'bg-white border-[#F3DEC8] text-[#6B5E77]'
-                        }`}
+                          }`}
                       >
                         <span className="text-xs font-black block text-[#1E122C]">⏰ Schedule for Later</span>
                         <span className="text-[10px]">AI optimal send window</span>

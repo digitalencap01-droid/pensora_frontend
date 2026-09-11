@@ -101,10 +101,10 @@ const ALL_CHANNEL_CONFIGS: Record<string, ChannelNavConfig> = {
     primaryRoute: '/email?tab=builder',
     badge: 'Email',
     subItems: [
-      { to: '/email?tab=builder', label: 'Email Studio & Campaigns', icon: Sparkles },
-      { to: '/email?tab=domain', label: 'Sender Domain & DNS', icon: Globe },
-      { to: '/email?tab=subscribers', label: 'Audience & Contacts', icon: Users },
-      { to: '/email?tab=analytics', label: 'Deliverability & Analytics', icon: BarChart3 }
+      { to: '/email?tab=builder', label: 'Email Studio', icon: Sparkles },
+      { to: '/email?tab=domain', label: 'Domain Setup', icon: Globe },
+      { to: '/email?tab=subscribers', label: 'Audience', icon: Users },
+      { to: '/email?tab=analytics', label: 'Analytics', icon: BarChart3 }
     ]
   },
   whatsapp: {
