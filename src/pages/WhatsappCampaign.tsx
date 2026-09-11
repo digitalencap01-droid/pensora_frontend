@@ -200,18 +200,6 @@ export const WhatsappCampaign: React.FC = () => {
         </button>
 
         <button
-          onClick={() => handleTabChange('audiences')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-            activeTab === 'audiences'
-              ? 'bg-[#E8F8EE] text-[#16A34A] border-b-2 border-[#16A34A] font-black shadow-3xs'
-              : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/60'
-          }`}
-        >
-          <Users className="w-3.5 h-3.5" />
-          <span>Audience Lists &amp; Opt-ins</span>
-        </button>
-
-        <button
           onClick={() => handleTabChange('automation')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
             activeTab === 'automation'
@@ -437,40 +425,6 @@ export const WhatsappCampaign: React.FC = () => {
         </div>
       )}
 
-      {/* Audiences View */}
-      {activeTab === 'audiences' && (
-        <Card className="p-6 border-[#F3DEC8] bg-white text-center space-y-4">
-          <div className="w-12 h-12 mx-auto rounded-2xl bg-[#DCFCE7] border border-[#BBF7D0] flex items-center justify-center text-[#16A34A]">
-            <Users className="w-6 h-6" />
-          </div>
-          <div>
-            <div className="flex items-center justify-center gap-2">
-              <h3 className="text-base font-black text-[#1E122C]">WhatsApp Opt-in Subscribers &amp; Consent Hub</h3>
-              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                Live Synced
-              </span>
-            </div>
-            <p className="text-xs text-[#6B5E77] max-w-md mx-auto mt-1">
-              Track explicit WhatsApp opt-ins and consented leads across website widgets, chat checkouts, and custom segments.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-            <button 
-              onClick={() => navigate('/contacts?source=WhatsApp Chat')}
-              className="px-4 py-2 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-xl text-xs font-black shadow-xs cursor-pointer flex items-center gap-1.5 transition-colors"
-            >
-              <Users className="w-3.5 h-3.5" />
-              <span>Manage WhatsApp Leads in CRM Hub</span>
-            </button>
-            <button 
-              onClick={() => navigate('/contacts?segment=whatsapp_leads')}
-              className="px-4 py-2 bg-[#FAF5F0] hover:bg-[#FFF4EE] border border-[#F3DEC8] hover:border-[#D94A2A]/40 text-[#1E122C] rounded-xl text-xs font-black cursor-pointer transition-colors"
-            >
-              Filter Opt-in Cohorts
-            </button>
-          </div>
-        </Card>
-      )}
 
       {/* Automation View */}
       {activeTab === 'automation' && (
