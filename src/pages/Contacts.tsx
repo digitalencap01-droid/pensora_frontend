@@ -251,23 +251,30 @@ export const Contacts: React.FC = () => {
       if (res.ok) {
         const data = await res.json();
         if (data.items) {
-          const mapped: Contact[] = data.items.map((item: any) => ({
-            id: item.id,
-            name: item.full_name || `${item.first_name || ''} ${item.last_name || ''}`.trim() || item.first_name || item.last_name || (item.email ? item.email.split('@')[0] : 'Unnamed Lead'),
-            email: item.email || '',
-            phone: item.phone || '',
-            company: item.company_name || 'Direct Lead',
-            jobTitle: item.job_title || 'Lead',
-            location: 'India',
-            source: item.source || 'CSV Import',
-            lifecycleStage: 'lead',
-            leadStatus: item.status || 'new',
-            leadScore: item.lead_score || 50,
-            priority: item.lead_score >= 80 ? 'high' : item.lead_score >= 50 ? 'medium' : 'low',
-            tags: item.tags || [],
-            consent: item.is_subscribed_email ?? true,
-            createdAt: item.created_at ? new Date(item.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
-          }));
+          const mapped: Contact[] = data.items.map((item: any) => {
+            const custom = item.custom_fields_json || item.custom_fields || {};
+            const tagList = Array.isArray(item.tags) && item.tags.length > 0 
+              ? item.tags 
+              : (custom.Tags ? custom.Tags.split(',').map((t: string) => t.trim()) : []);
+
+            return {
+              id: item.id,
+              name: item.full_name || `${item.first_name || ''} ${item.last_name || ''}`.trim() || item.first_name || item.last_name || (item.email ? item.email.split('@')[0] : 'Unnamed Lead'),
+              email: item.email || '',
+              phone: item.phone || '',
+              company: item.company_name || 'Direct Lead',
+              jobTitle: item.job_title || 'Lead',
+              location: custom.Location || 'India',
+              source: item.source || 'CSV Import',
+              lifecycleStage: 'lead',
+              leadStatus: item.status || 'new',
+              leadScore: item.lead_score || 50,
+              priority: custom.Priority ? custom.Priority.toLowerCase() : (item.lead_score >= 80 ? 'high' : item.lead_score >= 50 ? 'medium' : 'low'),
+              tags: tagList,
+              consent: custom.Consent ? custom.Consent === 'yes' : (item.is_subscribed_email ?? true),
+              createdAt: item.created_at ? new Date(item.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
+            };
+          });
           setContacts(mapped);
           return;
         }
