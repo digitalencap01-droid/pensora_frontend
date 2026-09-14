@@ -52,199 +52,20 @@ import { useMarketing } from '../context/MarketingContext';
 import { Contact } from '../types';
 import TemplateLibraryModal, { EmailTemplate, REAL_TEMPLATE_GALLERY } from '../components/campaigns/TemplateLibraryModal';
 
-const INITIAL_AUDIENCE_CONTACTS: Contact[] = [
-  {
-    id: 'aud_1',
-    name: 'Aarav Sharma',
-    email: 'aarav.sharma@fintechscale.com',
-    phone: '+91 98765 43210',
-    company: 'FinTech Scale',
-    jobTitle: 'VP Growth',
-    location: 'Mumbai, India',
-    source: 'Email Campaign',
-    lifecycleStage: 'sql',
-    leadStatus: 'qualified',
-    leadScore: 94,
-    priority: 'high',
-    segment: 'vip_engaged',
-    tags: ['B2B', 'VIP'],
-    consent: true,
-    createdAt: '2026-09-01'
-  },
-  {
-    id: 'aud_2',
-    name: 'Priya Patel',
-    email: 'priya.patel@luxoretail.in',
-    phone: '+91 98220 11223',
-    company: 'Luxo Retail',
-    jobTitle: 'CMO',
-    location: 'Bangalore, India',
-    source: 'Email Campaign',
-    lifecycleStage: 'customer',
-    leadStatus: 'qualified',
-    leadScore: 98,
-    priority: 'high',
-    segment: 'vip_engaged',
-    tags: ['D2C', 'HIGH-LTV'],
-    consent: true,
-    createdAt: '2026-09-02'
-  },
-  {
-    id: 'aud_3',
-    name: 'Rohan Mehta',
-    email: 'rohan.m@zenithmedia.com',
-    phone: '+91 97112 33445',
-    company: 'Zenith Media',
-    jobTitle: 'Founder & CEO',
-    location: 'New Delhi, India',
-    source: 'Email Campaign',
-    lifecycleStage: 'mql',
-    leadStatus: 'contacted',
-    leadScore: 88,
-    priority: 'high',
-    segment: 'vip_engaged',
-    tags: ['FOUNDER', 'VIP'],
-    consent: true,
-    createdAt: '2026-09-03'
-  },
-  {
-    id: 'aud_4',
-    name: 'Ananya Deshmukh',
-    email: 'ananya.d@urbanthreads.store',
-    phone: '+91 99887 76655',
-    company: 'Urban Threads',
-    jobTitle: 'Head of Merchandising',
-    location: 'Pune, India',
-    source: 'Website Form',
-    lifecycleStage: 'lead',
-    leadStatus: 'new',
-    leadScore: 76,
-    priority: 'medium',
-    segment: 'cart_abandoners',
-    tags: ['CART-DROP', 'APPAREL'],
-    consent: true,
-    createdAt: '2026-09-04'
-  },
-  {
-    id: 'aud_5',
-    name: 'Vikram Malhotra',
-    email: 'vikram@cloudscale.io',
-    phone: '+91 91234 56780',
-    company: 'CloudScale Technologies',
-    jobTitle: 'Director Marketing',
-    location: 'Hyderabad, India',
-    source: 'Email Campaign',
-    lifecycleStage: 'sql',
-    leadStatus: 'qualified',
-    leadScore: 91,
-    priority: 'high',
-    segment: 'promo_consented',
-    tags: ['SAAS', 'ACTIVE'],
-    consent: true,
-    createdAt: '2026-09-05'
-  },
-  {
-    id: 'aud_6',
-    name: 'Kavita Sundaram',
-    email: 'kavita.s@bloomorganic.com',
-    phone: '+91 94455 66778',
-    company: 'Bloom Organic',
-    jobTitle: 'Brand Strategist',
-    location: 'Chennai, India',
-    source: 'Website Form',
-    lifecycleStage: 'lead',
-    leadStatus: 'new',
-    leadScore: 68,
-    priority: 'medium',
-    segment: 'promo_consented',
-    tags: ['PROMO-OPTIN'],
-    consent: true,
-    createdAt: '2026-09-06'
-  },
-  {
-    id: 'aud_7',
-    name: 'Sameer Joshi',
-    email: 'sameer.j@horizontech.co',
-    phone: '+91 96543 21098',
-    company: 'Horizon Tech',
-    jobTitle: 'COO',
-    location: 'Mumbai, India',
-    source: 'Email Campaign',
-    lifecycleStage: 'customer',
-    leadStatus: 'qualified',
-    leadScore: 95,
-    priority: 'high',
-    segment: 'vip_engaged',
-    tags: ['ENTERPRISE', 'VIP'],
-    consent: true,
-    createdAt: '2026-09-07'
-  },
-  {
-    id: 'aud_8',
-    name: 'Meera Nambiar',
-    email: 'meera.n@keralaessentials.in',
-    phone: '+91 98450 12345',
-    company: 'Kerala Essentials',
-    jobTitle: 'Founder',
-    location: 'Kochi, India',
-    source: 'Website Form',
-    lifecycleStage: 'mql',
-    leadStatus: 'contacted',
-    leadScore: 82,
-    priority: 'medium',
-    segment: 'cart_abandoners',
-    tags: ['CART-DROP', 'RETENTION'],
-    consent: true,
-    createdAt: '2026-09-08'
-  },
-  {
-    id: 'aud_9',
-    name: 'David Miller',
-    email: 'david.m@apexbrands.com',
-    phone: '+1 415 555 0192',
-    company: 'Apex Brands Global',
-    jobTitle: 'VP Growth & Ecomm',
-    location: 'San Francisco, USA',
-    source: 'Email Campaign',
-    lifecycleStage: 'sql',
-    leadStatus: 'qualified',
-    leadScore: 99,
-    priority: 'high',
-    segment: 'vip_engaged',
-    tags: ['GLOBAL', 'HIGH-LTV'],
-    consent: true,
-    createdAt: '2026-09-09'
-  },
-  {
-    id: 'aud_10',
-    name: 'Sneha Kapoor',
-    email: 'sneha.k@studiochic.in',
-    phone: '+91 97890 12345',
-    company: 'Studio Chic Fashion',
-    jobTitle: 'Creative Director',
-    location: 'New Delhi, India',
-    source: 'Email Campaign',
-    lifecycleStage: 'mql',
-    leadStatus: 'contacted',
-    leadScore: 85,
-    priority: 'high',
-    segment: 'promo_consented',
-    tags: ['FASHION', 'VIP'],
-    consent: true,
-    createdAt: '2026-09-10'
-  }
-];
-
 export const EmailCampaign: React.FC = () => {
   const { activeWorkspace, updateWorkspace } = useMarketing();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const activeTab = searchParams.get('tab') || 'campaigns';
 
-  const brandName = activeWorkspace?.name || 'Bloom Boutique';
-  const cleanDomain = activeWorkspace?.website 
+  const [sesVerifiedDomain, setSesVerifiedDomain] = useState<string>('encaptechno.com');
+  const [targetDomainInput, setTargetDomainInput] = useState<string>('encaptechno.com');
+  const [sesConfigured, setSesConfigured] = useState<boolean>(true);
+
+  const brandName = activeWorkspace?.name || 'Encap Techno';
+  const cleanDomain = sesVerifiedDomain || targetDomainInput || (activeWorkspace?.website 
     ? activeWorkspace.website.replace(/^https?:\/\//, '').replace(/\/.*$/, '') 
-    : 'bloomboutique.shop';
+    : 'encaptechno.com');
 
   const handleTabChange = (tabId: string) => {
     setSearchParams({ tab: tabId });
@@ -263,22 +84,19 @@ export const EmailCampaign: React.FC = () => {
   // DOMAIN & SENDER PRE-FILLED IDENTITY STATE (From Onboarding / Active Workspace)
   const [isDomainSettingsOpen, setIsDomainSettingsOpen] = useState<boolean>(false);
   const [senderName, setSenderName] = useState<string>(
-    activeWorkspace?.email?.fromName || activeWorkspace?.name || 'Bloom Boutique'
+    activeWorkspace?.email?.fromName || activeWorkspace?.name || 'Growth Marketing'
   );
   const [senderEmail, setSenderEmail] = useState<string>(
-    activeWorkspace?.email?.fromEmail || (activeWorkspace?.website ? `hello@${cleanDomain}` : 'hello@bloomboutique.shop')
+    activeWorkspace?.email?.fromEmail || `hello@${cleanDomain}`
   );
   const [replyToEmail, setReplyToEmail] = useState<string>(
-    activeWorkspace?.email?.replyToEmail || (activeWorkspace?.website ? `support@${cleanDomain}` : 'support@bloomboutique.shop')
+    activeWorkspace?.email?.replyToEmail || `support@${cleanDomain}`
   );
   const [isDnsVerified, setIsDnsVerified] = useState<boolean>(() => {
     const saved = localStorage.getItem('growwise_email_dns_verified');
     return saved !== null ? saved === 'true' : true;
   });
   const [isVerifyingDns, setIsVerifyingDns] = useState<boolean>(false);
-  const [sesConfigured, setSesConfigured] = useState<boolean>(true);
-  const [sesVerifiedDomain, setSesVerifiedDomain] = useState<string>('encaptechno.com');
-  const [targetDomainInput, setTargetDomainInput] = useState<string>('encaptechno.com');
   const [copiedRecordIdx, setCopiedRecordIdx] = useState<string | null>(null);
   const [dnsRecords, setDnsRecords] = useState<Array<{ type: string; host: string; value: string; status: string; purpose?: string }>>([
     { type: 'SPF (TXT)', host: '@', value: 'v=spf1 include:amazonses.com ~all', status: 'Verified', purpose: 'Authorizes Amazon SES to send on behalf of your domain.' },
@@ -289,13 +107,11 @@ export const EmailCampaign: React.FC = () => {
   const [isLaunching, setIsLaunching] = useState<boolean>(false);
 
   // AUDIENCE & CONTACTS STATE (Synced directly with Unified CRM Hub)
-  const [cohortName, setCohortName] = useState<string>('VIP Engaged (High LTV)');
-  const [selectedPreset, setSelectedPreset] = useState<string>('vip_engaged');
-  const [cohortCount, setCohortCount] = useState<number>(2450);
-  const [audienceContacts, setAudienceContacts] = useState<Contact[]>(INITIAL_AUDIENCE_CONTACTS);
-  const [selectedContactIds, setSelectedContactIds] = useState<string[]>(() => 
-    INITIAL_AUDIENCE_CONTACTS.filter(c => c.segment === 'vip_engaged').map(c => c.id)
-  );
+  const [cohortName, setCohortName] = useState<string>('All Subscribers');
+  const [selectedPreset, setSelectedPreset] = useState<string>('all');
+  const [cohortCount, setCohortCount] = useState<number>(0);
+  const [audienceContacts, setAudienceContacts] = useState<Contact[]>([]);
+  const [selectedContactIds, setSelectedContactIds] = useState<string[]>([]);
   const [audienceSearch, setAudienceSearch] = useState<string>('');
 
   const fetchAnalytics = async () => {
@@ -310,21 +126,27 @@ export const EmailCampaign: React.FC = () => {
   useEffect(() => {
     // 1. Health check & SES Domain
     backendApi.checkHealth().then(h => {
-      if (h.sender_domain) setSesVerifiedDomain(h.sender_domain);
-      if (h.sender_email) setSenderEmail(h.sender_email);
+      if (h.sender_domain) {
+        setSesVerifiedDomain(h.sender_domain);
+        setTargetDomainInput(h.sender_domain);
+      }
+      if (h.sender_email) {
+        setSenderEmail(h.sender_email);
+        setReplyToEmail(h.sender_email);
+      }
       setSesConfigured(h.ses_configured);
     });
 
     // 2. Fetch real contacts for audience
     backendApi.getContacts().then(cts => {
-      if (cts && cts.length > 0) {
+      if (Array.isArray(cts)) {
         const mapped: Contact[] = cts.map((c, idx) => ({
           id: c.id || `c_${idx}`,
           name: c.fullName || `${c.first_name || ''} ${c.last_name || ''}`.trim() || c.email,
           email: c.email,
           phone: c.phone || '',
-          company: (c as any).company || 'Retail Co',
-          location: (c as any).location || 'India',
+          company: (c as any).company || '',
+          location: (c as any).location || '',
           segment: (c.tags && c.tags.includes('vip')) ? 'vip_engaged' : 'all',
           tags: c.tags || ['lead'],
           leadScore: c.leadScore || 85,
@@ -352,18 +174,18 @@ export const EmailCampaign: React.FC = () => {
 
     // 4. Fetch real campaigns
     backendApi.getCampaigns().then(camps => {
-      if (camps && camps.length > 0) {
+      if (Array.isArray(camps)) {
         setCampaignsList(camps.map(c => ({
           id: c.id,
           name: c.name,
           subject: c.subject || c.content?.subject || c.name,
           status: c.status || 'sent',
-          sentAt: c.created_at ? new Date(c.created_at).toLocaleDateString() : 'Recent',
-          recipients: c.performance?.sent || c.recipients || 10,
+          sentAt: c.created_at ? new Date(c.created_at).toLocaleString() : 'Recent',
+          recipients: c.performance?.sent || c.recipients || (c.individual_contact_ids?.length || 0),
           openRate: c.performance?.open_rate ? `${c.performance.open_rate}%` : '0.0%',
           clickRate: c.performance?.click_rate ? `${c.performance.click_rate}%` : '0.0%',
-          revenue: '$0',
-          type: 'Broadcast'
+          revenue: c.performance?.revenue ? `$${c.performance.revenue}` : '$0',
+          type: c.scheduled_at ? 'Scheduled' : 'Broadcast'
         })));
       }
     });
@@ -372,9 +194,40 @@ export const EmailCampaign: React.FC = () => {
     fetchAnalytics();
   }, [cleanDomain]);
 
+  const cohortStats = useMemo(() => {
+    const total = audienceContacts.length;
+    const vip = audienceContacts.filter(c => 
+      c.segment === 'vip_engaged' || 
+      (c.leadScore && c.leadScore >= 75) || 
+      (c.tags && c.tags.some(t => t.toLowerCase().includes('vip')))
+    ).length;
+    const promo = audienceContacts.filter(c => 
+      c.segment === 'promo_consented' || 
+      c.consent || 
+      c.status === 'active'
+    ).length;
+    const cart = audienceContacts.filter(c => 
+      c.segment === 'cart_abandoners' || 
+      (c.tags && c.tags.some(t => t.toLowerCase().includes('cart') || t.toLowerCase().includes('lead') || t.toLowerCase().includes('abandon')))
+    ).length;
+
+    return {
+      all: total,
+      vip_engaged: vip,
+      promo_consented: promo,
+      cart_abandoners: cart,
+    };
+  }, [audienceContacts]);
+
   const filteredAudienceContacts = useMemo(() => {
     return audienceContacts.filter(contact => {
-      const matchesPreset = selectedPreset === 'all' || contact.segment === selectedPreset;
+      const matchesPreset = 
+        selectedPreset === 'all' ? true :
+        selectedPreset === 'vip_engaged' ? (contact.segment === 'vip_engaged' || (contact.leadScore && contact.leadScore >= 75) || (contact.tags && contact.tags.some(t => t.toLowerCase().includes('vip')))) :
+        selectedPreset === 'promo_consented' ? (contact.segment === 'promo_consented' || contact.consent || contact.status === 'active') :
+        selectedPreset === 'cart_abandoners' ? (contact.segment === 'cart_abandoners' || (contact.tags && contact.tags.some(t => t.toLowerCase().includes('cart') || t.toLowerCase().includes('lead') || t.toLowerCase().includes('abandon')))) :
+        contact.segment === selectedPreset;
+
       if (!audienceSearch.trim()) return matchesPreset;
       const q = audienceSearch.toLowerCase();
       const matchesSearch = 
@@ -387,14 +240,19 @@ export const EmailCampaign: React.FC = () => {
     });
   }, [audienceContacts, selectedPreset, audienceSearch]);
 
-  const handleSelectPreset = (presetId: string, count: number, label: string) => {
+  const handleSelectPreset = (presetId: string, label: string) => {
     setSelectedPreset(presetId);
-    setCohortCount(count);
     setCohortName(label);
-    const matchingIds = audienceContacts
-      .filter(c => presetId === 'all' || c.segment === presetId)
-      .map(c => c.id);
+    const matchingContacts = audienceContacts.filter(contact => {
+      if (presetId === 'all') return true;
+      if (presetId === 'vip_engaged') return contact.segment === 'vip_engaged' || (contact.leadScore && contact.leadScore >= 75) || (contact.tags && contact.tags.some(t => t.toLowerCase().includes('vip')));
+      if (presetId === 'promo_consented') return contact.segment === 'promo_consented' || contact.consent || contact.status === 'active';
+      if (presetId === 'cart_abandoners') return contact.segment === 'cart_abandoners' || (contact.tags && contact.tags.some(t => t.toLowerCase().includes('cart') || t.toLowerCase().includes('lead') || t.toLowerCase().includes('abandon')));
+      return contact.segment === presetId;
+    });
+    const matchingIds = matchingContacts.map(c => c.id);
     setSelectedContactIds(matchingIds);
+    setCohortCount(matchingIds.length);
   };
 
   const handleToggleContact = (id: string) => {
@@ -455,52 +313,20 @@ Thanks,
   const [aiInstructionPrompt, setAiInstructionPrompt] = useState<string>('');
 
   // STEP 6: REVIEW & DELIVERABILITY STATE
-  const [deliverabilityScore, setDeliverabilityScore] = useState<number>(94);
+  const [deliverabilityScore, setDeliverabilityScore] = useState<number>(96);
+  const [deliverabilityAudit, setDeliverabilityAudit] = useState<any>(null);
   const [isAutoFixing, setIsAutoFixing] = useState<boolean>(false);
   const [testEmailSent, setTestEmailSent] = useState<boolean>(false);
   const [sendMode, setSendMode] = useState<'now' | 'scheduled'>('now');
-  const [scheduleDate, setScheduleDate] = useState<string>('2026-09-12');
-  const [scheduleTime, setScheduleTime] = useState<string>('10:15');
+  const [scheduleDate, setScheduleDate] = useState<string>(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split('T')[0];
+  });
+  const [scheduleTime, setScheduleTime] = useState<string>('10:00');
 
-  // Broadcast History list
-  const [campaignsList, setCampaignsList] = useState([
-    {
-      id: 'em-101',
-      name: 'Summer Linen Capsule Launch',
-      subject: '✨ Introducing our Summer 2026 Eco-Linen Collection',
-      status: 'sent',
-      sentAt: 'Yesterday, 10:30 AM',
-      recipients: 4250,
-      openRate: '48.6%',
-      clickRate: '14.2%',
-      revenue: '$6,420',
-      type: 'Broadcast'
-    },
-    {
-      id: 'em-102',
-      name: 'Welcome Drip: Brand Story & First Order Gift',
-      subject: 'Welcome to sustainable living + 15% off your first order',
-      status: 'active',
-      sentAt: 'Automated Drip (Trigger: Sign up)',
-      recipients: 1840,
-      openRate: '62.4%',
-      clickRate: '28.1%',
-      revenue: '$3,890',
-      type: 'Automated Flow'
-    },
-    {
-      id: 'em-103',
-      name: 'Cart Recovery Sequence: Did you leave something behind?',
-      subject: 'Your basket misses you! Complete your order with free shipping 📦',
-      status: 'active',
-      sentAt: 'Automated Trigger (1 hr after abandonment)',
-      recipients: 612,
-      openRate: '54.1%',
-      clickRate: '21.5%',
-      revenue: '$4,150',
-      type: 'Automated Flow'
-    }
-  ]);
+  // Broadcast History list (Loaded dynamically from API)
+  const [campaignsList, setCampaignsList] = useState<any[]>([]);
 
   // Handle DNS live test
   const generateHtmlBody = () => {
@@ -548,14 +374,38 @@ Thanks,
     setIsAutoFixing(true);
     try {
       const res = await backendApi.autoOptimizeCopy(subjectLine, generateHtmlBody(), emailBodyText, brandName);
-      if (res.optimized_subject) setSubjectLine(res.optimized_subject);
-      if (res.optimized_body) setEmailBodyText(res.optimized_body);
-      setDeliverabilityScore(99);
+      let newSubject = subjectLine;
+      let newBody = emailBodyText;
+      if (res.optimized_subject) {
+        setSubjectLine(res.optimized_subject);
+        newSubject = res.optimized_subject;
+      }
+      if (res.optimized_body) {
+        setEmailBodyText(res.optimized_body);
+        newBody = res.optimized_body;
+      }
+      const reAudit = await backendApi.auditDeliverability(newSubject, generateHtmlBody(), newBody);
+      if (reAudit && reAudit.score !== undefined) {
+        setDeliverabilityScore(reAudit.score);
+        setDeliverabilityAudit(reAudit);
+      }
     } catch (e) {
       console.warn('Auto optimize copy error:', e);
-      setDeliverabilityScore(98);
     } finally {
       setIsAutoFixing(false);
+    }
+  };
+
+  const handleProceedToReview = async () => {
+    setCreatorStep(3);
+    try {
+      const audit = await backendApi.auditDeliverability(subjectLine, generateHtmlBody(), emailBodyText);
+      if (audit && audit.score !== undefined) {
+        setDeliverabilityScore(audit.score);
+        setDeliverabilityAudit(audit);
+      }
+    } catch (e) {
+      console.warn('Audit error:', e);
     }
   };
 
@@ -571,9 +421,9 @@ Thanks,
   // LIVE TEST EMAIL MODAL STATE
   const [isTestEmailModalOpen, setIsTestEmailModalOpen] = useState<boolean>(false);
   const [testRecipientEmail, setTestRecipientEmail] = useState<string>(
-    activeWorkspace?.email?.fromEmail || 'hello@bloomboutique.shop'
+    activeWorkspace?.email?.fromEmail || senderEmail || 'abhardwaj947@gmail.com'
   );
-  const [testRecipientName, setTestRecipientName] = useState<string>('Shristy');
+  const [testRecipientName, setTestRecipientName] = useState<string>('Valued Subscriber');
   const [testPrefixSubject, setTestPrefixSubject] = useState<boolean>(true);
   const [testIncludeSampleData, setTestIncludeSampleData] = useState<boolean>(true);
   const [testSendingState, setTestSendingState] = useState<'idle' | 'sending' | 'success'>('idle');
@@ -816,33 +666,55 @@ Thanks,
         </div>
       </div>
 
-      {/* 2. Top Summary KPI Cards (Clean & Simple) */}
+      {/* 2. Top Summary KPI Cards (Dynamic CRM & SES Telemetry) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="p-4 border-[#F3DEC8] bg-white space-y-1 shadow-3xs">
           <span className="text-[10px] font-bold text-[#6B5E77] uppercase tracking-wider block">Audience Subscribers</span>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-[#1E122C]">8,420</span>
-            <span className="text-xs font-bold text-[#10B981]">Clean List</span>
+            <span className="text-2xl font-black text-[#1E122C]">{audienceContacts.length.toLocaleString()}</span>
+            <span className={`text-xs font-bold ${audienceContacts.length > 0 ? 'text-[#10B981]' : 'text-[#6B5E77]'}`}>
+              {audienceContacts.length > 0 ? 'Active CRM' : 'No Contacts'}
+            </span>
           </div>
-          <p className="text-[11px] text-[#6B5E77]">0% hard bounce rate across last 3 sends</p>
+          <p className="text-[11px] text-[#6B5E77]">
+            {audienceContacts.length > 0 
+              ? `${cohortStats.vip_engaged} VIP • ${cohortStats.promo_consented} opted-in subscribers` 
+              : 'Add or import contacts from CRM Hub'}
+          </p>
         </Card>
 
         <Card className="p-4 border-[#F3DEC8] bg-white space-y-1 shadow-3xs">
           <span className="text-[10px] font-bold text-[#6B5E77] uppercase tracking-wider block">Average Open Rate</span>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-[#8C1F3D]">52.8%</span>
-            <span className="text-xs font-bold text-[#10B981]">Grade A+</span>
+            <span className="text-2xl font-black text-[#8C1F3D]">
+              {analyticsData?.summary?.open_rate !== undefined ? `${analyticsData.summary.open_rate}%` : '0.0%'}
+            </span>
+            <span className="text-xs font-bold text-[#10B981]">
+              {(analyticsData?.summary?.open_rate || 0) > 20 ? 'Optimal' : 'Standard'}
+            </span>
           </div>
-          <p className="text-[11px] text-[#6B5E77]">3.2x higher than industry average</p>
+          <p className="text-[11px] text-[#6B5E77]">
+            {analyticsData?.summary?.unique_opens 
+              ? `${analyticsData.summary.unique_opens.toLocaleString()} unique opens recorded` 
+              : 'Awaiting broadcast telemetry'}
+          </p>
         </Card>
 
         <Card className="p-4 border-[#F3DEC8] bg-white space-y-1 shadow-3xs">
           <span className="text-[10px] font-bold text-[#6B5E77] uppercase tracking-wider block">Sender Deliverability</span>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-[#10B981]">98%</span>
-            <span className="text-xs font-bold text-[#10B981]">SPF/DKIM Signed</span>
+            <span className={`text-2xl font-black ${(isDnsVerified || sesVerifiedDomain) ? 'text-[#10B981]' : 'text-amber-600'}`}>
+              {(isDnsVerified || sesVerifiedDomain) ? '100%' : 'Pending'}
+            </span>
+            <span className={`text-xs font-bold ${(isDnsVerified || sesVerifiedDomain) ? 'text-[#10B981]' : 'text-amber-600'}`}>
+              {(isDnsVerified || sesVerifiedDomain) ? 'SPF/DKIM Signed' : 'DNS Unverified'}
+            </span>
           </div>
-          <p className="text-[11px] text-[#6B5E77]">Dedicated Amazon SES infrastructure</p>
+          <p className="text-[11px] text-[#6B5E77]">
+            {(isDnsVerified || sesVerifiedDomain)
+              ? `Amazon SES authenticated on ${sesVerifiedDomain || cleanDomain}`
+              : 'Requires domain DNS record configuration'}
+          </p>
         </Card>
       </div>
 
@@ -942,47 +814,71 @@ Thanks,
             </div>
 
             <div className="grid grid-cols-1 gap-3">
-              {campaignsList.map((c) => (
-                <Card key={c.id} className="p-4 border-[#F3DEC8] bg-white hover:border-[#8C1F3D]/40 transition-all">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="space-y-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase ${
-                          c.status === 'sent' ? 'bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0]' :
-                          'bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]'
-                        }`}>
-                          {c.status}
-                        </span>
-                        <span className="text-[10px] font-bold text-[#8C1F3D] bg-[#FAF5F0] px-2 py-0.5 rounded-md border border-[#F3DEC8]">
-                          {c.type}
-                        </span>
-                        <span className="text-[10px] text-[#8A8294]">{c.sentAt}</span>
-                      </div>
-                      <h4 className="text-sm font-black text-[#1E122C] truncate">{c.name}</h4>
-                      <p className="text-xs text-[#6B5E77] font-medium truncate">{c.subject}</p>
-                    </div>
-
-                    <div className="grid grid-cols-4 gap-4 text-center shrink-0 border-t md:border-t-0 md:border-l border-[#F3DEC8]/70 pt-2 md:pt-0 md:pl-4">
-                      <div>
-                        <span className="text-[9.5px] font-bold text-[#6B5E77] uppercase block">Recipients</span>
-                        <span className="text-xs font-black text-[#1E122C]">{c.recipients.toLocaleString()}</span>
-                      </div>
-                      <div>
-                        <span className="text-[9.5px] font-bold text-[#6B5E77] uppercase block">Open Rate</span>
-                        <span className="text-xs font-black text-[#8C1F3D]">{c.openRate}</span>
-                      </div>
-                      <div>
-                        <span className="text-[9.5px] font-bold text-[#6B5E77] uppercase block">Click Rate</span>
-                        <span className="text-xs font-black text-[#EA580C]">{c.clickRate}</span>
-                      </div>
-                      <div>
-                        <span className="text-[9.5px] font-bold text-[#6B5E77] uppercase block">Revenue</span>
-                        <span className="text-xs font-black text-[#10B981]">{c.revenue}</span>
-                      </div>
-                    </div>
+              {campaignsList.length === 0 ? (
+                <Card className="p-8 border-[#F3DEC8] bg-[#FAF5F0]/30 text-center space-y-3 rounded-2xl">
+                  <div className="w-12 h-12 rounded-2xl bg-[#FFEFEA] text-[#8C1F3D] flex items-center justify-center mx-auto border border-[#FAD8C7]">
+                    <Mail className="w-6 h-6" />
                   </div>
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-black text-[#1E122C]">No Email Campaigns Yet</h4>
+                    <p className="text-xs text-[#6B5E77] max-w-md mx-auto">
+                      You haven't launched any email broadcasts yet. Click below to compose and dispatch your first campaign with live deliverability audit &amp; tracking.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setCreatorStep(1);
+                      setIsCreatorOpen(true);
+                    }}
+                    className="px-4 py-2 bg-[#8C1F3D] hover:bg-[#731831] text-white rounded-xl text-xs font-black shadow-md cursor-pointer inline-flex items-center gap-1.5 transition-all"
+                  >
+                    <Zap className="w-3.5 h-3.5" />
+                    <span>Create Your First Campaign</span>
+                  </button>
                 </Card>
-              ))}
+              ) : (
+                campaignsList.map((c) => (
+                  <Card key={c.id} className="p-4 border-[#F3DEC8] bg-white hover:border-[#8C1F3D]/40 transition-all">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase ${
+                            c.status === 'sent' || c.status === 'completed' ? 'bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0]' :
+                            'bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]'
+                          }`}>
+                            {c.status}
+                          </span>
+                          <span className="text-[10px] font-bold text-[#8C1F3D] bg-[#FAF5F0] px-2 py-0.5 rounded-md border border-[#F3DEC8]">
+                            {c.type}
+                          </span>
+                          <span className="text-[10px] text-[#8A8294]">{c.sentAt}</span>
+                        </div>
+                        <h4 className="text-sm font-black text-[#1E122C] truncate">{c.name}</h4>
+                        <p className="text-xs text-[#6B5E77] font-medium truncate">{c.subject}</p>
+                      </div>
+
+                      <div className="grid grid-cols-4 gap-4 text-center shrink-0 border-t md:border-t-0 md:border-l border-[#F3DEC8]/70 pt-2 md:pt-0 md:pl-4">
+                        <div>
+                          <span className="text-[9.5px] font-bold text-[#6B5E77] uppercase block">Recipients</span>
+                          <span className="text-xs font-black text-[#1E122C]">{c.recipients.toLocaleString()}</span>
+                        </div>
+                        <div>
+                          <span className="text-[9.5px] font-bold text-[#6B5E77] uppercase block">Open Rate</span>
+                          <span className="text-xs font-black text-[#8C1F3D]">{c.openRate}</span>
+                        </div>
+                        <div>
+                          <span className="text-[9.5px] font-bold text-[#6B5E77] uppercase block">Click Rate</span>
+                          <span className="text-xs font-black text-[#EA580C]">{c.clickRate}</span>
+                        </div>
+                        <div>
+                          <span className="text-[9.5px] font-bold text-[#6B5E77] uppercase block">Revenue</span>
+                          <span className="text-xs font-black text-[#10B981]">{c.revenue}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -999,8 +895,12 @@ Thanks,
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-base font-black text-[#1E122C]">Sender Domain &amp; DNS Records</h3>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0]">
-                    ✓ Verified in Amazon SES
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border flex items-center gap-1 ${
+                    isDnsVerified
+                      ? 'bg-[#ECFDF5] text-[#059669] border-[#A7F3D0]'
+                      : 'bg-amber-50 text-amber-700 border-amber-200'
+                  }`}>
+                    {isDnsVerified ? '✓ Verified in Amazon SES' : '⏳ Pending DNS Verification'}
                   </span>
                 </div>
                 <p className="text-xs text-[#6B5E77]">
@@ -1206,8 +1106,12 @@ Thanks,
                 </p>
               </div>
 
-              <span className="text-xs font-bold text-[#10B981] bg-[#ECFDF5] px-3 py-1 rounded-full border border-[#A7F3D0]">
-                Inbox Placement: {analyticsData?.summary?.inbox_placement_rate || '99.4%'}
+              <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
+                (isDnsVerified || sesVerifiedDomain)
+                  ? 'text-[#10B981] bg-[#ECFDF5] border-[#A7F3D0]'
+                  : 'text-amber-700 bg-amber-50 border-amber-200'
+              }`}>
+                Inbox Placement: {analyticsData?.summary?.inbox_placement_rate ? `${analyticsData.summary.inbox_placement_rate}%` : (isDnsVerified ? '100%' : 'Pending DNS')}
               </span>
             </div>
 
@@ -1215,37 +1119,39 @@ Thanks,
               <div className="p-3.5 rounded-xl border border-[#F3DEC8] bg-[#FAF5F0]/50 space-y-1">
                 <span className="text-[10px] font-bold text-[#6B5E77] uppercase">Total Emails Sent</span>
                 <div className="text-xl font-black text-[#1E122C]">
-                  {analyticsData?.summary?.total_sent ? analyticsData.summary.total_sent.toLocaleString() : '18,450'}
+                  {(analyticsData?.summary?.total_sent ?? campaignsList.reduce((acc, c) => acc + (c.recipients || 0), 0)).toLocaleString()}
                 </div>
                 <span className="text-[10.5px] text-[#10B981] font-semibold">
-                  {analyticsData?.summary?.delivery_rate || '99.3%'} Delivered
+                  {analyticsData?.summary?.delivery_rate !== undefined
+                    ? `${analyticsData.summary.delivery_rate}% Delivered`
+                    : (campaignsList.length > 0 ? '100% Delivered' : '0.0% Delivered')}
                 </span>
               </div>
               <div className="p-3.5 rounded-xl border border-[#F3DEC8] bg-[#FAF5F0]/50 space-y-1">
                 <span className="text-[10px] font-bold text-[#6B5E77] uppercase">Unique Opens</span>
                 <div className="text-xl font-black text-[#8C1F3D]">
-                  {analyticsData?.summary?.unique_opens ? analyticsData.summary.unique_opens.toLocaleString() : '9,420'}
+                  {(analyticsData?.summary?.unique_opens ?? 0).toLocaleString()}
                 </div>
                 <span className="text-[10.5px] text-[#8C1F3D] font-semibold">
-                  {analyticsData?.summary?.open_rate || '51.4%'} Open Rate
+                  {analyticsData?.summary?.open_rate !== undefined ? `${analyticsData.summary.open_rate}% Open Rate` : '0.0% Open Rate'}
                 </span>
               </div>
               <div className="p-3.5 rounded-xl border border-[#F3DEC8] bg-[#FAF5F0]/50 space-y-1">
                 <span className="text-[10px] font-bold text-[#6B5E77] uppercase">Click-Throughs</span>
                 <div className="text-xl font-black text-[#EA580C]">
-                  {analyticsData?.summary?.unique_clicks ? analyticsData.summary.unique_clicks.toLocaleString() : '3,210'}
+                  {(analyticsData?.summary?.unique_clicks ?? 0).toLocaleString()}
                 </div>
                 <span className="text-[10.5px] text-[#EA580C] font-semibold">
-                  {analyticsData?.summary?.click_rate || '17.5%'} CTR
+                  {analyticsData?.summary?.click_rate !== undefined ? `${analyticsData.summary.click_rate}% CTR` : '0.0% CTR'}
                 </span>
               </div>
               <div className="p-3.5 rounded-xl border border-[#F3DEC8] bg-[#FAF5F0]/50 space-y-1">
                 <span className="text-[10px] font-bold text-[#6B5E77] uppercase">Spam Complaints</span>
                 <div className="text-xl font-black text-[#10B981]">
-                  {analyticsData?.summary?.spam_complaints_rate || '0.01%'}
+                  {analyticsData?.summary?.spam_complaints_rate !== undefined ? `${analyticsData.summary.spam_complaints_rate}%` : '0.00%'}
                 </div>
                 <span className="text-[10.5px] text-[#10B981] font-semibold">
-                  {analyticsData?.summary?.reputation_status || 'Optimal (Amazon SES)'}
+                  {analyticsData?.summary?.reputation_status || (isDnsVerified ? 'Optimal (Amazon SES)' : 'Pending DNS Verification')}
                 </span>
               </div>
             </div>
@@ -1275,17 +1181,20 @@ Thanks,
               <div className="flex items-center gap-3">
                 {/* Live Domain Status Pill (Clickable to Reconnect/Manage) */}
                 <div className={`hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
-                  isDnsVerified 
+                  (isDnsVerified || sesVerifiedDomain)
                     ? 'bg-[#ECFDF5] border border-[#A7F3D0] text-[#065F46]' 
                     : 'bg-[#FFF0F2] border border-[#FECACA] text-[#991B1B]'
                 }`}>
-                  <ShieldCheck className={`w-3.5 h-3.5 ${isDnsVerified ? 'text-[#10B981]' : 'text-[#EF4444]'}`} />
-                  <span>{cleanDomain}</span>
-                  <span className={`w-1.5 h-1.5 rounded-full ${isDnsVerified ? 'bg-[#10B981]' : 'bg-[#EF4444]'}`} />
-                  <span className="text-[10px] font-semibold">{isDnsVerified ? 'Connected' : 'Disconnected'}</span>
+                  <ShieldCheck className={`w-3.5 h-3.5 ${(isDnsVerified || sesVerifiedDomain) ? 'text-[#10B981]' : 'text-[#EF4444]'}`} />
+                  <span>{sesVerifiedDomain || targetDomainInput || cleanDomain}</span>
+                  <span className={`w-1.5 h-1.5 rounded-full ${(isDnsVerified || sesVerifiedDomain) ? 'bg-[#10B981]' : 'bg-[#EF4444]'}`} />
+                  <span className="text-[10px] font-semibold">{(isDnsVerified || sesVerifiedDomain) ? 'Connected (SES Verified)' : 'Disconnected'}</span>
                   <button
                     type="button"
-                    onClick={() => setIsDomainSettingsOpen(true)}
+                    onClick={() => {
+                      setIsCreatorOpen(false);
+                      handleTabChange('domain');
+                    }}
                     className="ml-1 text-[10px] text-[#065F46] font-extrabold underline hover:opacity-80 cursor-pointer"
                     title="Manage sending domain & DNS records"
                   >
@@ -1421,15 +1330,15 @@ Thanks,
                     {/* 4 Cohort Presets */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
                       {[
-                        { id: 'vip_engaged', label: 'VIP Engaged', count: 2450, tag: 'High LTV' },
-                        { id: 'promo_consented', label: 'Promo Consented', count: 1890, tag: 'Active' },
-                        { id: 'cart_abandoners', label: 'Cart Abandoners', count: 612, tag: 'Urgent' },
-                        { id: 'all', label: 'All Subscribers', count: 8420, tag: 'Full List' }
+                        { id: 'vip_engaged', label: 'VIP Engaged', count: cohortStats.vip_engaged, tag: 'High LTV' },
+                        { id: 'promo_consented', label: 'Promo Consented', count: cohortStats.promo_consented, tag: 'Active' },
+                        { id: 'cart_abandoners', label: 'Cart Abandoners', count: cohortStats.cart_abandoners, tag: 'Urgent' },
+                        { id: 'all', label: 'All Subscribers', count: cohortStats.all, tag: 'Full List' }
                       ].map((preset) => (
                         <button
                           key={preset.id}
                           type="button"
-                          onClick={() => handleSelectPreset(preset.id, preset.count, preset.label)}
+                          onClick={() => handleSelectPreset(preset.id, preset.label)}
                           className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
                             selectedPreset === preset.id
                               ? 'bg-[#FFEFEA] border-[#8C1F3D] text-[#8C1F3D] shadow-xs'
@@ -1465,7 +1374,7 @@ Thanks,
 
                         <div className="flex items-center gap-2 shrink-0">
                           <span className="text-[11px] font-bold text-[#6B5E77] bg-white px-2.5 py-1 rounded-xl border border-[#F3DEC8]">
-                            <strong className="text-[#8C1F3D]">{selectedContactIds.length}</strong> of {filteredAudienceContacts.length} selected
+                            <strong className="text-[#8C1F3D]">{filteredAudienceContacts.filter(c => selectedContactIds.includes(c.id)).length}</strong> of {filteredAudienceContacts.length} in cohort selected ({selectedContactIds.length} total)
                           </span>
 
                           <button
@@ -1749,9 +1658,15 @@ Thanks,
                         onChange={(e) => setPreviewRecipient(e.target.value)}
                         className="px-2 py-1 text-[10px] bg-[#FAF5F0] border border-[#F3DEC8] rounded-lg font-bold text-[#1E122C]"
                       >
-                        <option value="Abhishek">Preview: Abhishek</option>
-                        <option value="Priya Sharma">Preview: Priya Sharma</option>
-                        <option value="Rahul Verma">Preview: Rahul Verma</option>
+                        {audienceContacts.length > 0 ? (
+                          audienceContacts.map(c => (
+                            <option key={c.id} value={c.name.split(' ')[0]}>
+                              Preview: {c.name}
+                            </option>
+                          ))
+                        ) : (
+                          <option value="Subscriber">Preview: Valued Subscriber</option>
+                        )}
                       </select>
                     </div>
 
@@ -1903,12 +1818,31 @@ Thanks,
                   {/* Deliverability Inspector */}
                   <div className="p-4 rounded-2xl bg-white border border-[#F3DEC8] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-2xl bg-[#ECFDF5] border border-[#A7F3D0] flex items-center justify-center text-lg font-black text-[#059669]">
+                      <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center text-lg font-black ${
+                        deliverabilityScore >= 90
+                          ? 'bg-[#ECFDF5] border-[#A7F3D0] text-[#059669]'
+                          : deliverabilityScore >= 75
+                          ? 'bg-amber-50 border-amber-200 text-amber-700'
+                          : 'bg-red-50 border-red-200 text-red-700'
+                      }`}>
                         {deliverabilityScore}%
                       </div>
                       <div>
                         <h4 className="text-xs font-black text-[#1E122C]">PRE-FLIGHT DELIVERABILITY &amp; SPAM INSPECTION</h4>
-                        <span className="text-[11px] text-[#10B981] font-bold">Grade A+ • Safe from Gmail &amp; Apple spam filters</span>
+                        <span className={`text-[11px] font-bold ${
+                          deliverabilityScore >= 90 ? 'text-[#10B981]' : deliverabilityScore >= 75 ? 'text-amber-600' : 'text-red-600'
+                        }`}>
+                          {deliverabilityScore >= 90
+                            ? 'Optimal • Safe from Gmail & Apple spam filters'
+                            : deliverabilityScore >= 75
+                            ? 'Moderate Spam Risk • Optimization suggested'
+                            : 'High Spam Risk • Critical review needed'}
+                        </span>
+                        {deliverabilityAudit?.flags && deliverabilityAudit.flags.length > 0 && (
+                          <div className="text-[10px] text-[#8C1F3D] pt-0.5">
+                            Spam Triggers: {deliverabilityAudit.flags.join(' • ')}
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -2071,7 +2005,7 @@ Thanks,
               ) : creatorStep === 2 ? (
                 <button
                   type="button"
-                  onClick={() => setCreatorStep(3)}
+                  onClick={handleProceedToReview}
                   className="px-6 py-2.5 bg-[#8C1F3D] hover:bg-[#731831] text-white rounded-xl text-xs font-black shadow-md cursor-pointer transition-all"
                 >
                   Review &amp; Launch ➔
@@ -2153,17 +2087,23 @@ Thanks,
                 </div>
 
                 <div className="grid grid-cols-3 gap-2 text-[11px]">
-                  <div className="p-2.5 bg-white rounded-xl border border-[#F3DEC8]">
-                    <strong className="text-[#1E122C] block">SPF Record</strong>
-                    <span className="font-mono text-[10px] text-[#6B5E77]">v=spf1 include:amazonses.com</span>
+                  <div className="p-2.5 bg-white rounded-xl border border-[#F3DEC8] overflow-hidden">
+                    <strong className="text-[#1E122C] block truncate">SPF Record</strong>
+                    <span className="font-mono text-[10px] text-[#6B5E77] block truncate" title={dnsRecords.find(r => r.type.includes('SPF'))?.value}>
+                      {dnsRecords.find(r => r.type.includes('SPF'))?.value || 'v=spf1 include:amazonses.com ~all'}
+                    </span>
                   </div>
-                  <div className="p-2.5 bg-white rounded-xl border border-[#F3DEC8]">
-                    <strong className="text-[#1E122C] block">DKIM Key</strong>
-                    <span className="font-mono text-[10px] text-[#6B5E77]">resend._domainkey</span>
+                  <div className="p-2.5 bg-white rounded-xl border border-[#F3DEC8] overflow-hidden">
+                    <strong className="text-[#1E122C] block truncate">DKIM Key</strong>
+                    <span className="font-mono text-[10px] text-[#6B5E77] block truncate" title={dnsRecords.find(r => r.type.includes('DKIM'))?.value}>
+                      {dnsRecords.find(r => r.type.includes('DKIM'))?.value || 'dkim.amazonses.com'}
+                    </span>
                   </div>
-                  <div className="p-2.5 bg-white rounded-xl border border-[#F3DEC8]">
-                    <strong className="text-[#1E122C] block">DMARC Policy</strong>
-                    <span className="font-mono text-[10px] text-[#6B5E77]">p=none; rua=mailto:...</span>
+                  <div className="p-2.5 bg-white rounded-xl border border-[#F3DEC8] overflow-hidden">
+                    <strong className="text-[#1E122C] block truncate">DMARC Policy</strong>
+                    <span className="font-mono text-[10px] text-[#6B5E77] block truncate" title={dnsRecords.find(r => r.type.includes('DMARC'))?.value}>
+                      {dnsRecords.find(r => r.type.includes('DMARC'))?.value || `v=DMARC1; p=none; rua=mailto:dmarc@${cleanDomain}`}
+                    </span>
                   </div>
                 </div>
 
@@ -2171,7 +2111,7 @@ Thanks,
                   <span className="text-[11px] text-[#6B5E77]">Domain: <strong>{cleanDomain}</strong></span>
                   <button
                     type="button"
-                    onClick={handleVerifyDns}
+                    onClick={() => handleVerifyDns()}
                     disabled={isVerifyingDns}
                     className="px-3 py-1.5 bg-white border border-[#F3DEC8] hover:bg-[#FAF5F0] text-xs font-bold text-[#8C1F3D] rounded-xl cursor-pointer flex items-center gap-1.5 shadow-3xs"
                   >
@@ -2230,7 +2170,7 @@ Thanks,
                   <h4 className="text-sm font-black text-[#065F46]">Test Email Dispatched!</h4>
                   <p className="text-xs text-[#047857]">{testSuccessMessage}</p>
                   <div className="text-[10px] text-[#059669] pt-1 font-semibold">
-                    Deliverability Grade: <strong>A+ (99.4%)</strong> • SPF/DKIM: <strong>Verified</strong>
+                    Deliverability Score: <strong>{deliverabilityScore}%</strong> • SPF/DKIM: <strong>{isDnsVerified ? 'Verified' : 'Pending'}</strong>
                   </div>
                 </div>
               ) : (
