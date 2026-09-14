@@ -67,8 +67,19 @@ export const EmailCampaign: React.FC = () => {
     ? activeWorkspace.website.replace(/^https?:\/\//, '').replace(/\/.*$/, '') 
     : 'encaptechno.com');
 
+  const [isRefreshingTelemetry, setIsRefreshingTelemetry] = useState<boolean>(false);
+
+  const formatPercent = (val: any) => {
+    if (val === undefined || val === null || val === '') return '0.0%';
+    const s = String(val).trim();
+    return s.endsWith('%') ? s : `${s}%`;
+  };
+
   const handleTabChange = (tabId: string) => {
     setSearchParams({ tab: tabId });
+    if (tabId === 'analytics') {
+      fetchAnalytics();
+    }
   };
 
   // =========================================================================
@@ -193,6 +204,30 @@ export const EmailCampaign: React.FC = () => {
     // 5. Fetch live Analytics telemetry
     fetchAnalytics();
   }, [cleanDomain]);
+
+  useEffect(() => {
+    if (activeTab === 'analytics') {
+      fetchAnalytics();
+    }
+  }, [activeTab]);
+
+  const campaignsBreakdown = useMemo(() => {
+    if (analyticsData?.campaigns_breakdown && analyticsData.campaigns_breakdown.length > 0) {
+      return analyticsData.campaigns_breakdown;
+    }
+    return campaignsList.map(c => ({
+      id: c.id,
+      name: c.name,
+      subject: c.subject,
+      status: c.status,
+      sent_count: c.recipients || 1,
+      delivered_count: c.recipients || 1,
+      open_count: 0,
+      click_count: 0,
+      open_rate_percent: c.openRate || '0.0%',
+      click_rate_percent: c.clickRate || '0.0%'
+    }));
+  }, [analyticsData, campaignsList]);
 
   const cohortStats = useMemo(() => {
     const total = audienceContacts.length;
@@ -505,6 +540,8 @@ Thanks,
 
       setCampaignsList(prev => [newCamp, ...prev]);
       fetchAnalytics();
+      setTimeout(fetchAnalytics, 800);
+      setTimeout(fetchAnalytics, 2500);
     } catch (err: any) {
       console.error('Launch failed:', err);
       alert(`Campaign dispatch error: ${err.message}`);
@@ -687,9 +724,7 @@ Thanks,
           <span className="text-[10px] font-bold text-[#6B5E77] uppercase tracking-wider block">Average Open Rate</span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-black text-[#8C1F3D]">
-              {analyticsData?.summary?.open_rate 
-                ? (String(analyticsData.summary.open_rate).endsWith('%') ? analyticsData.summary.open_rate : `${analyticsData.summary.open_rate}%`) 
-                : '0.0%'}
+              {formatPercent(analyticsData?.summary?.open_rate || '0.0%')}
             </span>
             <span className="text-xs font-bold text-[#10B981]">
               {parseFloat(analyticsData?.summary?.open_rate || '0') > 20 ? 'Optimal' : 'Standard'}
@@ -1099,7 +1134,7 @@ Thanks,
           ========================================================================= */}
       {activeTab === 'analytics' && (
         <div className="space-y-4">
-          <Card className="p-6 border-[#F3DEC8] bg-white space-y-4">
+          <Card className="p-6 border-[#F3DEC8] bg-white space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#F3DEC8]">
               <div>
                 <h3 className="text-base font-black text-[#1E122C]">Deliverability Health &amp; Engagement Analytics</h3>
@@ -1108,25 +1143,42 @@ Thanks,
                 </p>
               </div>
 
-              <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
-                (isDnsVerified || sesVerifiedDomain)
-                  ? 'text-[#10B981] bg-[#ECFDF5] border-[#A7F3D0]'
-                  : 'text-amber-700 bg-amber-50 border-amber-200'
-              }`}>
-                Inbox Placement: {analyticsData?.summary?.inbox_placement_rate ? `${analyticsData.summary.inbox_placement_rate}%` : (isDnsVerified ? '100%' : 'Pending DNS')}
-              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setIsRefreshingTelemetry(true);
+                    await fetchAnalytics();
+                    setTimeout(() => setIsRefreshingTelemetry(false), 500);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-xl border border-[#F3DEC8] bg-[#FAF5F0] hover:bg-[#F3DEC8]/50 text-xs font-bold text-[#1E122C] transition-all cursor-pointer shadow-3xs"
+                  title="Refresh Live Metrics & Events"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 text-[#8C1F3D] ${isRefreshingTelemetry ? 'animate-spin' : ''}`} />
+                  <span>Refresh</span>
+                </button>
+
+                <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
+                  (isDnsVerified || sesVerifiedDomain)
+                    ? 'text-[#10B981] bg-[#ECFDF5] border-[#A7F3D0]'
+                    : 'text-amber-700 bg-amber-50 border-amber-200'
+                }`}>
+                  Inbox Placement: {formatPercent(analyticsData?.summary?.inbox_placement_rate || (isDnsVerified ? '100%' : 'Pending DNS'))}
+                </span>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
               <div className="p-3.5 rounded-xl border border-[#F3DEC8] bg-[#FAF5F0]/50 space-y-1">
                 <span className="text-[10px] font-bold text-[#6B5E77] uppercase">Total Emails Sent</span>
                 <div className="text-xl font-black text-[#1E122C]">
-                  {(analyticsData?.summary?.total_sent ?? campaignsList.reduce((acc, c) => acc + (c.recipients || 0), 0)).toLocaleString()}
+                  {Math.max(
+                    analyticsData?.summary?.total_sent || 0,
+                    campaignsList.reduce((acc, c) => acc + (c.status === 'completed' || c.status === 'sent' ? (c.recipients || 0) : 0), 0)
+                  ).toLocaleString()}
                 </div>
                 <span className="text-[10.5px] text-[#10B981] font-semibold">
-                  {analyticsData?.summary?.delivery_rate !== undefined
-                    ? `${analyticsData.summary.delivery_rate}% Delivered`
-                    : (campaignsList.length > 0 ? '100% Delivered' : '0.0% Delivered')}
+                  {formatPercent(analyticsData?.summary?.delivery_rate || (campaignsList.length > 0 ? '100%' : '0.0%'))} Delivered
                 </span>
               </div>
               <div className="p-3.5 rounded-xl border border-[#F3DEC8] bg-[#FAF5F0]/50 space-y-1">
@@ -1135,7 +1187,7 @@ Thanks,
                   {(analyticsData?.summary?.unique_opens ?? 0).toLocaleString()}
                 </div>
                 <span className="text-[10.5px] text-[#8C1F3D] font-semibold">
-                  {analyticsData?.summary?.open_rate !== undefined ? `${analyticsData.summary.open_rate}% Open Rate` : '0.0% Open Rate'}
+                  {formatPercent(analyticsData?.summary?.open_rate || '0.0%')} Open Rate
                 </span>
               </div>
               <div className="p-3.5 rounded-xl border border-[#F3DEC8] bg-[#FAF5F0]/50 space-y-1">
@@ -1144,18 +1196,149 @@ Thanks,
                   {(analyticsData?.summary?.unique_clicks ?? 0).toLocaleString()}
                 </div>
                 <span className="text-[10.5px] text-[#EA580C] font-semibold">
-                  {analyticsData?.summary?.click_rate !== undefined ? `${analyticsData.summary.click_rate}% CTR` : '0.0% CTR'}
+                  {formatPercent(analyticsData?.summary?.click_rate || '0.0%')} CTR
                 </span>
               </div>
               <div className="p-3.5 rounded-xl border border-[#F3DEC8] bg-[#FAF5F0]/50 space-y-1">
                 <span className="text-[10px] font-bold text-[#6B5E77] uppercase">Spam Complaints</span>
                 <div className="text-xl font-black text-[#10B981]">
-                  {analyticsData?.summary?.spam_complaints_rate !== undefined ? `${analyticsData.summary.spam_complaints_rate}%` : '0.00%'}
+                  {formatPercent(analyticsData?.summary?.spam_complaints_rate || '0.00%')}
                 </div>
                 <span className="text-[10.5px] text-[#10B981] font-semibold">
                   {analyticsData?.summary?.reputation_status || (isDnsVerified ? 'Optimal (Amazon SES)' : 'Pending DNS Verification')}
                 </span>
               </div>
+            </div>
+
+            {/* Campaign Broadcast Deliverability Breakdown */}
+            <div className="pt-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-black uppercase text-[#6B5E77] tracking-wider">
+                  Campaign Broadcast Deliverability Breakdown
+                </h4>
+                <span className="text-[11px] text-[#8A8294]">
+                  {campaignsBreakdown.length} Broadcast{campaignsBreakdown.length === 1 ? '' : 's'} recorded
+                </span>
+              </div>
+
+              {campaignsBreakdown.length === 0 ? (
+                <div className="p-6 text-center border border-[#F3DEC8] rounded-2xl bg-[#FAF5F0]/40 text-xs text-[#6B5E77]">
+                  No dispatched campaigns found yet. Launch a campaign from Email Studio to inspect real-time deliverability and conversion tracking.
+                </div>
+              ) : (
+                <div className="overflow-x-auto border border-[#F3DEC8] rounded-2xl">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-[#FAF5F0] border-b border-[#F3DEC8] text-[10px] font-black uppercase text-[#6B5E77]">
+                      <tr>
+                        <th className="py-2.5 px-4">Campaign Name &amp; Subject</th>
+                        <th className="py-2.5 px-3 text-center">Status</th>
+                        <th className="py-2.5 px-3 text-center">Sent</th>
+                        <th className="py-2.5 px-3 text-center">Delivered</th>
+                        <th className="py-2.5 px-3 text-center">Unique Opens</th>
+                        <th className="py-2.5 px-3 text-center">Clicks (CTR)</th>
+                        <th className="py-2.5 px-4 text-right">Telemetry Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#F3DEC8]/70 bg-white">
+                      {campaignsBreakdown.map((c: any) => (
+                        <tr key={c.id} className="hover:bg-[#FAF5F0]/30 transition-colors">
+                          <td className="py-3 px-4 min-w-[200px]">
+                            <div className="font-black text-[#1E122C]">{c.name}</div>
+                            <div className="text-[11px] text-[#6B5E77] truncate max-w-xs">{c.subject}</div>
+                          </td>
+                          <td className="py-3 px-3 text-center">
+                            <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0]">
+                              {c.status || 'completed'}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 text-center font-bold text-[#1E122C]">
+                            {c.sent_count || c.performance?.sent || c.recipients || 1}
+                          </td>
+                          <td className="py-3 px-3 text-center font-bold text-[#10B981]">
+                            {c.delivered_count || c.performance?.delivered || c.sent_count || 1}
+                          </td>
+                          <td className="py-3 px-3 text-center font-black text-[#8C1F3D]">
+                            {c.open_count || 0} ({formatPercent(c.open_rate_percent || '0.0%')})
+                          </td>
+                          <td className="py-3 px-3 text-center font-black text-[#EA580C]">
+                            {c.click_count || 0} ({formatPercent(c.click_rate_percent || '0.0%')})
+                          </td>
+                          <td className="py-3 px-4 text-right whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  await backendApi.simulateOpen(c.id);
+                                  await fetchAnalytics();
+                                }}
+                                className="px-2.5 py-1 rounded-lg bg-[#FFEFEA] hover:bg-[#FAD8C7] text-[#8C1F3D] text-[11px] font-bold border border-[#F3DEC8] cursor-pointer inline-flex items-center gap-1 transition-all"
+                                title="Simulate a recipient opening this email"
+                              >
+                                <Eye className="w-3 h-3" />
+                                <span>Simulate Open</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  await backendApi.simulateClick(c.id);
+                                  await fetchAnalytics();
+                                }}
+                                className="px-2.5 py-1 rounded-lg bg-[#FFF7ED] hover:bg-[#FED7AA] text-[#EA580C] text-[11px] font-bold border border-[#FDBA74]/50 cursor-pointer inline-flex items-center gap-1 transition-all"
+                                title="Simulate a recipient clicking a link in this email"
+                              >
+                                <Zap className="w-3 h-3" />
+                                <span>Simulate Click</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Live Telemetry Events Feed */}
+            <div className="pt-3 space-y-3 border-t border-[#F3DEC8]/70">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-black uppercase text-[#6B5E77] tracking-wider">
+                  Live Telemetry Activity Feed
+                </h4>
+                <span className="text-[11px] text-[#8A8294]">
+                  Real-time webhook &amp; tracking pixel signals
+                </span>
+              </div>
+
+              {(!analyticsData?.recent_events || analyticsData.recent_events.length === 0) ? (
+                <div className="p-4 rounded-xl border border-dashed border-[#F3DEC8] bg-[#FAF5F0]/30 text-center text-xs text-[#8A8294]">
+                  No tracking events recorded yet. Click &quot;Simulate Open&quot; or &quot;Simulate Click&quot; above to test pixel tracking.
+                </div>
+              ) : (
+                <div className="divide-y divide-[#F3DEC8]/70 border border-[#F3DEC8] rounded-xl bg-white overflow-hidden max-h-56 overflow-y-auto">
+                  {analyticsData.recent_events.map((evt: any) => (
+                    <div key={evt.id} className="p-3 flex items-center justify-between text-xs hover:bg-[#FAF5F0]/40 transition-colors">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${evt.type === 'opened' ? 'bg-[#8C1F3D]' : 'bg-[#EA580C]'}`} />
+                        <span className="font-bold text-[#1E122C] uppercase text-[10px] tracking-wide">
+                          {evt.type === 'opened' ? 'Email Opened' : 'Link Clicked'}
+                        </span>
+                        <span className="text-[#6B5E77] text-[11px]">
+                          Campaign ID: <span className="font-mono text-[10px] font-bold text-[#1E122C]">{evt.campaign_id}</span>
+                        </span>
+                        {evt.link && (
+                          <span className="text-[10px] text-[#8A8294] truncate max-w-xs">
+                            ({evt.link})
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[10px] text-[#8A8294]">
+                        {evt.timestamp ? new Date(evt.timestamp).toLocaleTimeString() : 'Just now'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </Card>
         </div>

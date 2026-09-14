@@ -264,21 +264,37 @@ export const backendApi = {
     }
     return {
       summary: {
-        total_sent: 18450,
-        total_delivered: 18320,
-        delivery_rate: '99.3%',
-        unique_opens: 9420,
-        open_rate: '51.4%',
-        unique_clicks: 3210,
-        click_rate: '17.5%',
-        spam_complaints_rate: '0.01%',
-        inbox_placement_rate: '99.4%',
-        reputation_status: 'Optimal (Amazon SES Tier 1)'
+        total_sent: 0,
+        total_delivered: 0,
+        delivery_rate: '0.0%',
+        unique_opens: 0,
+        open_rate: '0.0%',
+        unique_clicks: 0,
+        click_rate: '0.0%',
+        spam_complaints_rate: '0.00%',
+        inbox_placement_rate: '100.0%',
+        reputation_status: 'Optimal (Amazon SES)'
       },
       campaigns_breakdown: [],
       recent_events: [],
       subscribers_count: 0
     };
+  },
+
+  async simulateOpen(campaignId: string, contactId: string = 'c-1'): Promise<any> {
+    try {
+      await fetch(`${getApiBaseUrl()}/api/v1/track/open/trk_${campaignId}_${contactId}`);
+    } catch (e) {
+      console.warn('Simulate open error:', e);
+    }
+  },
+
+  async simulateClick(campaignId: string, contactId: string = 'c-1', url: string = 'https://google.com'): Promise<any> {
+    try {
+      await fetch(`${getApiBaseUrl()}/api/v1/track/click/trk_${campaignId}_${contactId}?url=${encodeURIComponent(url)}`);
+    } catch (e) {
+      console.warn('Simulate click error:', e);
+    }
   }
 };
 
