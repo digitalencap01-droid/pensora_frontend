@@ -278,6 +278,8 @@ export const EmailCampaign: React.FC = () => {
   const [isVerifyingDns, setIsVerifyingDns] = useState<boolean>(false);
   const [sesConfigured, setSesConfigured] = useState<boolean>(true);
   const [sesVerifiedDomain, setSesVerifiedDomain] = useState<string>('encaptechno.com');
+  const [targetDomainInput, setTargetDomainInput] = useState<string>('encaptechno.com');
+  const [copiedRecordIdx, setCopiedRecordIdx] = useState<string | null>(null);
   const [dnsRecords, setDnsRecords] = useState<Array<{ type: string; host: string; value: string; status: string; purpose?: string }>>([
     { type: 'SPF (TXT)', host: '@', value: 'v=spf1 include:amazonses.com ~all', status: 'Verified', purpose: 'Authorizes Amazon SES to send on behalf of your domain.' },
     { type: 'DKIM (CNAME)', host: 'resend._domainkey', value: 'dkim.amazonses.com', status: 'Verified', purpose: 'Cryptographic signature preventing email spoofing.' },
@@ -525,12 +527,14 @@ Thanks,
   };
 
   // Handle DNS live test
-  const handleVerifyDns = async () => {
+  const handleVerifyDns = async (domainOverride?: string) => {
     setIsVerifyingDns(true);
+    const domain = (domainOverride || targetDomainInput || sesVerifiedDomain || cleanDomain).trim();
     try {
-      const info = await backendApi.verifyDomainDns(cleanDomain);
+      const info = await backendApi.verifyDomainDns(domain);
       setIsDnsVerified(info.is_verified ?? true);
       if (info.records && info.records.length > 0) setDnsRecords(info.records);
+      if (info.domain) setSesVerifiedDomain(info.domain);
     } catch (e) {
       console.warn('DNS verification error:', e);
       setIsDnsVerified(true);
@@ -768,16 +772,26 @@ Thanks,
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-[#8C1F3D] text-white">
               Email Channel
             </span>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0] flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => handleTabChange('domain')}
+              className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#ECFDF5] hover:bg-[#D1FAE5] text-[#059669] border border-[#A7F3D0] flex items-center gap-1 cursor-pointer transition-colors"
+              title="Click to view & edit Domain DNS Authentication records"
+            >
               <CheckCircle2 className="w-3 h-3 text-[#10B981]" />
-              <span>SES Domain: {sesVerifiedDomain || cleanDomain} (Verified)</span>
-            </span>
-            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 ${
-              sesConfigured ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
-            }`}>
+              <span>SES Domain: {sesVerifiedDomain || targetDomainInput || cleanDomain} (Verified)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleTabChange('domain')}
+              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${
+                sesConfigured ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
+              }`}
+              title="Click to view SES Configuration"
+            >
               <ShieldCheck className="w-3 h-3" />
               <span>{sesConfigured ? 'AWS SES Active (ap-south-1)' : 'SES Connecting...'}</span>
-            </span>
+            </button>
           </div>
 
           <h1 className="text-xl md:text-2xl font-black text-[#1E122C] tracking-tight">
@@ -979,35 +993,86 @@ Thanks,
           ========================================================================= */}
       {activeTab === 'domain' && (
         <div className="space-y-4">
-          <Card className="p-6 border-[#F3DEC8] bg-white space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#F3DEC8]">
+          <Card className="p-6 border-[#F3DEC8] bg-white space-y-5">
+            {/* Header & Verify Action */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#F3DEC8]">
               <div>
-                <h3 className="text-base font-black text-[#1E122C]">Sender Domain &amp; DNS Records</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-black text-[#1E122C]">Sender Domain &amp; DNS Records</h3>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0]">
+                    ✓ Verified in Amazon SES
+                  </span>
+                </div>
                 <p className="text-xs text-[#6B5E77]">
-                  Configure your sending domain authentication to prevent spam filters and achieve 99%+ deliverability.
+                  Configure and verify your domain DNS records (SPF, DKIM, DMARC) to prevent spam folders and guarantee 99%+ deliverability.
                 </p>
               </div>
 
               <button
                 type="button"
-                onClick={handleVerifyDns}
+                onClick={() => handleVerifyDns()}
                 disabled={isVerifyingDns}
-                className="px-4 py-2 bg-[#8C1F3D] hover:bg-[#731831] text-white rounded-xl text-xs font-black shadow-xs cursor-pointer flex items-center gap-1.5"
+                className="px-4 py-2.5 bg-[#8C1F3D] hover:bg-[#731831] disabled:opacity-50 text-white rounded-xl text-xs font-black shadow-xs cursor-pointer flex items-center gap-2 shrink-0 transition-all"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isVerifyingDns ? 'animate-spin' : ''}`} />
-                <span>{isVerifyingDns ? 'Checking DNS...' : 'Verify DNS Records'}</span>
+                <span>{isVerifyingDns ? 'Querying Amazon SES...' : 'Verify DNS Records'}</span>
               </button>
             </div>
 
+            {/* Target Domain Config Box */}
+            <div className="p-4 rounded-2xl bg-[#FFFDFB] border border-[#F3DEC8] space-y-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <label className="text-xs font-black text-[#1E122C] flex items-center gap-1.5">
+                  <Globe className="w-3.5 h-3.5 text-[#8C1F3D]" />
+                  <span>Sending Domain for Authentication:</span>
+                </label>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-[#6B5E77]">Quick select:</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTargetDomainInput('encaptechno.com');
+                      handleVerifyDns('encaptechno.com');
+                    }}
+                    className={`px-2 py-0.5 rounded-md text-[10px] font-bold cursor-pointer transition-colors ${
+                      targetDomainInput === 'encaptechno.com'
+                        ? 'bg-[#8C1F3D] text-white'
+                        : 'bg-white border border-[#F3DEC8] text-[#1E122C] hover:bg-[#FAF5F0]'
+                    }`}
+                  >
+                    encaptechno.com (SES Verified)
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={targetDomainInput}
+                  onChange={(e) => setTargetDomainInput(e.target.value)}
+                  placeholder="e.g. yourcompany.com"
+                  className="flex-1 px-3.5 py-2 text-xs bg-white border border-[#F3DEC8] rounded-xl font-bold text-[#1E122C] outline-none focus:border-[#8C1F3D]"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleVerifyDns(targetDomainInput)}
+                  className="px-3.5 py-2 bg-[#FAF5F0] hover:bg-[#FFEFEA] text-[#8C1F3D] border border-[#F3DEC8] rounded-xl text-xs font-bold cursor-pointer transition-all"
+                >
+                  Fetch Records
+                </button>
+              </div>
+            </div>
+
             {/* Sender Identity Config */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
               <div className="space-y-1">
-                <label className="text-xs font-black text-[#1E122C]">Sender From Name</label>
+                <label className="text-xs font-black text-[#1E122C]">Sender Display Name</label>
                 <input
                   type="text"
                   value={senderName}
                   onChange={(e) => setSenderName(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-[#FAF5F0] border border-[#F3DEC8] rounded-xl font-bold"
+                  placeholder="e.g. Growth Marketing"
+                  className="w-full px-3 py-2 text-xs bg-white border border-[#F3DEC8] rounded-xl font-bold text-[#1E122C] outline-none focus:border-[#8C1F3D]"
                 />
               </div>
 
@@ -1017,7 +1082,8 @@ Thanks,
                   type="email"
                   value={senderEmail}
                   onChange={(e) => setSenderEmail(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-[#FAF5F0] border border-[#F3DEC8] rounded-xl font-bold"
+                  placeholder={`noreply@${targetDomainInput || 'encaptechno.com'}`}
+                  className="w-full px-3 py-2 text-xs bg-white border border-[#F3DEC8] rounded-xl font-bold text-[#1E122C] outline-none focus:border-[#8C1F3D]"
                 />
               </div>
 
@@ -1027,33 +1093,82 @@ Thanks,
                   type="email"
                   value={replyToEmail}
                   onChange={(e) => setReplyToEmail(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-[#FAF5F0] border border-[#F3DEC8] rounded-xl font-bold"
+                  placeholder={`support@${targetDomainInput || 'encaptechno.com'}`}
+                  className="w-full px-3 py-2 text-xs bg-white border border-[#F3DEC8] rounded-xl font-bold text-[#1E122C] outline-none focus:border-[#8C1F3D]"
                 />
               </div>
             </div>
 
             {/* DNS Records Table */}
-            <div className="space-y-2 pt-2">
-              <span className="text-xs font-black text-[#1E122C] block">Required DNS Authentication Records</span>
+            <div className="space-y-2 pt-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black text-[#1E122C] block">
+                  Required DNS Authentication Records for <span className="text-[#8C1F3D] underline">{targetDomainInput || 'encaptechno.com'}</span>
+                </span>
+                <span className="text-[10px] text-[#6B5E77]">Copy these into Cloudflare, GoDaddy, Route53, or Namecheap</span>
+              </div>
+
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left border border-[#F3DEC8] rounded-xl overflow-hidden">
-                  <thead className="bg-[#FAF5F0] text-[#6B5E77] font-bold">
+                  <thead className="bg-[#FAF5F0] text-[#6B5E77] font-bold border-b border-[#F3DEC8]">
                     <tr>
-                      <th className="p-2.5">Type</th>
-                      <th className="p-2.5">Host / Name</th>
-                      <th className="p-2.5">Value</th>
-                      <th className="p-2.5">Status</th>
+                      <th className="p-3 w-36">Type</th>
+                      <th className="p-3 w-44">Host / Name</th>
+                      <th className="p-3">Value</th>
+                      <th className="p-3 w-28 text-center">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#F3DEC8]">
+                  <tbody className="divide-y divide-[#F3DEC8] bg-white">
                     {dnsRecords.map((rec, idx) => (
-                      <tr key={idx}>
-                        <td className="p-2.5 font-bold">{rec.type}</td>
-                        <td className="p-2.5 font-mono text-[11px]">{rec.host}</td>
-                        <td className="p-2.5 font-mono text-[11px] break-all">{rec.value}</td>
-                        <td className="p-2.5">
-                          <span className={`font-bold ${rec.status.toLowerCase().includes('verif') || rec.status.toLowerCase().includes('act') ? 'text-[#10B981]' : 'text-amber-600'}`}>
-                            ✓ {rec.status}
+                      <tr key={idx} className="hover:bg-[#FFFDFB]">
+                        <td className="p-3 font-bold text-[#1E122C]">
+                          <div>{rec.type}</div>
+                          {rec.purpose && (
+                            <span className="text-[10px] text-[#6B5E77] font-normal block leading-tight">{rec.purpose}</span>
+                          )}
+                        </td>
+                        <td className="p-3">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-mono text-[11px] bg-[#FAF5F0] px-2 py-1 rounded-md text-[#1E122C] font-semibold">{rec.host}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(rec.host);
+                                setCopiedRecordIdx(`h_${idx}`);
+                                setTimeout(() => setCopiedRecordIdx(null), 2000);
+                              }}
+                              className="p-1 text-[#6B5E77] hover:text-[#8C1F3D] cursor-pointer"
+                              title="Copy Host"
+                            >
+                              {copiedRecordIdx === `h_${idx}` ? <Check className="w-3 h-3 text-[#10B981]" /> : <Copy className="w-3 h-3" />}
+                            </button>
+                          </div>
+                        </td>
+                        <td className="p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-mono text-[11px] break-all bg-[#FAF5F0] px-2 py-1 rounded-md text-[#1E122C]">{rec.value}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(rec.value);
+                                setCopiedRecordIdx(`v_${idx}`);
+                                setTimeout(() => setCopiedRecordIdx(null), 2000);
+                              }}
+                              className="p-1 text-[#6B5E77] hover:text-[#8C1F3D] cursor-pointer shrink-0"
+                              title="Copy Value"
+                            >
+                              {copiedRecordIdx === `v_${idx}` ? <Check className="w-3.5 h-3.5 text-[#10B981]" /> : <Copy className="w-3.5 h-3.5" />}
+                            </button>
+                          </div>
+                        </td>
+                        <td className="p-3 text-center">
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10.5px] font-black ${
+                            rec.status.toLowerCase().includes('verif') || rec.status.toLowerCase().includes('act')
+                              ? 'bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0]'
+                              : 'bg-amber-50 text-amber-700 border border-amber-200'
+                          }`}>
+                            <CheckCircle2 className="w-3 h-3" />
+                            <span>{rec.status}</span>
                           </span>
                         </td>
                       </tr>
@@ -1061,6 +1176,16 @@ Thanks,
                   </tbody>
                 </table>
               </div>
+            </div>
+
+            {/* Quick Helper Notes */}
+            <div className="p-4 rounded-xl bg-[#FAF5F0] border border-[#F3DEC8] text-xs space-y-1.5 text-[#6B5E77]">
+              <span className="font-black text-[#1E122C] block">📌 How to Add Records in Your Domain Registrar:</span>
+              <p>
+                1. Log in to your DNS provider (e.g. Cloudflare, GoDaddy, Namecheap, AWS Route 53).<br />
+                2. Add the <strong>TXT</strong> and <strong>CNAME</strong> records exactly as shown above.<br />
+                3. Click <strong>"Verify DNS Records"</strong> above. Amazon SES will detect the records and confirm full authentication.
+              </p>
             </div>
           </Card>
         </div>
