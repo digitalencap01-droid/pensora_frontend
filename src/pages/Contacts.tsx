@@ -659,7 +659,7 @@ export const Contacts: React.FC = () => {
   };
 
   // Add Contact Form Submit
-  const handleAddSubmit = (e: React.FormEvent) => {
+  const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName.trim() || !formEmail.trim()) return;
 
@@ -669,6 +669,42 @@ export const Contacts: React.FC = () => {
       formattedPhone = `+91 ${formattedPhone.substring(0, 5)} ${formattedPhone.substring(5)}`;
     }
 
+    const payload = {
+      full_name: formName.trim(),
+      email: normalizedEmail,
+      phone: formattedPhone || null,
+      company_name: formCompany.trim() || null,
+      job_title: formJobTitle.trim() || null,
+      status: formStatus || "new",
+      source: formSource || "manual",
+      lead_score: Number(formScore) || 50,
+      tags: formTags.split(',').map(t => t.trim()).filter(Boolean),
+      custom_fields_json: {
+        Location: formLocation.trim() || null,
+        Priority: formPriority || null,
+        Segment: formSegment.trim() || null,
+        Consent: formConsent ? "yes" : "no"
+      }
+    };
+
+    try {
+      const res = await fetch('http://127.0.0.1:8004/api/v1/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        await fetchLeads();
+        setIsAddModalOpen(false);
+        resetForm();
+        triggerNotification(`Added contact ${formName.trim()} to database!`);
+        return;
+      }
+    } catch (err) {
+      console.error('Failed saving contact to database:', err);
+    }
+
+    // Fallback in-memory
     const newContact: Contact = {
       id: `c_${Date.now()}`,
       name: formName.trim(),
@@ -688,15 +724,14 @@ export const Contacts: React.FC = () => {
       consent: formConsent,
       createdAt: new Date().toISOString()
     };
-
     setContacts(prev => [newContact, ...prev]);
     setIsAddModalOpen(false);
     resetForm();
-    triggerNotification(`Added contact ${newContact.name} successfully!`);
+    triggerNotification(`Added contact ${newContact.name}!`);
   };
 
   // Edit Contact Form Submit
-  const handleEditSubmit = (e: React.FormEvent) => {
+  const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeContact || !formName.trim() || !formEmail.trim()) return;
 
@@ -706,31 +741,39 @@ export const Contacts: React.FC = () => {
       formattedPhone = `+91 ${formattedPhone.substring(0, 5)} ${formattedPhone.substring(5)}`;
     }
 
-    const updatedContact: Contact = {
-      ...activeContact,
-      name: formName.trim(),
+    const payload = {
+      full_name: formName.trim(),
       email: normalizedEmail,
-      phone: formattedPhone,
-      company: formCompany.trim() || undefined,
-      jobTitle: formJobTitle.trim() || undefined,
-      location: formLocation.trim() || undefined,
-      source: formSource,
-      lifecycleStage: formStage,
-      leadStatus: formStatus,
-      leadScore: Number(formScore),
-      priority: formPriority,
-      segment: formSegment.trim() || undefined,
+      phone: formattedPhone || null,
+      company_name: formCompany.trim() || null,
+      job_title: formJobTitle.trim() || null,
+      status: formStatus || "new",
+      source: formSource || "manual",
+      lead_score: Number(formScore) || 50,
       tags: formTags.split(',').map(t => t.trim()).filter(Boolean),
-      owner: formOwner.trim() || undefined,
-      consent: formConsent
+      custom_fields_json: {
+        Location: formLocation.trim() || null,
+        Priority: formPriority || null,
+        Segment: formSegment.trim() || null,
+        Consent: formConsent ? "yes" : "no"
+      }
     };
 
-    setContacts(prev => prev.map(c => c.id === activeContact.id ? updatedContact : c));
-    setActiveContact(updatedContact);
+    try {
+      const res = await fetch(`http://127.0.0.1:8004/api/v1/leads/${activeContact.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        await fetchLeads();
+      }
+    } catch (err) {
+      console.error('Failed editing contact in DB:', err);
+    }
     setIsEditModalOpen(false);
-    triggerNotification(`Updated profile for ${updatedContact.name}`);
+    triggerNotification(`Updated profile for ${formName.trim()}`);
   };
-
   const triggerEdit = (contact: Contact) => {
     setActiveContact(contact);
     setFormName(contact.name);
