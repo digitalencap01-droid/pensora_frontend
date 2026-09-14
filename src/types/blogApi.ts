@@ -178,6 +178,16 @@ export interface WebflowPublishResponse {
   dashboard_url?: string | null;
 }
 
+export interface LinkedInStatusResponse {
+  connected: boolean;
+  linkedin_name?: string | null;
+}
+
+export interface LinkedInPublishResult {
+  post_urn: string;
+  post_url?: string | null;
+}
+
 export interface ApiErrorPayload {
   stage?: string;
   message?: string;

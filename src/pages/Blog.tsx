@@ -51,7 +51,8 @@ import {
   PieChart,
   ShoppingBag,
   Activity,
-  Send
+  Send,
+  Linkedin
 } from 'lucide-react';
 import { useMarketing } from '../context/MarketingContext';
 import {
@@ -194,7 +195,7 @@ function artifactsToArticle(
 }
 
 
-export type PublishingPlatformId = 'webflow' | 'wordpress' | 'shopify' | 'ghost' | 'medium' | 'webhook' | 'internal';
+export type PublishingPlatformId = 'webflow' | 'linkedin';
 
 export interface PlatformConnection {
   id: PublishingPlatformId;
@@ -221,57 +222,12 @@ const DEFAULT_CONNECTIONS: PlatformConnection[] = [
     statusMode: 'live'
   },
   {
-    id: 'wordpress',
-    name: 'WordPress',
-    category: 'Open Source CMS',
-    description: 'Publish via WordPress REST API & Application Passwords',
+    id: 'linkedin',
+    name: 'LinkedIn',
+    category: 'Professional Network',
+    description: 'Publish articles & insights directly to your LinkedIn profile/page',
     connected: false,
-    siteUrl: 'https://myblog.com',
-    username: 'admin',
-    statusMode: 'draft'
-  },
-  {
-    id: 'shopify',
-    name: 'Shopify Blog',
-    category: 'E-commerce CMS',
-    description: 'Sync articles to your Shopify storefront blog channel',
-    connected: false,
-    siteUrl: 'mystore.myshopify.com',
-    statusMode: 'draft'
-  },
-  {
-    id: 'ghost',
-    name: 'Ghost CMS',
-    category: 'Creator Publication',
-    description: 'Send to Ghost Admin API with tags and author attribution',
-    connected: false,
-    siteUrl: 'https://myblog.ghost.io',
-    statusMode: 'draft'
-  },
-  {
-    id: 'medium',
-    name: 'Medium',
-    category: 'Story Network',
-    description: 'Cross-post to Medium publication with canonical tags',
-    connected: false,
-    statusMode: 'draft'
-  },
-  {
-    id: 'webhook',
-    name: 'Custom Webhook',
-    category: 'Headless / API',
-    description: 'POST clean JSON/HTML payload to custom backend or Strapi',
-    connected: false,
-    siteUrl: 'https://api.mycustomsite.com/webhooks/blog',
-    statusMode: 'live'
-  },
-  {
-    id: 'internal',
-    name: 'GrowWise Live Blog',
-    category: 'Built-in Portal',
-    description: 'Instant zero-configuration hosting on /blogs public showcase',
-    connected: true,
-    siteUrl: '/blogs',
+    siteUrl: '',
     statusMode: 'live'
   }
 ];
@@ -296,8 +252,13 @@ export const Blog: React.FC = () => {
   // Platform Connections state with localStorage persistence
   const [platformConnections, setPlatformConnections] = useState<PlatformConnection[]>(() => {
     try {
-      const stored = localStorage.getItem('growwise_blog_platform_connections');
-      if (stored) return JSON.parse(stored);
+      const stored = localStorage.getItem('growwise_blog_platform_connections_v2');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.every(p => p.id === 'webflow' || p.id === 'linkedin')) {
+          return parsed;
+        }
+      }
     } catch {}
     return DEFAULT_CONNECTIONS;
   });
@@ -320,34 +281,44 @@ export const Blog: React.FC = () => {
   const [isPublishing, setIsPublishing] = useState<boolean>(false);
   const [publishSuccessMsg, setPublishSuccessMsg] = useState<string | null>(null);
 
-  // Sync Webflow backend connection status on mount
+  // Sync Webflow and LinkedIn backend connection status on mount
   useEffect(() => {
-    blogApi.getWebflowStatus()
-      .then((status) => {
-        setPlatformConnections(prev => {
-          const updated = prev.map(p => {
-            if (p.id === 'webflow') {
-              return {
-                ...p,
-                connected: status.connected,
-                siteUrl: status.site_name ? `${status.site_name} (${status.collection_name || 'Blogs'})` : p.siteUrl
-              };
-            }
-            return p;
-          });
-          try {
-            localStorage.setItem('growwise_blog_platform_connections', JSON.stringify(updated));
-          } catch {}
-          return updated;
+    Promise.allSettled([
+      blogApi.getWebflowStatus(),
+      blogApi.getLinkedInStatus()
+    ]).then(([webflowRes, linkedinRes]) => {
+      setPlatformConnections(prev => {
+        const updated = prev.map(p => {
+          if (p.id === 'webflow' && webflowRes.status === 'fulfilled') {
+            const status = webflowRes.value;
+            return {
+              ...p,
+              connected: status.connected,
+              siteUrl: status.site_name ? `${status.site_name} (${status.collection_name || 'Blogs'})` : p.siteUrl
+            };
+          }
+          if (p.id === 'linkedin' && linkedinRes.status === 'fulfilled') {
+            const status = linkedinRes.value;
+            return {
+              ...p,
+              connected: status.connected,
+              siteUrl: status.linkedin_name ? `@${status.linkedin_name}` : p.siteUrl
+            };
+          }
+          return p;
         });
-      })
-      .catch(() => {});
+        try {
+          localStorage.setItem('growwise_blog_platform_connections_v2', JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+    }).catch(() => {});
   }, []);
 
   const saveConnections = (updated: PlatformConnection[]) => {
     setPlatformConnections(updated);
     try {
-      localStorage.setItem('growwise_blog_platform_connections', JSON.stringify(updated));
+      localStorage.setItem('growwise_blog_platform_connections_v2', JSON.stringify(updated));
     } catch {}
   };
 
@@ -383,13 +354,21 @@ export const Blog: React.FC = () => {
     setConfiguringPlatform(null);
   };
 
-  const handleDisconnectPlatform = (id: PublishingPlatformId) => {
+  const handleDisconnectPlatform = async (id: PublishingPlatformId) => {
+    if (id === 'linkedin') {
+      try {
+        await blogApi.disconnectLinkedIn();
+      } catch (err) {
+        console.error('Failed to disconnect LinkedIn on backend', err);
+      }
+    }
     const updated = platformConnections.map(p => {
       if (p.id === id) {
         return {
           ...p,
           connected: false,
           apiKey: '',
+          siteUrl: '',
           lastSynced: undefined
         };
       }
@@ -401,6 +380,17 @@ export const Blog: React.FC = () => {
     }
   };
 
+  const handleConnectLinkedIn = async () => {
+    try {
+      const res = await blogApi.getLinkedInConnectUrl('/blog');
+      if (res.authorize_url) {
+        window.location.href = res.authorize_url;
+      }
+    } catch (err: any) {
+      alert(`Could not initiate LinkedIn connection: ${err.message || 'Error'}`);
+    }
+  };
+
   const handlePublishToPlatform = async (article: BlogArticle, platformId: PublishingPlatformId) => {
     setIsPublishing(true);
     setPublishSuccessMsg(null);
@@ -408,24 +398,16 @@ export const Blog: React.FC = () => {
       if (platformId === 'webflow') {
         const res = await blogApi.publishToWebflow(article.id);
         setPublishSuccessMsg(`Published to Webflow CMS (${res.status})! Item ID: ${res.item_id}`);
-      } else if (platformId === 'wordpress') {
-        await new Promise(r => setTimeout(r, 1200));
-        setPublishSuccessMsg(`Successfully published to WordPress as Draft post! Title: "${article.title}"`);
-      } else if (platformId === 'shopify') {
-        await new Promise(r => setTimeout(r, 1200));
-        setPublishSuccessMsg(`Synced to Shopify Storefront Blog!`);
-      } else if (platformId === 'ghost') {
-        await new Promise(r => setTimeout(r, 1200));
-        setPublishSuccessMsg(`Sent to Ghost CMS editorial queue.`);
-      } else if (platformId === 'medium') {
-        await new Promise(r => setTimeout(r, 1200));
-        setPublishSuccessMsg(`Published story draft to Medium!`);
-      } else if (platformId === 'webhook') {
-        await new Promise(r => setTimeout(r, 1000));
-        setPublishSuccessMsg(`Payload dispatched to custom webhook endpoint successfully.`);
-      } else {
-        await new Promise(r => setTimeout(r, 800));
-        setPublishSuccessMsg(`Live on GrowWise Blog portal (/blogs/${article.slug})!`);
+      } else if (platformId === 'linkedin') {
+        const siteOrigin = typeof window !== 'undefined' ? window.location.origin : 'https://growwise.app';
+        const articleUrl = `${siteOrigin}/blogs/${article.slug || 'article'}`;
+        const res = await blogApi.publishToLinkedIn({
+          article_title: article.title,
+          article_summary: article.excerpt || (article.contentMarkdown ? article.contentMarkdown.slice(0, 250) : ''),
+          article_url: articleUrl,
+          commentary: `🚀 Just published: "${article.title}"!\n\nRead our full breakdown here:`
+        });
+        setPublishSuccessMsg(`Published to LinkedIn! Post ID: ${res.post_urn}`);
       }
     } catch (err: any) {
       alert(`Publishing failed: ${err.message || 'Unknown error'}`);
@@ -794,12 +776,10 @@ export const Blog: React.FC = () => {
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div className="grid grid-cols-2 gap-2.5">
                       {[
-                        { id: 'webflow' as const, label: 'Webflow CMS', tag: 'CMS' },
-                        { id: 'wordpress' as const, label: 'WordPress', tag: 'REST' },
-                        { id: 'shopify' as const, label: 'Shopify Blog', tag: 'Store' },
-                        { id: 'internal' as const, label: 'GrowWise Blog', tag: 'Live' }
+                        { id: 'webflow' as const, label: 'Webflow CMS', tag: 'Visual CMS' },
+                        { id: 'linkedin' as const, label: 'LinkedIn', tag: 'Social Network' }
                       ].map(item => {
                         const conn = platformConnections.find(p => p.id === item.id);
                         const isSelected = targetPlatform === item.id;
@@ -1135,12 +1115,7 @@ export const Blog: React.FC = () => {
                                   isSelected ? 'bg-[#DB2777] text-white' : 'bg-[#FAF8FE] text-[#1E122C] border border-[#EDE8F8]'
                                 }`}>
                                   {platform.id === 'webflow' && 'W'}
-                                  {platform.id === 'wordpress' && 'WP'}
-                                  {platform.id === 'shopify' && 'S'}
-                                  {platform.id === 'ghost' && 'G'}
-                                  {platform.id === 'medium' && 'M'}
-                                  {platform.id === 'webhook' && 'API'}
-                                  {platform.id === 'internal' && '★'}
+                                  {platform.id === 'linkedin' && <Linkedin className="w-4 h-4" />}
                                 </div>
                                 <div>
                                   <h4 className="text-xs font-black text-[#1E122C] flex items-center gap-1.5">
@@ -1945,12 +1920,7 @@ export const Blog: React.FC = () => {
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-[#FAF8FE] border border-[#EDE8F8] text-[#DB2777] flex items-center justify-center font-black text-sm">
                   {configuringPlatform.id === 'webflow' && 'W'}
-                  {configuringPlatform.id === 'wordpress' && 'WP'}
-                  {configuringPlatform.id === 'shopify' && 'S'}
-                  {configuringPlatform.id === 'ghost' && 'G'}
-                  {configuringPlatform.id === 'medium' && 'M'}
-                  {configuringPlatform.id === 'webhook' && 'API'}
-                  {configuringPlatform.id === 'internal' && '★'}
+                  {configuringPlatform.id === 'linkedin' && <Linkedin className="w-5 h-5 text-[#0077B5]" />}
                 </div>
                 <div>
                   <h3 className="text-sm font-black text-[#1E122C] flex items-center gap-2">
@@ -1976,46 +1946,6 @@ export const Blog: React.FC = () => {
 
             {/* Platform Specific Form */}
             <div className="space-y-4 text-left">
-              {configuringPlatform.id === 'wordpress' && (
-                <>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-[#1E122C]">WordPress Site URL</label>
-                    <input
-                      type="url"
-                      value={configForm.siteUrl}
-                      onChange={(e) => setConfigForm(prev => ({ ...prev, siteUrl: e.target.value }))}
-                      placeholder="https://yourblog.com"
-                      className="w-full bg-white border border-[#EDE8F8] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none focus:border-[#DB2777]"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-[#1E122C]">Admin Username</label>
-                      <input
-                        type="text"
-                        value={configForm.username}
-                        onChange={(e) => setConfigForm(prev => ({ ...prev, username: e.target.value }))}
-                        placeholder="admin"
-                        className="w-full bg-white border border-[#EDE8F8] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none focus:border-[#DB2777]"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-[#1E122C]">Application Password</label>
-                      <input
-                        type="password"
-                        value={configForm.apiKey}
-                        onChange={(e) => setConfigForm(prev => ({ ...prev, apiKey: e.target.value }))}
-                        placeholder="xxxx xxxx xxxx xxxx"
-                        className="w-full bg-white border border-[#EDE8F8] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none focus:border-[#DB2777]"
-                      />
-                    </div>
-                  </div>
-                  <p className="text-[10.5px] text-[#6B5E77] bg-[#FAF8FE] p-3 rounded-xl border border-[#EDE8F8]">
-                    💡 <strong>Tip:</strong> In WordPress Admin, navigate to <em>Users → Profile → Application Passwords</em> to generate an application key without sharing your main password.
-                  </p>
-                </>
-              )}
-
               {configuringPlatform.id === 'webflow' && (
                 <>
                   <div className="space-y-1">
@@ -2040,103 +1970,44 @@ export const Blog: React.FC = () => {
                   </div>
                   <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-[11px] font-bold text-emerald-800 flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Backend integration active with Webflow API server.</span>
+                    <span>Backend integration active with Webflow API server (Encaptechno).</span>
                   </div>
                 </>
               )}
 
-              {configuringPlatform.id === 'shopify' && (
-                <>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-[#1E122C]">Shopify Store Domain</label>
-                    <input
-                      type="text"
-                      value={configForm.siteUrl}
-                      onChange={(e) => setConfigForm(prev => ({ ...prev, siteUrl: e.target.value }))}
-                      placeholder="yourstore.myshopify.com"
-                      className="w-full bg-white border border-[#EDE8F8] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none focus:border-[#DB2777]"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-[#1E122C]">Admin API Access Token</label>
-                    <input
-                      type="password"
-                      value={configForm.apiKey}
-                      onChange={(e) => setConfigForm(prev => ({ ...prev, apiKey: e.target.value }))}
-                      placeholder="shpat_xxxxxxxxxxxxxxxxxxxx"
-                      className="w-full bg-white border border-[#EDE8F8] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none focus:border-[#DB2777]"
-                    />
-                  </div>
-                </>
-              )}
-
-              {configuringPlatform.id === 'ghost' && (
-                <>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-[#1E122C]">Ghost Admin API URL</label>
-                    <input
-                      type="url"
-                      value={configForm.siteUrl}
-                      onChange={(e) => setConfigForm(prev => ({ ...prev, siteUrl: e.target.value }))}
-                      placeholder="https://yourblog.ghost.io"
-                      className="w-full bg-white border border-[#EDE8F8] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none focus:border-[#DB2777]"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-[#1E122C]">Ghost Admin API Key</label>
-                    <input
-                      type="password"
-                      value={configForm.apiKey}
-                      onChange={(e) => setConfigForm(prev => ({ ...prev, apiKey: e.target.value }))}
-                      placeholder="66d34883...:abcdef0123456789..."
-                      className="w-full bg-white border border-[#EDE8F8] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none focus:border-[#DB2777]"
-                    />
-                  </div>
-                </>
-              )}
-
-              {configuringPlatform.id === 'medium' && (
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-[#1E122C]">Medium Integration Token</label>
-                  <input
-                    type="password"
-                    value={configForm.apiKey}
-                    onChange={(e) => setConfigForm(prev => ({ ...prev, apiKey: e.target.value }))}
-                    placeholder="2xxxxxxxxxxxxxxxxxxxxxxxx"
-                    className="w-full bg-white border border-[#EDE8F8] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none focus:border-[#DB2777]"
-                  />
-                </div>
-              )}
-
-              {configuringPlatform.id === 'webhook' && (
-                <>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-[#1E122C]">Webhook Destination URL</label>
-                    <input
-                      type="url"
-                      value={configForm.siteUrl}
-                      onChange={(e) => setConfigForm(prev => ({ ...prev, siteUrl: e.target.value }))}
-                      placeholder="https://api.yourdomain.com/webhooks/blog"
-                      className="w-full bg-white border border-[#EDE8F8] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none focus:border-[#DB2777]"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-[#1E122C]">Secret Bearer Token (Optional)</label>
-                    <input
-                      type="password"
-                      value={configForm.apiKey}
-                      onChange={(e) => setConfigForm(prev => ({ ...prev, apiKey: e.target.value }))}
-                      placeholder="Bearer token or secret signature"
-                      className="w-full bg-white border border-[#EDE8F8] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none focus:border-[#DB2777]"
-                    />
-                  </div>
-                </>
-              )}
-
-              {configuringPlatform.id === 'internal' && (
-                <div className="p-4 bg-[#FAF8FE] border border-[#EDE8F8] rounded-2xl text-xs space-y-2">
-                  <p className="font-bold text-[#1E122C]">GrowWise Built-in Public Blog is always connected.</p>
-                  <p className="text-[#6B5E77]">Published articles are immediately visible on your live public portal at <code className="text-[#DB2777]">/blogs</code>.</p>
+              {configuringPlatform.id === 'linkedin' && (
+                <div className="space-y-3">
+                  {configuringPlatform.connected ? (
+                    <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl space-y-2">
+                      <div className="flex items-center gap-2 text-emerald-800 font-bold text-xs">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span>Connected to LinkedIn</span>
+                      </div>
+                      <p className="text-[11px] text-emerald-700 font-medium">
+                        Account: <span className="font-bold">{configuringPlatform.siteUrl || 'LinkedIn Profile'}</span>
+                      </p>
+                      <p className="text-[10.5px] text-[#6B5E77]">
+                        Articles and posts will be published directly to your LinkedIn account using official OAuth credentials.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-[#FAF8FE] border border-[#EDE8F8] rounded-2xl space-y-3">
+                      <div className="space-y-1">
+                        <h4 className="text-xs font-bold text-[#1E122C]">Authorize via LinkedIn OAuth 2.0</h4>
+                        <p className="text-[11px] text-[#6B5E77] leading-relaxed">
+                          Connect your LinkedIn profile to publish blog articles and thought leadership posts directly to your network.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleConnectLinkedIn}
+                        className="w-full py-2.5 px-4 bg-[#0077B5] hover:bg-[#006097] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
+                      >
+                        <Linkedin className="w-4 h-4" />
+                        <span>Sign in with LinkedIn</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 

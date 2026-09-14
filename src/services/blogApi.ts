@@ -7,6 +7,8 @@ import {
   UsageSummary,
   WebflowPublishResponse,
   WebflowStatusResponse,
+  LinkedInStatusResponse,
+  LinkedInPublishResult,
 } from '../types/blogApi';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -98,6 +100,39 @@ export const blogApi = {
   publishToWebflow(projectId: string): Promise<WebflowPublishResponse> {
     return request<WebflowPublishResponse>(`/api/v1/webflow/projects/${projectId}/publish`, {
       method: 'POST',
+    });
+  },
+
+  getLinkedInStatus(): Promise<LinkedInStatusResponse> {
+    return request<LinkedInStatusResponse>('/api/v1/linkedin/status');
+  },
+
+  getLinkedInConnectUrl(returnPath = '/blog'): Promise<{ authorize_url: string }> {
+    return request<{ authorize_url: string }>(`/api/v1/linkedin/connect?return_path=${encodeURIComponent(returnPath)}`);
+  },
+
+  disconnectLinkedIn(): Promise<void> {
+    return request<void>('/api/v1/linkedin/disconnect', {
+      method: 'DELETE',
+    });
+  },
+
+  publishToLinkedIn(payload: {
+    article_title: string;
+    article_summary?: string;
+    article_url: string;
+    commentary?: string;
+  }): Promise<LinkedInPublishResult> {
+    return request<LinkedInPublishResult>('/api/v1/linkedin/publish', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  publishLinkedInPost(text: string): Promise<LinkedInPublishResult> {
+    return request<LinkedInPublishResult>('/api/v1/linkedin/publish-post', {
+      method: 'POST',
+      body: JSON.stringify({ text }),
     });
   },
 };
