@@ -253,7 +253,7 @@ export const Contacts: React.FC = () => {
         if (data.items) {
           const mapped: Contact[] = data.items.map((item: any) => ({
             id: item.id,
-            name: item.full_name || `${item.first_name || ''} ${item.last_name || ''}`.trim() || 'Unnamed Lead',
+            name: item.full_name || `${item.first_name || ''} ${item.last_name || ''}`.trim() || item.first_name || item.last_name || (item.email ? item.email.split('@')[0] : 'Unnamed Lead'),
             email: item.email || '',
             phone: item.phone || '',
             company: item.company_name || 'Direct Lead',
@@ -671,6 +671,8 @@ export const Contacts: React.FC = () => {
 
     const payload = {
       full_name: formName.trim(),
+      first_name: formName.trim().split(' ')[0],
+      last_name: formName.trim().split(' ').slice(1).join(' ') || null,
       email: normalizedEmail,
       phone: formattedPhone || null,
       company_name: formCompany.trim() || null,
@@ -743,6 +745,8 @@ export const Contacts: React.FC = () => {
 
     const payload = {
       full_name: formName.trim(),
+      first_name: formName.trim().split(' ')[0],
+      last_name: formName.trim().split(' ').slice(1).join(' ') || null,
       email: normalizedEmail,
       phone: formattedPhone || null,
       company_name: formCompany.trim() || null,
