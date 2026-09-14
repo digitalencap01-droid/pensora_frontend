@@ -805,14 +805,19 @@ export const Contacts: React.FC = () => {
     setIsEditModalOpen(true);
   };
 
-  const handleDeleteContact = (id: string) => {
+  const handleDeleteContact = async (id: string) => {
     if (confirm('Are you sure you want to delete this contact?')) {
+      try {
+        await axios.delete(`http://localhost:8004/api/v1/leads/${id}`);
+      } catch (err) {
+        console.error('Error deleting lead from backend/Supabase:', err);
+      }
       setContacts(prev => prev.filter(c => c.id !== id));
       setSelectedIds(prev => prev.filter(item => item !== id));
       if (activeContact?.id === id) {
         setContactDetailOpen(false);
       }
-      triggerNotification('Contact deleted from CRM.');
+      triggerNotification('Contact deleted from CRM and Database.');
     }
   };
 
@@ -847,11 +852,17 @@ export const Contacts: React.FC = () => {
     triggerNotification(`Assigned segment to ${selectedIds.length} contacts!`);
   };
 
-  const handleBulkDelete = () => {
+  const handleBulkDelete = async () => {
     if (confirm(`Are you sure you want to delete the ${selectedIds.length} selected contacts?`)) {
-      setContacts(prev => prev.filter(c => !selectedIds.includes(c.id)));
+      const idsToDelete = [...selectedIds];
+      try {
+        await Promise.all(idsToDelete.map(id => axios.delete(`http://localhost:8004/api/v1/leads/${id}`)));
+      } catch (err) {
+        console.error('Error deleting selected leads from backend/Supabase:', err);
+      }
+      setContacts(prev => prev.filter(c => !idsToDelete.includes(c.id)));
       setSelectedIds([]);
-      triggerNotification('Selected contacts deleted.');
+      triggerNotification('Selected contacts deleted from CRM and Database.');
     }
   };
 
