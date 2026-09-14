@@ -1617,34 +1617,6 @@ export const Blog: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Dynamic AI Outline Section (Only when topic is entered) */}
-                  {topic.trim().length >= 3 && (
-                    <div className="space-y-2 pt-2 border-t border-[#EDE8F8]">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10.5px] font-black uppercase tracking-wider text-[#6B5E77]">
-                          AI Outline Architecture
-                        </span>
-                        <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
-                          <Sparkles className="w-3 h-3 text-[#DB2777]" /> Auto-Synthesized
-                        </span>
-                      </div>
-
-                      <div className="space-y-1.5 text-xs font-bold text-[#1E122C]">
-                        {[
-                          `1. Executive Overview & Intent Hook for "${topic.slice(0, 30)}${topic.length > 30 ? '...' : ''}"`,
-                          `2. Current Market Benchmarks & Landscape Analysis`,
-                          `3. Step-by-Step Strategic Implementation Framework`,
-                          `4. Common Pitfalls & High-Converting Solutions`,
-                          `5. Key Takeaways, ROI Metrics & Action Plan`
-                        ].map((chap, idx) => (
-                          <div key={idx} className="p-2 rounded-xl bg-white border border-[#EDE8F8] flex items-center justify-between shadow-3xs">
-                            <span className="truncate pr-2 text-[11px] font-bold">{chap}</span>
-                            <span className="text-[9.5px] text-[#DB2777] font-mono shrink-0">H2</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
 
                   {/* Big Glowing Launch Button */}
                   <div className="pt-2">
