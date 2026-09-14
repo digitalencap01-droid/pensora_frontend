@@ -212,5 +212,6 @@ export interface Contact {
   tags: string[];
   owner?: string;
   consent: boolean;
+  status?: string;
   createdAt: string;
 }

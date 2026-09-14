@@ -124,6 +124,7 @@ export const EmailCampaign: React.FC = () => {
   const [audienceContacts, setAudienceContacts] = useState<Contact[]>([]);
   const [selectedContactIds, setSelectedContactIds] = useState<string[]>([]);
   const [audienceSearch, setAudienceSearch] = useState<string>('');
+  const [campaignsList, setCampaignsList] = useState<any[]>([]);
 
   const fetchAnalytics = async () => {
     try {
@@ -359,9 +360,6 @@ Thanks,
     return d.toISOString().split('T')[0];
   });
   const [scheduleTime, setScheduleTime] = useState<string>('10:00');
-
-  // Broadcast History list (Loaded dynamically from API)
-  const [campaignsList, setCampaignsList] = useState<any[]>([]);
 
   // Handle DNS live test
   const generateHtmlBody = () => {
