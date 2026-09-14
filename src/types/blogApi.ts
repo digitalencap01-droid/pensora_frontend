@@ -188,6 +188,23 @@ export interface LinkedInPublishResult {
   post_url?: string | null;
 }
 
+export type LinkedInContentType = 'post' | 'article';
+
+export interface LinkedInGenerateRequest {
+  content_type: LinkedInContentType;
+  topic: string;
+  tone?: string | null;
+  use_web_search?: boolean;
+  document_id?: string | null;
+  image_batch_id?: string | null;
+}
+
+export interface LinkedInGenerateResult {
+  content_type: LinkedInContentType;
+  text: string;
+  hashtags: string[];
+}
+
 export interface ApiErrorPayload {
   stage?: string;
   message?: string;

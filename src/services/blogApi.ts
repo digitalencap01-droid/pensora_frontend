@@ -9,6 +9,8 @@ import {
   WebflowStatusResponse,
   LinkedInStatusResponse,
   LinkedInPublishResult,
+  LinkedInGenerateRequest,
+  LinkedInGenerateResult,
 } from '../types/blogApi';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -133,6 +135,13 @@ export const blogApi = {
     return request<LinkedInPublishResult>('/api/v1/linkedin/publish-post', {
       method: 'POST',
       body: JSON.stringify({ text }),
+    });
+  },
+
+  generateLinkedInContent(payload: LinkedInGenerateRequest): Promise<LinkedInGenerateResult> {
+    return request<LinkedInGenerateResult>('/api/v1/linkedin/generate', {
+      method: 'POST',
+      body: JSON.stringify(payload),
     });
   },
 };
