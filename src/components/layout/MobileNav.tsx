@@ -41,7 +41,6 @@ interface ChannelNavConfig {
   title: string;
   icon: React.ElementType;
   primaryRoute: string;
-  badge?: string;
   subItems: SubMenuItem[];
 }
 
@@ -51,7 +50,6 @@ const ALL_CHANNEL_CONFIGS: Record<string, ChannelNavConfig> = {
     title: 'AI Blog Writer',
     icon: FileText,
     primaryRoute: '/blog?tab=write',
-    badge: 'Articles',
     subItems: [
       { to: '/blog?tab=write', label: 'Write New Article', icon: Sparkles },
       { to: '/blog?tab=library', label: 'Post History & Drafts', icon: BookOpen },
@@ -63,7 +61,6 @@ const ALL_CHANNEL_CONFIGS: Record<string, ChannelNavConfig> = {
     title: 'LinkedIn',
     icon: Briefcase,
     primaryRoute: '/content',
-    badge: 'B2B',
     subItems: [
       { to: '/content', label: 'Post Creator & Studio', icon: Sparkles },
       { to: '/contacts?source=LinkedIn', label: 'LinkedIn Leads & Prospects', icon: Users },
@@ -75,7 +72,6 @@ const ALL_CHANNEL_CONFIGS: Record<string, ChannelNavConfig> = {
     title: 'SEO Optimization',
     icon: Search,
     primaryRoute: '/website',
-    badge: 'Organic',
     subItems: [
       { to: '/website', label: 'SEO Audit & Health', icon: Globe },
       { to: '/discover', label: 'Keyword & Competitors', icon: Compass },
@@ -84,39 +80,34 @@ const ALL_CHANNEL_CONFIGS: Record<string, ChannelNavConfig> = {
   },
   sem: {
     id: 'sem',
-    title: 'SEM & Paid Ads',
-    icon: DollarSign,
+    title: 'Paid Ads',
+    icon: Zap,
     primaryRoute: '/ads',
-    badge: 'Paid',
     subItems: [
-      { to: '/ads', label: 'Ad Campaigns & Funnels', icon: Target },
-      { to: '/content', label: 'Ad Creative Studio', icon: Sparkles },
+      { to: '/ads', label: 'Ad Manager & Funnels', icon: Target },
+      { to: '/content', label: 'Creative Studio', icon: Sparkles },
       { to: '/results', label: 'ROAS & Conversions', icon: BarChart3 }
     ]
   },
   email: {
     id: 'email',
-    title: 'Email Campaign',
+    title: 'Email',
     icon: Mail,
     primaryRoute: '/email?tab=builder',
-    badge: 'Email',
     subItems: [
-      { to: '/email?tab=builder', label: 'Email Studio & Campaigns', icon: Sparkles },
+      { to: '/email?tab=builder', label: 'Email Studio', icon: Sparkles },
       { to: '/email?tab=domain', label: 'Sender Domain & DNS', icon: Globe },
-      { to: '/email?tab=subscribers', label: 'Audience & Contacts', icon: Users },
       { to: '/email?tab=analytics', label: 'Deliverability & Analytics', icon: BarChart3 }
     ]
   },
   whatsapp: {
     id: 'whatsapp',
-    title: 'WhatsApp Campaign',
+    title: 'WhatsApp',
     icon: MessageSquare,
     primaryRoute: '/whatsapp?tab=broadcast',
-    badge: 'Direct',
     subItems: [
       { to: '/whatsapp?tab=broadcast', label: 'Broadcast Studio', icon: Sparkles },
       { to: '/whatsapp?tab=templates', label: 'Message Templates', icon: BookOpen },
-      { to: '/whatsapp?tab=audiences', label: 'Audience Lists & Opt-ins', icon: Users },
       { to: '/whatsapp?tab=automation', label: 'Automated Bot & Alerts', icon: Zap },
       { to: '/whatsapp?tab=analytics', label: 'Delivery & Read Rates', icon: BarChart3 }
     ]
@@ -126,7 +117,6 @@ const ALL_CHANNEL_CONFIGS: Record<string, ChannelNavConfig> = {
     title: 'Social Media',
     icon: Share2,
     primaryRoute: '/content',
-    badge: 'Viral',
     subItems: [
       { to: '/content', label: 'Reels & Post Studio', icon: Sparkles },
       { to: '/plan', label: 'Publishing Calendar', icon: Calendar },
@@ -214,46 +204,39 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose }) => {
     const ChannelIcon = config.icon;
 
     return (
-      <div key={channelKey} className={`rounded-xl overflow-hidden transition-all ${
-        isChannelActiveOnRoute ? 'bg-white/90 border border-[#D94A2A]/40 shadow-3xs' : 'bg-white/40 border border-[#F3DEC8]/50 hover:bg-white/70'
+      <div key={channelKey} className={`rounded-2xl overflow-hidden transition-all bg-white border border-[#EDE8F8] shadow-3xs hover:border-[#DDD6FE] ${
+        isChannelActiveOnRoute ? 'ring-1 ring-[#DDD6FE]' : ''
       }`}>
         <div
           onClick={() => handleChannelClick(channelKey, config.primaryRoute)}
-          className={`w-full flex items-center justify-between px-3 py-2 text-xs font-black transition-colors cursor-pointer ${
-            isChannelActiveOnRoute ? 'text-[#D94A2A]' : 'text-[#1E122C]'
+          className={`w-full flex items-center justify-between px-3.5 py-2.5 text-xs font-bold transition-colors cursor-pointer group ${
+            isChannelActiveOnRoute ? 'text-[#7C3AED] font-black' : 'text-[#334155] hover:text-[#7C3AED]'
           }`}
         >
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className={`w-6 h-6 rounded-lg border flex items-center justify-center shrink-0 ${
-              isChannelActiveOnRoute ? 'bg-[#FFEFEA] border-[#FAD8C7] text-[#D94A2A]' : 'bg-[#FAF5F0] border-[#F3DEC8] text-[#8C1F3D]'
+            <div className={`w-7 h-7 rounded-xl border flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
+              isChannelActiveOnRoute ? 'bg-[#EDE8FD] border-[#DDD6FE] text-[#7C3AED]' : 'bg-[#F5F0FF] border-[#E9DDFE] text-[#7C3AED]'
             }`}>
               <ChannelIcon className="w-3.5 h-3.5" />
             </div>
-            <span className="truncate text-left">{config.title}</span>
+            <span className="truncate text-left font-extrabold text-[#1E122C] group-hover:text-[#7C3AED] text-xs">{config.title}</span>
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
-            {config.badge && (
-              <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-md bg-[#FAF5F0] text-[#8C1F3D] border border-[#F3DEC8]/80">
-                {config.badge}
-              </span>
+          <button
+            type="button"
+            onClick={(e) => handleChevronToggle(e, channelKey)}
+            className="p-1 hover:bg-[#F0EBFC] rounded-md transition-colors shrink-0"
+          >
+            {isExpanded ? (
+              <ChevronDown className="w-3.5 h-3.5 text-[#8B7F9E]" />
+            ) : (
+              <ChevronRight className="w-3.5 h-3.5 text-[#8B7F9E]" />
             )}
-            <button
-              type="button"
-              onClick={(e) => handleChevronToggle(e, channelKey)}
-              className="p-1 hover:bg-[#FAF5F0] rounded-md transition-colors"
-            >
-              {isExpanded ? (
-                <ChevronDown className="w-3.5 h-3.5 text-[#6B5E77]" />
-              ) : (
-                <ChevronRight className="w-3.5 h-3.5 text-[#6B5E77]" />
-              )}
-            </button>
-          </div>
+          </button>
         </div>
 
         {isExpanded && (
-          <div className="px-2 pb-2 pt-0.5 space-y-0.5 border-t border-[#F3DEC8]/40 bg-[#FAF5F0]/30 animate-in fade-in duration-200">
+          <div className="px-2 pb-2 pt-0.5 space-y-0.5 border-t border-[#EDE8F8] bg-[#FAF8FE] animate-in fade-in duration-200">
             {config.subItems.map((subItem) => {
               const SubIcon = subItem.icon;
               const currentFull = location.pathname + location.search;
@@ -271,13 +254,13 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose }) => {
                   className={`
                     flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all
                     ${isSubActive 
-                      ? 'bg-white text-[#D94A2A] font-black shadow-3xs border border-[#F3DEC8]' 
-                      : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/60'
+                      ? 'bg-white text-[#7C3AED] font-black shadow-3xs border border-[#DDD6FE]' 
+                      : 'text-[#64748B] hover:text-[#7C3AED] hover:bg-white'
                     }
                   `}
                 >
-                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSubActive ? 'bg-[#D94A2A]' : 'bg-[#D94A2A]/40'}`} />
-                  <SubIcon className={`w-3 h-3 shrink-0 ${isSubActive ? 'text-[#D94A2A]' : 'text-[#6B5E77]'}`} />
+                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSubActive ? 'bg-[#7C3AED]' : 'bg-[#7C3AED]/30'}`} />
+                  <SubIcon className={`w-3 h-3 shrink-0 ${isSubActive ? 'text-[#7C3AED]' : 'text-[#8B7F9E]'}`} />
                   <span className="truncate">{subItem.label}</span>
                 </NavLink>
               );
@@ -301,21 +284,21 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose }) => {
       />
 
       {/* Drawer */}
-      <div className="fixed left-0 top-0 bottom-0 w-72 bg-[#FEF9F5] flex flex-col z-50 animate-in slide-in-from-left duration-200 border-r border-[#F3DEC8]">
+      <div className="fixed left-0 top-0 bottom-0 w-72 bg-[#FAF8FE] flex flex-col z-50 animate-in slide-in-from-left duration-200 border-r border-[#EDE8F8]">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 h-20 border-b border-[#F3DEC8]/70 bg-white/50 shrink-0">
+        <div className="flex items-center justify-between px-5 h-20 border-b border-[#EDE8F8] bg-[#FAF8FE] shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-white border border-[#F3DEC8] flex items-center justify-center shadow-xs shrink-0 overflow-hidden p-1">
+            <div className="w-10 h-10 rounded-2xl bg-white border border-[#EDE8F8] flex items-center justify-center shadow-xs shrink-0 overflow-hidden p-1">
               <img src="/growwise-icon.png" alt="GrowWise AI" className="w-full h-full object-contain" />
             </div>
             <div className="min-w-0">
               <span className="font-black text-[#1E122C] text-sm truncate block leading-tight">{brandName}</span>
-              <span className="text-[10px] text-[#6B5E77] font-semibold block leading-none pt-0.5">GrowWise AI</span>
+              <span className="text-[10px] text-[#7C3AED] font-bold block leading-none pt-0.5">GrowWise AI</span>
             </div>
           </div>
           <button 
             onClick={onClose}
-            className="p-1.5 rounded-xl text-[#6B5E77] hover:bg-white hover:text-[#1E122C] transition-colors cursor-pointer"
+            className="p-1.5 rounded-xl text-[#8B7F9E] hover:bg-[#F0EBFC] hover:text-[#1E122C] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -331,12 +314,12 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose }) => {
               className={({ isActive }) => `
                 flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold tracking-wide transition-all duration-200
                 ${isActive 
-                  ? 'bg-[#FFEFEA] text-[#D94A2A] font-black border-l-4 border-[#D94A2A] rounded-l-none shadow-2xs' 
-                  : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/70'
+                  ? 'bg-[#F3EAFF] text-[#7C3AED] font-black border-l-4 border-[#7C3AED] rounded-l-none shadow-xs' 
+                  : 'text-[#475569] hover:text-[#7C3AED] hover:bg-white'
                 }
               `}
             >
-              <Home className="w-4 h-4 shrink-0 text-[#D94A2A]" />
+              <Home className="w-4 h-4 shrink-0 text-[#7C3AED]" />
               <span>Home Overview</span>
             </NavLink>
 
@@ -346,33 +329,25 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose }) => {
               className={({ isActive }) => `
                 flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold tracking-wide transition-all duration-200
                 ${isActive 
-                  ? 'bg-[#FFEFEA] text-[#8C1F3D] font-black border-l-4 border-[#8C1F3D] rounded-l-none shadow-2xs' 
-                  : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/70'
+                  ? 'bg-[#F3EAFF] text-[#7C3AED] font-black border-l-4 border-[#7C3AED] rounded-l-none shadow-xs' 
+                  : 'text-[#475569] hover:text-[#7C3AED] hover:bg-white'
                 }
               `}
             >
               <div className="flex items-center gap-3">
-                <Users className="w-4 h-4 shrink-0 text-[#8C1F3D]" />
-                <span>Leads &amp; Audience CRM</span>
+                <Users className="w-4 h-4 shrink-0 text-[#7C3AED]" />
+                <span>Leads &amp; Audience</span>
               </div>
-              <span className="text-[8.5px] font-bold px-1.5 py-0.5 rounded-md bg-[#FAF5F0] text-[#8C1F3D] border border-[#F3DEC8]">
-                All Leads
-              </span>
             </NavLink>
           </div>
 
           {/* 1. Campaigns Group */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between px-3 pt-1">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[9.5px] font-black uppercase tracking-wider text-[#8C1F3D]">
-                  Campaigns
-                </span>
-                <span className="w-1.5 h-1.5 rounded-full bg-[#EA580C] animate-pulse" />
-              </div>
-              <span className="text-[8.5px] font-bold text-[#EA580C] bg-[#FFF0E6] border border-[#FAD8C7] px-1.5 py-0.5 rounded-md">
-                {campaignChannels.length} Channels
+            <div className="flex items-center gap-1.5 px-3 pt-1">
+              <span className="text-[10px] font-black uppercase tracking-wider text-[#8B7F9E]">
+                Campaigns
               </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#EC4899] animate-pulse" />
             </div>
 
             <div className="space-y-1.5">
@@ -382,13 +357,10 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose }) => {
 
           {/* 2. Marketing Channels & Content Group */}
           {otherChannels.length > 0 && (
-            <div className="space-y-2 pt-1 border-t border-[#F3DEC8]/50">
-              <div className="flex items-center justify-between px-3 pt-1">
-                <span className="text-[9.5px] font-black uppercase tracking-wider text-[#8A8294]">
-                  Channels &amp; Content
-                </span>
-                <span className="text-[8.5px] font-bold text-[#6B5E77] bg-[#FAF5F0] border border-[#F3DEC8] px-1.5 py-0.5 rounded-md">
-                  {otherChannels.length} Active
+            <div className="space-y-2 pt-1 border-t border-[#EDE8F8]">
+              <div className="flex items-center px-3 pt-1">
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#8B7F9E]">
+                  Content &amp; Channels
                 </span>
               </div>
 
@@ -399,8 +371,8 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose }) => {
           )}
 
           {/* Workspace Tools */}
-          <div className="space-y-1 pt-1">
-            <span className="text-[9.5px] font-black uppercase tracking-wider text-[#8A8294] px-3 block">
+          <div className="space-y-1 pt-1 border-t border-[#EDE8F8]">
+            <span className="text-[10px] font-black uppercase tracking-wider text-[#8B7F9E] px-3 block">
               Workspace Tools
             </span>
 
@@ -410,17 +382,17 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose }) => {
               className={({ isActive }) => `
                 flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-bold tracking-wide transition-all duration-200
                 ${isActive 
-                  ? 'bg-[#FFEFEA] text-[#D94A2A] font-black border-l-4 border-[#D94A2A] rounded-l-none shadow-2xs' 
-                  : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/70'
+                  ? 'bg-[#F3EAFF] text-[#7C3AED] font-black border-l-4 border-[#7C3AED] rounded-l-none shadow-xs' 
+                  : 'text-[#475569] hover:text-[#7C3AED] hover:bg-white'
                 }
               `}
             >
               <div className="flex items-center gap-3">
-                <Zap className="w-4 h-4 text-[#D94A2A] shrink-0" />
+                <Zap className="w-4 h-4 text-[#7C3AED] shrink-0" />
                 <span>AI Actions</span>
               </div>
               {pendingActionsCount > 0 && (
-                <span className="px-1.5 py-0.5 rounded-md bg-[#D94A2A] text-white text-[9px] font-black leading-none">
+                <span className="px-1.5 py-0.5 rounded-md bg-[#EC4899] text-white text-[9px] font-black leading-none">
                   {pendingActionsCount}
                 </span>
               )}
@@ -432,12 +404,12 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose }) => {
               className={({ isActive }) => `
                 flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-bold tracking-wide transition-all duration-200
                 ${isActive 
-                  ? 'bg-[#FFEFEA] text-[#D94A2A] font-black border-l-4 border-[#D94A2A] rounded-l-none shadow-2xs' 
-                  : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/70'
+                  ? 'bg-[#F3EAFF] text-[#7C3AED] font-black border-l-4 border-[#7C3AED] rounded-l-none shadow-xs' 
+                  : 'text-[#475569] hover:text-[#7C3AED] hover:bg-white'
                 }
               `}
             >
-              <Calendar className="w-4 h-4 text-[#7E22CE] shrink-0" />
+              <Calendar className="w-4 h-4 text-[#7C3AED] shrink-0" />
               <span>Strategy Calendar</span>
             </NavLink>
 
@@ -447,27 +419,27 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose }) => {
               className={({ isActive }) => `
                 flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-bold tracking-wide transition-all duration-200
                 ${isActive 
-                  ? 'bg-[#FFEFEA] text-[#D94A2A] font-black border-l-4 border-[#D94A2A] rounded-l-none shadow-2xs' 
-                  : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/70'
+                  ? 'bg-[#F3EAFF] text-[#7C3AED] font-black border-l-4 border-[#7C3AED] rounded-l-none shadow-xs' 
+                  : 'text-[#475569] hover:text-[#7C3AED] hover:bg-white'
                 }
               `}
             >
-              <BarChart3 className="w-4 h-4 text-[#10B981] shrink-0" />
-              <span>ROI & Analytics</span>
+              <BarChart3 className="w-4 h-4 text-[#7C3AED] shrink-0" />
+              <span>ROI &amp; Analytics</span>
             </NavLink>
           </div>
         </nav>
 
         {/* Footer */}
-        <div className="p-3.5 border-t border-[#F3DEC8] space-y-2 bg-white/40 shrink-0">
+        <div className="p-3.5 border-t border-[#EDE8F8] space-y-2 bg-[#FAF8FE] shrink-0">
           <button
             onClick={() => { onClose(); setAssistantOpen(true); }}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-[#1E122C] bg-white hover:bg-[#FFF8F5] border border-[#F3DEC8] shadow-3xs transition-all cursor-pointer group"
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-[#1E122C] bg-white hover:bg-[#F3EAFF] border border-[#EDE8F8] shadow-3xs transition-all cursor-pointer group"
           >
-            <div className="w-5 h-5 rounded-lg bg-[#FFF8F5] border border-[#F3DEC8] flex items-center justify-center shrink-0 overflow-hidden p-0.5 group-hover:scale-105 transition-transform">
+            <div className="w-5 h-5 rounded-lg bg-[#F5F0FF] border border-[#E0D4FA] flex items-center justify-center shrink-0 overflow-hidden p-0.5 group-hover:scale-105 transition-transform">
               <img src="/growwise-icon.png" alt="GrowWise AI" className="w-full h-full object-contain" />
             </div>
-            <span className="group-hover:text-[#D94A2A] transition-colors">Ask GrowWise AI</span>
+            <span className="group-hover:text-[#7C3AED] transition-colors">Ask GrowWise AI</span>
           </button>
 
           <NavLink
@@ -476,12 +448,12 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose }) => {
             className={({ isActive }) => `
               flex items-center gap-3 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all
               ${isActive 
-                ? 'bg-[#FFEFEA] text-[#D94A2A]' 
-                : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/90'
+                ? 'bg-[#F3EAFF] text-[#7C3AED] font-black' 
+                : 'text-[#475569] hover:text-[#7C3AED] hover:bg-white'
               }
             `}
           >
-            <Settings className="w-4 h-4 text-[#4B1D6B] shrink-0" />
+            <Settings className="w-4 h-4 text-[#7C3AED] shrink-0" />
             <span>Settings</span>
           </NavLink>
         </div>

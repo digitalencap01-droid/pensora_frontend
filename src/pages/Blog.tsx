@@ -40,7 +40,6 @@ import {
   HelpCircle,
   FolderPlus,
   SlidersHorizontal,
-  Wand2,
   CheckSquare,
   Compass,
   FileCheck2,
@@ -193,81 +192,6 @@ function artifactsToArticle(
   };
 }
 
-// 4 Strategic Content Presets for instant 1-click loading.
-// tone/contentGoal/country/searchQueriesCount use the exact values the backend accepts
-// (app/schemas/content_brief.py ToneType, app/schemas/keywords.py ContentGoal,
-// 2-letter ISO country codes, max_research_queries range 2-6).
-const CONTENT_PRESETS: {
-  id: string;
-  title: string;
-  badge: string;
-  description: string;
-  icon: typeof Zap;
-  topic: string;
-  targetWordCount: number;
-  tone: ToneType;
-  contentGoal: ContentGoal;
-  country: string;
-  searchQueriesCount: number;
-  featuredImage: string;
-}[] = [
-  {
-    id: 'seo_pillar',
-    title: 'SEO Power Pillar',
-    badge: 'Organic Traffic #1',
-    description: 'Comprehensive 2,500-word authority pillar page targeting high-volume keywords with deep subheadings.',
-    icon: Zap,
-    topic: 'How small businesses can use AI for autonomous customer support',
-    targetWordCount: 2500,
-    tone: 'authoritative',
-    contentGoal: 'organic_traffic',
-    country: 'IN',
-    searchQueriesCount: 6,
-    featuredImage: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=800&auto=format&fit=crop&q=60'
-  },
-  {
-    id: 'thought_leadership',
-    title: 'Founder Thought Leadership',
-    badge: 'Viral & Bold',
-    description: 'Polarizing, insightful commentary designed to spark shares and inbound founder inquiries on LinkedIn & Blog.',
-    icon: Sparkles,
-    topic: 'Why traditional SaaS sales SDRs will be obsolete by 2027',
-    targetWordCount: 1500,
-    tone: 'conversational',
-    contentGoal: 'thought_leadership',
-    country: 'US',
-    searchQueriesCount: 4,
-    featuredImage: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&auto=format&fit=crop&q=60'
-  },
-  {
-    id: 'howto_tutorial',
-    title: 'Actionable How-To Guide',
-    badge: 'Product Lead Gen',
-    description: 'Step-by-step practical implementation tutorial with numbered walkthroughs and measurable milestones.',
-    icon: Wand2,
-    topic: 'Step-by-step framework to launch an automated email nurture sequence',
-    targetWordCount: 2000,
-    tone: 'educational',
-    contentGoal: 'lead_generation',
-    country: 'US',
-    searchQueriesCount: 5,
-    featuredImage: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=60'
-  },
-  {
-    id: 'industry_trends',
-    title: 'Industry Trends & Benchmark',
-    badge: 'Data-Driven',
-    description: 'Data-backed industry analysis examining consumer trends, retention shifts, and 2026 market projections.',
-    icon: BarChart3,
-    topic: 'Sustainable e-commerce marketing trends & consumer loyalty benchmarks',
-    targetWordCount: 3000,
-    tone: 'professional',
-    contentGoal: 'organic_traffic',
-    country: 'US',
-    searchQueriesCount: 6,
-    featuredImage: 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=800&auto=format&fit=crop&q=60'
-  }
-];
 
 export const Blog: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -285,9 +209,6 @@ export const Blog: React.FC = () => {
 
   // Target Destination
   const [targetPlatform, setTargetPlatform] = useState<'blog' | 'linkedin' | 'webflow'>('blog');
-
-  // Selected Preset ID
-  const [selectedPreset, setSelectedPreset] = useState<string>('seo_pillar');
 
   // =========================================================================
   // CORE FORM STATE
@@ -375,19 +296,6 @@ export const Blog: React.FC = () => {
 
   const activeReadingSummary = projects.find(p => p.id === activeReadingProjectId) || null;
   const activeReadingArticle = activeReadingSummary ? projectToArticle(activeReadingSummary) : null;
-
-  // Apply a strategic preset
-  const handleApplyPreset = (preset: typeof CONTENT_PRESETS[0]) => {
-    setSelectedPreset(preset.id);
-    setTopic(preset.topic);
-    setTargetWordCount(preset.targetWordCount);
-    setTone(preset.tone);
-    setContentGoal(preset.contentGoal);
-    setCountry(preset.country);
-    setSearchQueriesCount(preset.searchQueriesCount);
-    setMainImage(preset.featuredImage);
-    setThumbnailImage(preset.featuredImage);
-  };
 
   const buildGenerateRequest = (): ContentGenerateRequest => {
     const normalizedSiteUrl = /^https?:\/\//i.test(siteUrl.trim()) ? siteUrl.trim() : `https://${siteUrl.trim()}`;
@@ -489,10 +397,10 @@ export const Blog: React.FC = () => {
       {/* =========================================================================
           1. HEADER WITH STUDIO MODE TOGGLE
           ========================================================================= */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-[#F3DEC8]/70">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-[#EDE8F8]">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#2B0847] to-[#8C1F3D] text-[#FFD188] flex items-center justify-center shadow-[0_4px_16px_rgba(75,29,107,0.15)]">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-[#BE185D] via-[#DB2777] to-[#EC4899] text-white flex items-center justify-center shadow-[0_4px_16px_rgba(219,39,119,0.2)]">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
@@ -500,7 +408,7 @@ export const Blog: React.FC = () => {
                 <h1 className="text-2xl sm:text-3xl font-black text-[#1E122C] tracking-tight">
                   AI Blog Studio
                 </h1>
-                <span className="px-2 py-0.5 rounded-full bg-[#8C1F3D]/10 border border-[#8C1F3D]/20 text-[#8C1F3D] text-[10px] font-black uppercase tracking-wider">
+                <span className="px-2 py-0.5 rounded-full bg-pink-50 border border-pink-200 text-[#DB2777] text-[10px] font-black uppercase tracking-wider">
                   PRO CANVAS
                 </span>
               </div>
@@ -512,14 +420,14 @@ export const Blog: React.FC = () => {
         </div>
 
         {/* 3 Core Studio Mode Buttons */}
-        <div className="flex items-center gap-1.5 p-1.5 bg-white/90 backdrop-blur-xs border border-[#F3DEC8] rounded-2xl shadow-3xs">
+        <div className="flex items-center gap-1.5 p-1.5 bg-white/90 backdrop-blur-xs border border-[#EDE8F8] rounded-2xl shadow-3xs">
           <button
             type="button"
             onClick={() => setTab('write')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
               activeTab === 'write'
-                ? 'bg-gradient-to-r from-[#2B0847] to-[#48115B] text-white shadow-xs'
-                : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-[#FAF5F0]'
+                ? 'bg-gradient-to-r from-[#BE185D] via-[#DB2777] to-[#EC4899] text-white shadow-xs'
+                : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-[#FAF8FE]'
             }`}
           >
             <PenTool className="w-3.5 h-3.5" />
@@ -531,14 +439,14 @@ export const Blog: React.FC = () => {
             onClick={() => setTab('library')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
               activeTab === 'library'
-                ? 'bg-gradient-to-r from-[#2B0847] to-[#48115B] text-white shadow-xs'
-                : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-[#FAF5F0]'
+                ? 'bg-gradient-to-r from-[#BE185D] via-[#DB2777] to-[#EC4899] text-white shadow-xs'
+                : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-[#FAF8FE]'
             }`}
           >
             <BookOpen className="w-3.5 h-3.5" />
             <span>Post History</span>
             <span className={`ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] ${
-              activeTab === 'library' ? 'bg-white/20 text-white' : 'bg-[#FAF5F0] text-[#8C1F3D] border border-[#F3DEC8]'
+              activeTab === 'library' ? 'bg-white/20 text-white' : 'bg-[#FAF8FE] text-[#DB2777] border border-[#EDE8F8]'
             }`}>
               {projectsData?.total ?? projects.length}
             </span>
@@ -549,8 +457,8 @@ export const Blog: React.FC = () => {
             onClick={() => setTab('overview')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
               activeTab === 'overview'
-                ? 'bg-gradient-to-r from-[#2B0847] to-[#48115B] text-white shadow-xs'
-                : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-[#FAF5F0]'
+                ? 'bg-gradient-to-r from-[#BE185D] via-[#DB2777] to-[#EC4899] text-white shadow-xs'
+                : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-[#FAF8FE]'
             }`}
           >
             <LayoutDashboard className="w-3.5 h-3.5" />
@@ -565,75 +473,16 @@ export const Blog: React.FC = () => {
       {activeTab === 'write' && (
         <div className="space-y-6 animate-in fade-in duration-200">
           
-          {/* Top Preset Template Fast-Track Bar */}
-          <div className="space-y-2.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-black uppercase tracking-wider text-[#8C1F3D] flex items-center gap-1.5">
-                <Wand2 className="w-3.5 h-3.5 text-[#EA580C]" />
-                Select Strategic Blueprint Template
-              </span>
-              <span className="text-[11px] font-semibold text-[#6B5E77]">1-click auto-configuration</span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {CONTENT_PRESETS.map((preset) => {
-                const Icon = preset.icon;
-                const isSelected = selectedPreset === preset.id;
-                return (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    onClick={() => handleApplyPreset(preset)}
-                    className={`p-4 rounded-3xl border text-left transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between ${
-                      isSelected
-                        ? 'bg-gradient-to-br from-[#2B0847] to-[#48115B] text-white border-[#2B0847] shadow-[0_8px_20px_rgba(43,8,71,0.2)] scale-[1.02]'
-                        : 'bg-white border-[#F3DEC8] text-[#1E122C] hover:border-[#8C1F3D]/50 hover:bg-[#FCFAF8] shadow-3xs'
-                    }`}
-                  >
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
-                          isSelected ? 'bg-white/15 text-[#FFD188]' : 'bg-[#FAF5F0] text-[#8C1F3D]'
-                        }`}>
-                          <Icon className="w-4 h-4" />
-                        </div>
-                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
-                          isSelected ? 'bg-white/20 text-white' : 'bg-[#FAF5F0] text-[#EA580C] border border-[#F3DEC8]'
-                        }`}>
-                          {preset.badge}
-                        </span>
-                      </div>
-
-                      <h3 className={`text-xs font-black tracking-tight ${isSelected ? 'text-white' : 'text-[#1E122C]'}`}>
-                        {preset.title}
-                      </h3>
-                      <p className={`text-[11px] line-clamp-2 leading-relaxed ${isSelected ? 'text-white/80' : 'text-[#6B5E77]'}`}>
-                        {preset.description}
-                      </p>
-                    </div>
-
-                    <div className={`mt-3 pt-2.5 border-t text-[10px] font-bold flex items-center justify-between ${
-                      isSelected ? 'border-white/15 text-white/90' : 'border-[#F3DEC8]/60 text-[#6B5E77]'
-                    }`}>
-                      <span>{preset.targetWordCount} words</span>
-                      <span className="capitalize">{preset.tone}</span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           {/* 2-Column Split Studio Canvas */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             
             {/* =========================================================================
                 LEFT PANEL (7 Cols): STUDIO COCKPIT & CONFIGURATOR
                 ========================================================================= */}
-            <div className="lg:col-span-7 bg-white border border-[#F3DEC8] rounded-3xl p-6 sm:p-7 shadow-[0_4px_24px_rgba(75,29,107,0.03)] space-y-6">
+            <div className="lg:col-span-7 bg-white border border-[#EDE8F8] rounded-3xl p-6 sm:p-7 shadow-[0_8px_30px_-6px_rgba(219,39,119,0.06)] space-y-6">
               
               {/* Studio Step Navigation Tabs */}
-              <div className="flex items-center justify-between gap-2 p-1.5 bg-[#FAF7F2] rounded-2xl border border-[#EADDCF]">
+              <div className="flex items-center justify-between gap-2 p-1.5 bg-[#FAF8FE] rounded-2xl border border-[#EDE8F8]">
                 {[
                   { num: 1, label: 'Topic & Intel', icon: Search },
                   { num: 2, label: 'Research & Media', icon: Layers },
@@ -645,8 +494,8 @@ export const Blog: React.FC = () => {
                     onClick={() => setActiveStep(step.num)}
                     className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-2 ${
                       activeStep === step.num
-                        ? 'bg-gradient-to-r from-[#2B0847] to-[#48115B] text-white shadow-xs'
-                        : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/60'
+                        ? 'bg-gradient-to-r from-[#BE185D] via-[#DB2777] to-[#EC4899] text-white shadow-xs'
+                        : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white'
                     }`}
                   >
                     <step.icon className="w-3.5 h-3.5" />
@@ -663,10 +512,10 @@ export const Blog: React.FC = () => {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-black text-[#1E122C] uppercase tracking-wide flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-[#EA580C]" />
+                        <Sparkles className="w-3.5 h-3.5 text-[#DB2777]" />
                         Article Core Topic / Keyword Focus <span className="text-rose-500">*</span>
                       </label>
-                      <span className="text-[11px] font-bold text-[#8C1F3D]">Live AI Web Crawler Active</span>
+                      <span className="text-[11px] font-bold text-[#DB2777]">Live AI Web Crawler Active</span>
                     </div>
 
                     <textarea
@@ -674,7 +523,7 @@ export const Blog: React.FC = () => {
                       value={topic}
                       onChange={(e) => setTopic(e.target.value)}
                       placeholder="e.g. How small businesses can use AI for autonomous customer support"
-                      className="w-full bg-[#FAF7F2]/60 border border-[#EADDCF] rounded-2xl p-4 text-xs sm:text-sm font-bold text-[#1E122C] placeholder-[#9E92A6] outline-none focus:border-[#8C1F3D] focus:bg-white focus:ring-4 focus:ring-[#8C1F3D]/8 transition-all resize-none shadow-3xs"
+                      className="w-full bg-[#FAF8FE]/60 border border-[#EDE8F8] rounded-2xl p-4 text-xs sm:text-sm font-bold text-[#1E122C] placeholder-[#9E92A6] outline-none focus:border-[#DB2777] focus:bg-white focus:ring-4 focus:ring-[#DB2777]/10 transition-all resize-none shadow-3xs"
                     />
 
                     {/* Fast Topic Ideas */}
@@ -689,7 +538,7 @@ export const Blog: React.FC = () => {
                           key={chip}
                           type="button"
                           onClick={() => setTopic(chip)}
-                          className="px-3 py-1 rounded-xl bg-[#FAF5F0] hover:bg-[#F5EEFB] border border-[#F3DEC8] hover:border-[#8C1F3D]/40 text-[11px] font-bold text-[#5C4D6B] hover:text-[#8C1F3D] transition-all cursor-pointer"
+                          className="px-3 py-1 rounded-xl bg-[#FAF8FE] hover:bg-[#FDF2F8] border border-[#EDE8F8] hover:border-[#DB2777]/40 text-[11px] font-bold text-[#6B5E77] hover:text-[#DB2777] transition-all cursor-pointer"
                         >
                           + {chip}
                         </button>
@@ -698,8 +547,8 @@ export const Blog: React.FC = () => {
                   </div>
 
                   {/* Destination Switcher */}
-                  <div className="space-y-2 pt-2 border-t border-[#F3DEC8]/60">
-                    <label className="text-[11px] font-black text-[#5C4D6B] uppercase tracking-wide">
+                  <div className="space-y-2 pt-2 border-t border-[#EDE8F8]">
+                    <label className="text-[11px] font-black text-[#6B5E77] uppercase tracking-wide">
                       Target Channel Output
                     </label>
                     <div className="grid grid-cols-3 gap-2.5">
@@ -708,11 +557,11 @@ export const Blog: React.FC = () => {
                         onClick={() => setTargetPlatform('blog')}
                         className={`p-3 rounded-2xl border text-xs font-black flex items-center justify-center gap-2 transition-all cursor-pointer ${
                           targetPlatform === 'blog'
-                            ? 'bg-[#2B0847] text-white border-[#2B0847] shadow-xs'
-                            : 'bg-white border-[#EADDCF] text-[#6B5E77] hover:border-[#8C1F3D]'
+                            ? 'bg-gradient-to-r from-[#BE185D] to-[#DB2777] text-white border-[#DB2777] shadow-xs'
+                            : 'bg-white border-[#EDE8F8] text-[#6B5E77] hover:border-[#DB2777]'
                         }`}
                       >
-                        <Sparkles className="w-3.5 h-3.5 text-[#FFD188]" />
+                        <Sparkles className="w-3.5 h-3.5 text-pink-200" />
                         <span>Blog Article</span>
                       </button>
 
@@ -722,7 +571,7 @@ export const Blog: React.FC = () => {
                         className={`p-3 rounded-2xl border text-xs font-black flex items-center justify-center gap-2 transition-all cursor-pointer ${
                           targetPlatform === 'linkedin'
                             ? 'bg-[#0A66C2] text-white border-[#0A66C2] shadow-xs'
-                            : 'bg-white border-[#EADDCF] text-[#6B5E77] hover:border-[#0A66C2]'
+                            : 'bg-white border-[#EDE8F8] text-[#6B5E77] hover:border-[#0A66C2]'
                         }`}
                       >
                         <span className="font-serif italic font-bold">in</span>
@@ -735,7 +584,7 @@ export const Blog: React.FC = () => {
                         className={`p-3 rounded-2xl border text-xs font-black flex items-center justify-center gap-2 transition-all cursor-pointer ${
                           targetPlatform === 'webflow'
                             ? 'bg-[#146EF5] text-white border-[#146EF5] shadow-xs'
-                            : 'bg-white border-[#EADDCF] text-[#6B5E77] hover:border-[#146EF5]'
+                            : 'bg-white border-[#EDE8F8] text-[#6B5E77] hover:border-[#146EF5]'
                         }`}
                       >
                         <span className="font-black">W</span>
@@ -747,11 +596,11 @@ export const Blog: React.FC = () => {
                   {/* Search Queries & Country Grid */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 pt-2">
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-bold text-[#5C4D6B] block">Target Country</label>
+                      <label className="text-[11px] font-bold text-[#6B5E77] block">Target Country</label>
                       <select
                         value={country}
                         onChange={(e) => setCountry(e.target.value)}
-                        className="w-full bg-[#FAF7F2]/60 border border-[#EADDCF] rounded-xl px-3 py-2.5 text-xs font-bold text-[#1E122C] outline-none focus:border-[#8C1F3D] cursor-pointer"
+                        className="w-full bg-[#FAF8FE]/60 border border-[#EDE8F8] rounded-xl px-3 py-2.5 text-xs font-bold text-[#1E122C] outline-none focus:border-[#DB2777] cursor-pointer"
                       >
                         <option value="IN">🇮🇳 India (IN)</option>
                         <option value="US">🇺🇸 United States (US)</option>
@@ -762,11 +611,11 @@ export const Blog: React.FC = () => {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-bold text-[#5C4D6B] block">Language</label>
+                      <label className="text-[11px] font-bold text-[#6B5E77] block">Language</label>
                       <select
                         value={language}
                         onChange={(e) => setLanguage(e.target.value)}
-                        className="w-full bg-[#FAF7F2]/60 border border-[#EADDCF] rounded-xl px-3 py-2.5 text-xs font-bold text-[#1E122C] outline-none focus:border-[#8C1F3D] cursor-pointer"
+                        className="w-full bg-[#FAF8FE]/60 border border-[#EDE8F8] rounded-xl px-3 py-2.5 text-xs font-bold text-[#1E122C] outline-none focus:border-[#DB2777] cursor-pointer"
                       >
                         <option value="English">English</option>
                         <option value="Spanish">Spanish</option>
@@ -777,11 +626,11 @@ export const Blog: React.FC = () => {
                     </div>
 
                     <div className="space-y-1.5 col-span-2 sm:col-span-1">
-                      <label className="text-[11px] font-bold text-[#5C4D6B] block">Freshness</label>
+                      <label className="text-[11px] font-bold text-[#6B5E77] block">Freshness</label>
                       <select
                         value={freshness}
                         onChange={(e) => setFreshness(e.target.value)}
-                        className="w-full bg-[#FAF7F2]/60 border border-[#EADDCF] rounded-xl px-3 py-2.5 text-xs font-bold text-[#1E122C] outline-none focus:border-[#8C1F3D] cursor-pointer"
+                        className="w-full bg-[#FAF8FE]/60 border border-[#EDE8F8] rounded-xl px-3 py-2.5 text-xs font-bold text-[#1E122C] outline-none focus:border-[#DB2777] cursor-pointer"
                       >
                         <option value="24h">Last 24 hours</option>
                         <option value="7d">Last 7 days</option>
@@ -794,10 +643,10 @@ export const Blog: React.FC = () => {
                   </div>
 
                   {/* Search Query Depth Slider */}
-                  <div className="space-y-2 p-4 rounded-2xl bg-[#FCFAF8] border border-[#F3DEC8]/70">
+                  <div className="space-y-2 p-4 rounded-2xl bg-[#FAF8FE] border border-[#EDE8F8]">
                     <div className="flex items-center justify-between text-xs font-bold text-[#1E122C]">
                       <span>Live Search Query Depth</span>
-                      <span className="text-[#8C1F3D] font-black">{searchQueriesCount} Live Queries Analyzed</span>
+                      <span className="text-[#DB2777] font-black">{searchQueriesCount} Live Queries Analyzed</span>
                     </div>
                     <input
                       type="range"
@@ -805,7 +654,7 @@ export const Blog: React.FC = () => {
                       max={6}
                       value={searchQueriesCount}
                       onChange={(e) => setSearchQueriesCount(Number(e.target.value))}
-                      className="w-full accent-[#8C1F3D] cursor-pointer"
+                      className="w-full accent-[#DB2777] cursor-pointer"
                     />
                     <div className="flex justify-between text-[10px] font-bold text-[#6B5E77]">
                       <span>Fast (2 queries)</span>
@@ -821,7 +670,7 @@ export const Blog: React.FC = () => {
                   {/* Grounding Mode 3-Card Selector */}
                   <div className="space-y-2.5">
                     <label className="text-xs font-black text-[#1E122C] uppercase tracking-wide flex items-center gap-1.5">
-                      <FileText className="w-3.5 h-3.5 text-[#4B1D6B]" />
+                      <FileText className="w-3.5 h-3.5 text-[#7C3AED]" />
                       Knowledge Grounding Source
                     </label>
 
@@ -837,8 +686,8 @@ export const Blog: React.FC = () => {
                           onClick={() => setGroundingMode(g.id as any)}
                           className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                             groundingMode === g.id
-                              ? 'bg-[#F9F3FC] border-[#8C1F3D] text-[#8C1F3D] shadow-xs'
-                              : 'bg-white border-[#EADDCF] text-[#6B5E77] hover:border-[#8C1F3D]/50'
+                              ? 'bg-[#FDF2F8] border-[#DB2777] text-[#DB2777] shadow-xs'
+                              : 'bg-white border-[#EDE8F8] text-[#6B5E77] hover:border-[#DB2777]/50'
                           }`}
                         >
                           <g.icon className="w-4 h-4 mb-2" />
@@ -852,8 +701,8 @@ export const Blog: React.FC = () => {
 
                     {/* If Document Grounding is selected */}
                     {groundingMode === 'doc' && (
-                      <div className="p-4 rounded-2xl bg-[#FCFAF8] border border-dashed border-[#F3DEC8] text-center space-y-2">
-                        <Upload className="w-5 h-5 text-[#8C1F3D] mx-auto" />
+                      <div className="p-4 rounded-2xl bg-[#FAF8FE] border border-dashed border-[#EDE8F8] text-center space-y-2">
+                        <Upload className="w-5 h-5 text-[#DB2777] mx-auto" />
                         <p className="text-xs font-black text-[#1E122C]">Attach reference notes or client interview transcripts</p>
                         <input
                           type="file"
@@ -865,7 +714,7 @@ export const Blog: React.FC = () => {
                         />
                         <label
                           htmlFor="doc-upload-dock"
-                          className="inline-block px-3.5 py-1.5 bg-white border border-[#EADDCF] text-xs font-bold rounded-xl cursor-pointer hover:bg-[#FAF5F0]"
+                          className="inline-block px-3.5 py-1.5 bg-white border border-[#EDE8F8] text-xs font-bold rounded-xl cursor-pointer hover:bg-[#FAF8FE]"
                         >
                           Choose Document File
                         </label>
@@ -884,9 +733,9 @@ export const Blog: React.FC = () => {
                   </div>
 
                   {/* Featured Banner Visual Deck */}
-                  <div className="space-y-3 pt-2 border-t border-[#F3DEC8]/60">
+                  <div className="space-y-3 pt-2 border-t border-[#EDE8F8]">
                     <label className="text-xs font-black text-[#1E122C] uppercase tracking-wide flex items-center gap-1.5">
-                      <ImageIcon className="w-3.5 h-3.5 text-[#EA580C]" />
+                      <ImageIcon className="w-3.5 h-3.5 text-[#DB2777]" />
                       Featured Hero Image
                     </label>
 
@@ -901,7 +750,7 @@ export const Blog: React.FC = () => {
                           key={i}
                           onClick={() => { setMainImage(imgUrl); setThumbnailImage(imgUrl); }}
                           className={`h-18 rounded-xl overflow-hidden border-2 cursor-pointer transition-all relative ${
-                            mainImage === imgUrl ? 'border-[#8C1F3D] ring-2 ring-[#8C1F3D]/20' : 'border-[#EADDCF] opacity-70 hover:opacity-100'
+                            mainImage === imgUrl ? 'border-[#DB2777] ring-2 ring-[#DB2777]/20' : 'border-[#EDE8F8] opacity-70 hover:opacity-100'
                           }`}
                         >
                           <img src={imgUrl} alt="Preset" className="w-full h-full object-cover" />
@@ -910,13 +759,13 @@ export const Blog: React.FC = () => {
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[10.5px] font-bold text-[#5C4D6B]">Custom Image URL</label>
+                      <label className="text-[10.5px] font-bold text-[#6B5E77]">Custom Image URL</label>
                       <input
                         type="url"
                         value={mainImage}
                         onChange={(e) => { setMainImage(e.target.value); setThumbnailImage(e.target.value); }}
                         placeholder="https://images.unsplash.com/photo-..."
-                        className="w-full bg-[#FAF7F2]/60 border border-[#EADDCF] rounded-xl px-3 py-2 text-xs font-semibold text-[#1E122C] outline-none focus:border-[#8C1F3D]"
+                        className="w-full bg-[#FAF8FE]/60 border border-[#EDE8F8] rounded-xl px-3 py-2 text-xs font-semibold text-[#1E122C] outline-none focus:border-[#DB2777]"
                       />
                     </div>
                   </div>
@@ -927,10 +776,10 @@ export const Blog: React.FC = () => {
               {activeStep === 3 && (
                 <div className="space-y-5 animate-in fade-in duration-150">
                   {/* Word Count Slider */}
-                  <div className="space-y-2 p-4 rounded-2xl bg-[#FCFAF8] border border-[#F3DEC8]/70">
+                  <div className="space-y-2 p-4 rounded-2xl bg-[#FAF8FE] border border-[#EDE8F8]">
                     <div className="flex items-center justify-between text-xs font-bold text-[#1E122C]">
                       <span>Target Article Length</span>
-                      <span className="text-[#8C1F3D] font-black">{targetWordCount} Words (~{Math.ceil(targetWordCount / 250)} min read)</span>
+                      <span className="text-[#DB2777] font-black">{targetWordCount} Words (~{Math.ceil(targetWordCount / 250)} min read)</span>
                     </div>
                     <input
                       type="range"
@@ -939,7 +788,7 @@ export const Blog: React.FC = () => {
                       step={200}
                       value={targetWordCount}
                       onChange={(e) => setTargetWordCount(Number(e.target.value))}
-                      className="w-full accent-[#8C1F3D] cursor-pointer"
+                      className="w-full accent-[#DB2777] cursor-pointer"
                     />
                     <div className="flex justify-between text-[10px] font-bold text-[#6B5E77]">
                       <span>Short Post (800w)</span>
@@ -949,7 +798,7 @@ export const Blog: React.FC = () => {
 
                   {/* Tone of Voice Selector */}
                   <div className="space-y-2">
-                    <label className="text-[11px] font-black text-[#5C4D6B] uppercase tracking-wide">
+                    <label className="text-[11px] font-black text-[#6B5E77] uppercase tracking-wide">
                       Tone of Voice
                     </label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -960,8 +809,8 @@ export const Blog: React.FC = () => {
                           onClick={() => setTone(t.id)}
                           className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                             tone === t.id
-                              ? 'bg-[#2B0847] text-white border-[#2B0847] shadow-xs'
-                              : 'bg-white border-[#EADDCF] text-[#6B5E77] hover:border-[#8C1F3D]'
+                              ? 'bg-gradient-to-r from-[#BE185D] to-[#DB2777] text-white border-[#DB2777] shadow-xs'
+                              : 'bg-white border-[#EDE8F8] text-[#6B5E77] hover:border-[#DB2777]'
                           }`}
                         >
                           {t.label}
@@ -973,45 +822,45 @@ export const Blog: React.FC = () => {
                   {/* Audience & CTA */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     <div className="space-y-1">
-                      <label className="text-[10.5px] font-bold text-[#5C4D6B]">Target Audience</label>
+                      <label className="text-[10.5px] font-bold text-[#6B5E77]">Target Audience</label>
                       <input
                         type="text"
                         value={targetAudience}
                         onChange={(e) => setTargetAudience(e.target.value)}
-                        className="w-full bg-[#FAF7F2]/60 border border-[#EADDCF] rounded-xl px-3 py-2 text-xs font-bold text-[#1E122C] outline-none focus:border-[#8C1F3D]"
+                        className="w-full bg-[#FAF8FE]/60 border border-[#EDE8F8] rounded-xl px-3 py-2 text-xs font-bold text-[#1E122C] outline-none focus:border-[#DB2777]"
                       />
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[10.5px] font-bold text-[#5C4D6B]">Custom Call to Action</label>
+                      <label className="text-[10.5px] font-bold text-[#6B5E77]">Custom Call to Action</label>
                       <input
                         type="text"
                         value={callToAction}
                         onChange={(e) => setCallToAction(e.target.value)}
-                        className="w-full bg-[#FAF7F2]/60 border border-[#EADDCF] rounded-xl px-3 py-2 text-xs font-bold text-[#1E122C] outline-none focus:border-[#8C1F3D]"
+                        className="w-full bg-[#FAF8FE]/60 border border-[#EDE8F8] rounded-xl px-3 py-2 text-xs font-bold text-[#1E122C] outline-none focus:border-[#DB2777]"
                       />
                     </div>
                   </div>
 
                   {/* Publishing Meta Row */}
-                  <div className="grid grid-cols-2 gap-3.5 pt-2 border-t border-[#F3DEC8]/60">
+                  <div className="grid grid-cols-2 gap-3.5 pt-2 border-t border-[#EDE8F8]">
                     <div className="space-y-1">
-                      <label className="text-[10.5px] font-bold text-[#5C4D6B]">Author</label>
+                      <label className="text-[10.5px] font-bold text-[#6B5E77]">Author</label>
                       <input
                         type="text"
                         value={authorName}
                         onChange={(e) => setAuthorName(e.target.value)}
-                        className="w-full bg-[#FAF7F2]/60 border border-[#EADDCF] rounded-xl px-3 py-2 text-xs font-bold text-[#1E122C] outline-none focus:border-[#8C1F3D]"
+                        className="w-full bg-[#FAF8FE]/60 border border-[#EDE8F8] rounded-xl px-3 py-2 text-xs font-bold text-[#1E122C] outline-none focus:border-[#DB2777]"
                       />
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[10.5px] font-bold text-[#5C4D6B]">Path Prefix</label>
+                      <label className="text-[10.5px] font-bold text-[#6B5E77]">Path Prefix</label>
                       <input
                         type="text"
                         value={articlePathPrefix}
                         onChange={(e) => setArticlePathPrefix(e.target.value)}
-                        className="w-full bg-[#FAF7F2]/60 border border-[#EADDCF] rounded-xl px-3 py-2 text-xs font-bold text-[#1E122C] outline-none focus:border-[#8C1F3D]"
+                        className="w-full bg-[#FAF8FE]/60 border border-[#EDE8F8] rounded-xl px-3 py-2 text-xs font-bold text-[#1E122C] outline-none focus:border-[#DB2777]"
                       />
                     </div>
                   </div>
@@ -1019,13 +868,13 @@ export const Blog: React.FC = () => {
               )}
 
               {/* Step Forward / Backward Footer */}
-              <div className="flex items-center justify-between pt-4 border-t border-[#F3DEC8]/60">
+              <div className="flex items-center justify-between pt-4 border-t border-[#EDE8F8]">
                 <div className="flex items-center gap-2">
                   {activeStep > 1 && (
                     <button
                       type="button"
                       onClick={() => setActiveStep(prev => prev - 1)}
-                      className="px-4 py-2 bg-[#FAF5F0] hover:bg-[#FAF7F2] border border-[#EADDCF] text-xs font-black text-[#6B5E77] rounded-xl cursor-pointer"
+                      className="px-4 py-2 bg-[#FAF8FE] hover:bg-slate-50 border border-[#EDE8F8] text-xs font-black text-[#6B5E77] rounded-xl cursor-pointer"
                     >
                       ← Back
                     </button>
@@ -1034,7 +883,7 @@ export const Blog: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setActiveStep(prev => prev + 1)}
-                      className="px-4 py-2 bg-white hover:bg-[#FFF8F5] border border-[#EADDCF] hover:border-[#8C1F3D] text-xs font-black text-[#1E122C] rounded-xl cursor-pointer"
+                      className="px-4 py-2 bg-white hover:bg-[#FDF4F8] border border-[#EDE8F8] hover:border-[#DB2777] text-xs font-black text-[#1E122C] rounded-xl cursor-pointer"
                     >
                       Next Step →
                     </button>
@@ -1054,7 +903,7 @@ export const Blog: React.FC = () => {
             <div className="lg:col-span-5 space-y-5">
               
               {/* Live Blueprint Canvas Card */}
-              <div className="bg-white border-2 border-[#F3DEC8] rounded-3xl overflow-hidden shadow-[0_8px_30px_rgba(75,29,107,0.06)] sticky top-6">
+              <div className="bg-white border border-[#EDE8F8] rounded-3xl overflow-hidden shadow-[0_8px_30px_rgba(219,39,119,0.08)] sticky top-6">
                 
                 {/* Hero Banner Preview */}
                 <div className="h-44 w-full relative bg-slate-100 overflow-hidden">
@@ -1062,7 +911,7 @@ export const Blog: React.FC = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-between p-4">
                     <div className="flex items-center justify-between">
                       <span className="px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-xs text-[10px] font-black text-[#1E122C] shadow-sm uppercase tracking-wider flex items-center gap-1">
-                        <Sparkles className="w-3 h-3 text-[#EA580C]" />
+                        <Sparkles className="w-3 h-3 text-[#DB2777]" />
                         {targetPlatform.toUpperCase()}
                       </span>
                       <span className="px-2.5 py-1 rounded-full bg-emerald-500 text-white text-[10px] font-black shadow-sm">
@@ -1071,7 +920,7 @@ export const Blog: React.FC = () => {
                     </div>
 
                     <div className="text-white space-y-0.5">
-                      <span className="text-[10px] font-bold text-[#FFD188] uppercase tracking-wider">Blueprint Preview</span>
+                      <span className="text-[10px] font-bold text-pink-200 uppercase tracking-wider">Blueprint Preview</span>
                       <h3 className="text-sm font-black line-clamp-1 leading-snug">
                         {topic || 'Your Target Article Headline'}
                       </h3>
@@ -1083,17 +932,17 @@ export const Blog: React.FC = () => {
                 <div className="p-5 sm:p-6 space-y-4">
                   {/* Live Meta Spec Badges */}
                   <div className="grid grid-cols-3 gap-2 text-center">
-                    <div className="p-2.5 rounded-2xl bg-[#FAF7F2] border border-[#EADDCF]">
+                    <div className="p-2.5 rounded-2xl bg-[#FAF8FE] border border-[#EDE8F8]">
                       <span className="text-[9.5px] font-black uppercase text-[#6B5E77] block">Length</span>
                       <span className="text-xs font-black text-[#1E122C]">{targetWordCount}w</span>
                     </div>
-                    <div className="p-2.5 rounded-2xl bg-[#FAF7F2] border border-[#EADDCF]">
+                    <div className="p-2.5 rounded-2xl bg-[#FAF8FE] border border-[#EDE8F8]">
                       <span className="text-[9.5px] font-black uppercase text-[#6B5E77] block">Read Time</span>
                       <span className="text-xs font-black text-[#1E122C]">~{Math.ceil(targetWordCount / 250)} min</span>
                     </div>
-                    <div className="p-2.5 rounded-2xl bg-[#FAF7F2] border border-[#EADDCF]">
+                    <div className="p-2.5 rounded-2xl bg-[#FAF8FE] border border-[#EDE8F8]">
                       <span className="text-[9.5px] font-black uppercase text-[#6B5E77] block">Tone</span>
-                      <span className="text-xs font-black text-[#8C1F3D] capitalize">{tone}</span>
+                      <span className="text-xs font-black text-[#DB2777] capitalize">{tone}</span>
                     </div>
                   </div>
 
@@ -1116,9 +965,9 @@ export const Blog: React.FC = () => {
                         '4. Common Pitfalls & High-Converting Solutions',
                         '5. Conclusion & Action Plan'
                       ].map((chap, idx) => (
-                        <div key={idx} className="p-2 rounded-xl bg-[#FAF7F2]/60 border border-[#EADDCF] flex items-center justify-between">
+                        <div key={idx} className="p-2 rounded-xl bg-[#FAF8FE]/80 border border-[#EDE8F8] flex items-center justify-between">
                           <span className="truncate pr-2">{chap}</span>
-                          <span className="text-[10px] text-[#8C1F3D] font-mono">H2</span>
+                          <span className="text-[10px] text-[#DB2777] font-mono">H2</span>
                         </div>
                       ))}
                     </div>
@@ -1132,7 +981,7 @@ export const Blog: React.FC = () => {
                       onClick={handleGenerateArticle}
                       className={`w-full py-4 rounded-2xl font-black text-xs text-white shadow-lg flex items-center justify-center gap-2.5 transition-all ${
                         topic.trim().length >= 3 && !isGenerating
-                          ? 'bg-gradient-to-r from-[#2B0847] via-[#5C164E] to-[#8C1F3D] hover:shadow-[0_8px_25px_rgba(140,31,61,0.35)] hover:scale-102 active:scale-98 cursor-pointer'
+                          ? 'bg-gradient-to-r from-[#BE185D] via-[#DB2777] to-[#EC4899] hover:shadow-[0_8px_25px_rgba(219,39,119,0.35)] hover:scale-102 active:scale-98 cursor-pointer'
                           : 'bg-slate-300 opacity-60 cursor-not-allowed shadow-none'
                       }`}
                     >
@@ -1143,7 +992,7 @@ export const Blog: React.FC = () => {
                         </>
                       ) : (
                         <>
-                          <Sparkles className="w-4 h-4 text-[#FFD188]" />
+                          <Sparkles className="w-4 h-4 text-pink-100" />
                           <span>Generate Complete Article</span>
                         </>
                       )}
@@ -1152,14 +1001,14 @@ export const Blog: React.FC = () => {
 
                   {/* AI Generation Live Simulation */}
                   {isGenerating && (
-                    <div className="p-4 rounded-2xl bg-[#FFF9F5] border border-[#F5E4D5] space-y-2.5 animate-in fade-in">
+                    <div className="p-4 rounded-2xl bg-[#FDF4F8] border border-[#FCE7F3] space-y-2.5 animate-in fade-in">
                       <div className="flex items-center justify-between text-xs font-black text-[#1E122C]">
                         <span>Stage {generationStage} of 6</span>
-                        <span className="text-[#EA580C]">{(generationStage / 6 * 100).toFixed(0)}% Complete</span>
+                        <span className="text-[#DB2777]">{(generationStage / 6 * 100).toFixed(0)}% Complete</span>
                       </div>
                       <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                         <motion.div
-                          className="h-full bg-gradient-to-r from-[#EA580C] to-[#8C1F3D] rounded-full"
+                          className="h-full bg-gradient-to-r from-[#BE185D] via-[#DB2777] to-[#EC4899] rounded-full"
                           animate={{ width: `${(generationStage / 6) * 100}%` }}
                           transition={{ duration: 0.3 }}
                         />
@@ -1194,7 +1043,7 @@ export const Blog: React.FC = () => {
       {activeTab === 'library' && (
         <div className="space-y-6 animate-in fade-in">
           {/* Controls Bar */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-[#F3DEC8] p-4 rounded-3xl shadow-[0_2px_12px_rgba(75,29,107,0.03)]">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-[#EDE8F8] p-4 rounded-3xl shadow-xs">
 
             {/* Status Filter Tabs — real backend project statuses */}
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
@@ -1210,13 +1059,13 @@ export const Blog: React.FC = () => {
                   onClick={() => setLibraryFilter(st.id)}
                   className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
                     libraryFilter === st.id
-                      ? 'bg-gradient-to-r from-[#2B0847] to-[#48115B] text-white shadow-xs'
-                      : 'bg-[#FAF5F0] text-[#6B5E77] hover:text-[#1E122C]'
+                      ? 'bg-gradient-to-r from-[#BE185D] via-[#DB2777] to-[#EC4899] text-white shadow-xs'
+                      : 'bg-[#FAF8FE] text-[#6B5E77] hover:text-[#1E122C]'
                   }`}
                 >
                   <span>{st.label}</span>
                   <span className={`px-1.5 py-0.2 rounded-full text-[9px] ${
-                    libraryFilter === st.id ? 'bg-white/20 text-white' : 'bg-white border border-[#F3DEC8] text-[#1E122C]'
+                    libraryFilter === st.id ? 'bg-white/20 text-white' : 'bg-white border border-[#EDE8F8] text-[#1E122C]'
                   }`}>
                     {st.count}
                   </span>
@@ -1232,13 +1081,13 @@ export const Blog: React.FC = () => {
                 value={librarySearch}
                 onChange={(e) => setLibrarySearch(e.target.value)}
                 placeholder="Search by topic or type..."
-                className="w-full pl-9 pr-3.5 py-2 bg-[#FAF7F2]/60 border border-[#EADDCF] rounded-xl text-xs font-bold text-[#1E122C] outline-none focus:border-[#8C1F3D] focus:bg-white"
+                className="w-full pl-9 pr-3.5 py-2 bg-[#FAF8FE]/60 border border-[#EDE8F8] rounded-xl text-xs font-bold text-[#1E122C] outline-none focus:border-[#DB2777] focus:bg-white"
               />
             </div>
           </div>
 
           {projectsLoading && (
-            <div className="p-8 text-center bg-white border border-[#F3DEC8] rounded-3xl text-sm font-bold text-[#6B5E77]">
+            <div className="p-8 text-center bg-white border border-[#EDE8F8] rounded-3xl text-sm font-bold text-[#6B5E77]">
               Loading your projects from the backend...
             </div>
           )}
@@ -1256,7 +1105,7 @@ export const Blog: React.FC = () => {
           )}
 
           {!projectsLoading && !projectsError && filteredPosts.length === 0 && (
-            <div className="p-10 text-center bg-white border border-dashed border-[#F3DEC8] rounded-3xl">
+            <div className="p-10 text-center bg-white border border-dashed border-[#EDE8F8] rounded-3xl">
               <p className="text-sm font-black text-[#1E122C]">No articles yet</p>
               <p className="text-xs font-bold text-[#6B5E77] mt-1">Generate your first article from the Studio Workspace tab.</p>
             </div>
@@ -1268,11 +1117,11 @@ export const Blog: React.FC = () => {
               {filteredPosts.map(post => (
                 <div
                   key={post.id}
-                  className="bg-white border border-[#F3DEC8]/80 rounded-3xl overflow-hidden shadow-[0_2px_12px_rgba(75,29,107,0.03)] hover:shadow-lg transition-all flex flex-col justify-between group"
+                  className="bg-white border border-[#EDE8F8] rounded-3xl overflow-hidden shadow-xs hover:border-[#DDD6FE] hover:shadow-[0_8px_25px_rgba(219,39,119,0.08)] transition-all flex flex-col justify-between group"
                 >
                   <div>
                     {/* Card Thumbnail Image Banner */}
-                    <div className="h-48 w-full overflow-hidden relative bg-gradient-to-br from-[#FAF5F0] to-[#F3DEC8] flex items-center justify-center">
+                    <div className="h-48 w-full overflow-hidden relative bg-gradient-to-br from-[#FAF8FE] to-[#F3EAFF] flex items-center justify-center">
                       {post.featuredImage ? (
                         <img
                           src={post.featuredImage}
@@ -1280,7 +1129,7 @@ export const Blog: React.FC = () => {
                           className="w-full h-full object-cover group-hover:scale-104 transition-transform duration-300"
                         />
                       ) : (
-                        <FileText className="w-8 h-8 text-[#8C1F3D]/40" />
+                        <FileText className="w-8 h-8 text-[#DB2777]/40" />
                       )}
                       <div className="absolute top-3.5 left-3.5 flex items-center gap-1.5">
                         <span className={`px-2.5 py-0.8 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm ${
@@ -1299,7 +1148,7 @@ export const Blog: React.FC = () => {
 
                       {post.isEnriched && (
                         <div className="absolute top-3.5 right-3.5 bg-white/95 backdrop-blur-xs px-2.5 py-1 rounded-xl shadow-sm flex items-center gap-1">
-                          <Zap className="w-3.5 h-3.5 text-[#D94A2A]" />
+                          <Zap className="w-3.5 h-3.5 text-[#DB2777]" />
                           <span className="text-[10px] font-black text-[#1E122C]">
                             {post.seoScore}/100 SEO
                           </span>
@@ -1309,7 +1158,7 @@ export const Blog: React.FC = () => {
 
                     {/* Card Body */}
                     <div className="p-5 space-y-3">
-                      <h3 className="text-base font-black text-[#1E122C] leading-snug line-clamp-2 group-hover:text-[#8C1F3D] transition-colors">
+                      <h3 className="text-base font-black text-[#1E122C] leading-snug line-clamp-2 group-hover:text-[#DB2777] transition-colors">
                         {post.title}
                       </h3>
                       <p className="text-xs text-[#6B5E77] font-medium line-clamp-2 leading-relaxed">
@@ -1317,11 +1166,11 @@ export const Blog: React.FC = () => {
                       </p>
 
                       {/* Metadata Pill Row */}
-                      <div className="flex flex-wrap items-center gap-3 text-[11px] font-bold text-[#6B5E77] pt-2 border-t border-[#F3DEC8]/60">
+                      <div className="flex flex-wrap items-center gap-3 text-[11px] font-bold text-[#6B5E77] pt-2 border-t border-[#EDE8F8]">
                         {post.isEnriched ? (
                           <>
                             <span className="flex items-center gap-1">
-                              <Clock className="w-3 h-3 text-[#EA580C]" />
+                              <Clock className="w-3 h-3 text-[#DB2777]" />
                               {post.readingTime}
                             </span>
                             <span>•</span>
@@ -1337,14 +1186,14 @@ export const Blog: React.FC = () => {
                   </div>
 
                   {/* Card Action Footer */}
-                  <div className="px-5 py-3.5 bg-[#FAF7F2]/60 border-t border-[#F3DEC8]/70">
+                  <div className="px-5 py-3.5 bg-[#FAF8FE]/80 border-t border-[#EDE8F8]">
                     <button
                       type="button"
                       disabled={post.status === 'generating'}
                       onClick={() => setActiveReadingProjectId(post.id)}
-                      className="w-full py-2 bg-white hover:bg-[#FFF8F5] border border-[#EADDCF] hover:border-[#8C1F3D] disabled:opacity-50 disabled:cursor-not-allowed text-xs font-black text-[#1E122C] rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-3xs cursor-pointer"
+                      className="w-full py-2 bg-white hover:bg-[#FDF4F8] border border-[#EDE8F8] hover:border-[#DB2777] disabled:opacity-50 disabled:cursor-not-allowed text-xs font-black text-[#1E122C] rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-3xs cursor-pointer"
                     >
-                      <Eye className="w-3.5 h-3.5 text-[#8C1F3D]" />
+                      <Eye className="w-3.5 h-3.5 text-[#DB2777]" />
                       <span>{post.status === 'generating' ? 'Still Generating...' : 'Read Article'}</span>
                     </button>
                   </div>
@@ -1374,8 +1223,8 @@ export const Blog: React.FC = () => {
           <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-3 sm:p-5">
             <div className="fixed inset-0 bg-[#1E122C]/50 backdrop-blur-xs" onClick={closeModal} />
 
-            <div className="relative bg-white rounded-[32px] max-w-3xl w-full p-6 sm:p-8 shadow-2xl border border-[#F3DEC8] z-10 space-y-5 max-h-[90vh] flex flex-col justify-between">
-              <div className="flex items-center justify-between border-b border-[#F3DEC8] pb-3 shrink-0">
+            <div className="relative bg-white rounded-[32px] max-w-3xl w-full p-6 sm:p-8 shadow-2xl border border-[#EDE8F8] z-10 space-y-5 max-h-[90vh] flex flex-col justify-between">
+              <div className="flex items-center justify-between border-b border-[#EDE8F8] pb-3 shrink-0">
                 <div className="flex items-center gap-2.5 min-w-0 pr-4">
                   <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse shrink-0" />
                   <h3 className="text-sm sm:text-base font-black text-[#1E122C] truncate">
@@ -1389,7 +1238,7 @@ export const Blog: React.FC = () => {
                     onClick={() => {
                       navigator.clipboard.writeText(activeDoc?.contentMarkdown || '');
                     }}
-                    className="px-3.5 py-1.8 bg-[#FAF5F0] hover:bg-[#F5EEFB] border border-[#F3DEC8] text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer text-[#8C1F3D]"
+                    className="px-3.5 py-1.8 bg-[#FAF8FE] hover:bg-[#FDF2F8] border border-[#EDE8F8] text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer text-[#DB2777]"
                   >
                     <Copy className="w-3.5 h-3.5" />
                     <span>Copy Markdown</span>
@@ -1398,7 +1247,7 @@ export const Blog: React.FC = () => {
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="p-2 hover:bg-[#FAF5F0] rounded-xl text-[#6B5E77] hover:text-[#1E122C] cursor-pointer"
+                    className="p-2 hover:bg-[#FAF8FE] rounded-xl text-[#6B5E77] hover:text-[#1E122C] cursor-pointer"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -1421,7 +1270,7 @@ export const Blog: React.FC = () => {
 
               {!stillLoading && activeDoc && (
                 <>
-                  <div className="flex items-center gap-2 border-b border-[#F3DEC8]/60 pb-2.5 shrink-0 overflow-x-auto">
+                  <div className="flex items-center gap-2 border-b border-[#EDE8F8] pb-2.5 shrink-0 overflow-x-auto">
                     {[
                       { id: 'rendered', label: 'Article Reader', icon: Eye },
                       { id: 'markdown', label: 'Markdown Source', icon: FileText },
@@ -1434,8 +1283,8 @@ export const Blog: React.FC = () => {
                         onClick={() => setPreviewTab(t.id as any)}
                         className={`px-3.5 py-1.8 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
                           previewTab === t.id
-                            ? 'bg-[#2B0847] text-white shadow-xs'
-                            : 'bg-[#FAF5F0] text-[#6B5E77] hover:text-[#1E122C]'
+                            ? 'bg-gradient-to-r from-[#BE185D] to-[#DB2777] text-white shadow-xs'
+                            : 'bg-[#FAF8FE] text-[#6B5E77] hover:text-[#1E122C]'
                         }`}
                       >
                         <t.icon className="w-3.5 h-3.5" />
@@ -1451,7 +1300,7 @@ export const Blog: React.FC = () => {
                           <img
                             src={activeDoc.featuredImage}
                             alt="Featured banner"
-                            className="w-full h-60 object-cover rounded-2xl border border-[#F3DEC8]"
+                            className="w-full h-60 object-cover rounded-2xl border border-[#EDE8F8]"
                           />
                         )}
                         <div
@@ -1474,7 +1323,7 @@ export const Blog: React.FC = () => {
                     )}
 
                     {previewTab === 'seo' && (
-                      <div className="space-y-4 bg-[#FAF7F2]/80 p-5 rounded-2xl border border-[#F3DEC8]">
+                      <div className="space-y-4 bg-[#FAF8FE]/80 p-5 rounded-2xl border border-[#EDE8F8]">
                         <div className="space-y-1">
                           <span className="text-[10px] font-black uppercase text-[#6B5E77]">Meta Title</span>
                           <p className="text-xs font-bold text-[#1E122C]">{activeDoc.title} | {siteName}</p>
@@ -1485,7 +1334,7 @@ export const Blog: React.FC = () => {
                         </div>
                         <div className="space-y-1">
                           <span className="text-[10px] font-black uppercase text-[#6B5E77]">Canonical Slug</span>
-                          <code className="text-xs font-mono text-[#8C1F3D] bg-white px-2 py-0.5 rounded-lg border border-[#F3DEC8] inline-block">
+                          <code className="text-xs font-mono text-[#DB2777] bg-white px-2 py-0.5 rounded-lg border border-[#EDE8F8] inline-block">
                             {articlePathPrefix}/{activeDoc.slug}
                           </code>
                         </div>
@@ -1494,7 +1343,7 @@ export const Blog: React.FC = () => {
                             <span className="text-[10px] font-black uppercase text-[#6B5E77]">Target Keywords</span>
                             <div className="flex flex-wrap gap-1.5">
                               {activeDoc.targetKeywords.map(k => (
-                                <span key={k} className="px-2 py-0.5 rounded-lg bg-white border border-[#F3DEC8] text-[11px] font-bold text-[#8C1F3D]">
+                                <span key={k} className="px-2 py-0.5 rounded-lg bg-white border border-[#EDE8F8] text-[11px] font-bold text-[#DB2777]">
                                   {k}
                                 </span>
                               ))}
@@ -1505,7 +1354,7 @@ export const Blog: React.FC = () => {
                     )}
                   </div>
 
-                  <div className="pt-4 border-t border-[#F3DEC8] flex items-center justify-between gap-3 shrink-0">
+                  <div className="pt-4 border-t border-[#EDE8F8] flex items-center justify-between gap-3 shrink-0">
                     <span className="text-xs font-bold text-[#6B5E77]">
                       {activeDoc.isEnriched ? `${activeDoc.wordCount} words • ${activeDoc.seoScore}/100 SEO Score` : PROJECT_STATUS_LABEL[activeDoc.status]}
                     </span>
@@ -1513,7 +1362,7 @@ export const Blog: React.FC = () => {
                     <button
                       type="button"
                       onClick={closeModal}
-                      className="px-4 py-2 border border-[#EADDCF] hover:bg-[#FAF5F0] text-xs font-bold rounded-xl cursor-pointer"
+                      className="px-4 py-2 border border-[#EDE8F8] hover:bg-[#FAF8FE] text-xs font-bold rounded-xl cursor-pointer"
                     >
                       Close
                     </button>
@@ -1565,17 +1414,17 @@ const OverviewTab: React.FC<{ projects: ProjectSummary[]; projectsLoading: boole
 
       {/* Top 4 KPI Metrics — from GET /api/v1/projects/usage-summary */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white border border-[#F3DEC8]/80 p-5 rounded-3xl shadow-[0_2px_12px_rgba(75,29,107,0.03)] space-y-1">
+        <div className="bg-white border border-[#EDE8F8] p-5 rounded-3xl shadow-xs space-y-1">
           <span className="text-[10px] font-black text-[#6B5E77] uppercase tracking-wider block">Total Projects</span>
           <div className="flex items-center justify-between">
             <span className="text-2xl font-black text-[#1E122C]">{usageLoading ? '—' : usage?.total_projects ?? 0}</span>
-            <div className="w-8 h-8 rounded-xl bg-[#FAF5F0] text-[#8C1F3D] flex items-center justify-center font-bold">
+            <div className="w-8 h-8 rounded-xl bg-pink-50 text-[#DB2777] flex items-center justify-center font-bold">
               <FileText className="w-4 h-4" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white border border-[#F3DEC8]/80 p-5 rounded-3xl shadow-[0_2px_12px_rgba(75,29,107,0.03)] space-y-1">
+        <div className="bg-white border border-[#EDE8F8] p-5 rounded-3xl shadow-xs space-y-1">
           <span className="text-[10px] font-black text-[#6B5E77] uppercase tracking-wider block">Completed</span>
           <div className="flex items-center justify-between">
             <span className="text-2xl font-black text-[#1E122C]">{usageLoading ? '—' : usage?.completed_projects ?? 0}</span>
@@ -1585,7 +1434,7 @@ const OverviewTab: React.FC<{ projects: ProjectSummary[]; projectsLoading: boole
           </div>
         </div>
 
-        <div className="bg-white border border-[#F3DEC8]/80 p-5 rounded-3xl shadow-[0_2px_12px_rgba(75,29,107,0.03)] space-y-1">
+        <div className="bg-white border border-[#EDE8F8] p-5 rounded-3xl shadow-xs space-y-1">
           <span className="text-[10px] font-black text-[#6B5E77] uppercase tracking-wider block">Failed</span>
           <div className="flex items-center justify-between">
             <span className="text-2xl font-black text-[#1E122C]">{usageLoading ? '—' : usage?.failed_projects ?? 0}</span>
@@ -1595,11 +1444,11 @@ const OverviewTab: React.FC<{ projects: ProjectSummary[]; projectsLoading: boole
           </div>
         </div>
 
-        <div className="bg-white border border-[#F3DEC8]/80 p-5 rounded-3xl shadow-[0_2px_12px_rgba(75,29,107,0.03)] space-y-1">
+        <div className="bg-white border border-[#EDE8F8] p-5 rounded-3xl shadow-xs space-y-1">
           <span className="text-[10px] font-black text-[#6B5E77] uppercase tracking-wider block">Total Words Written</span>
           <div className="flex items-center justify-between">
             <span className="text-2xl font-black text-[#1E122C]">{usageLoading ? '—' : (usage?.total_words_written ?? 0).toLocaleString()}</span>
-            <div className="w-8 h-8 rounded-xl bg-[#F5EEFB] text-[#7E22CE] flex items-center justify-center font-bold">
+            <div className="w-8 h-8 rounded-xl bg-[#F3EAFF] text-[#7C3AED] flex items-center justify-center font-bold">
               <Zap className="w-4 h-4" />
             </div>
           </div>
@@ -1610,10 +1459,10 @@ const OverviewTab: React.FC<{ projects: ProjectSummary[]; projectsLoading: boole
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
         {/* Recent Projects (5 Cols) */}
-        <div className="lg:col-span-5 bg-white border border-[#F3DEC8]/80 rounded-3xl p-6 shadow-[0_2px_12px_rgba(75,29,107,0.03)] space-y-4">
-          <div className="flex items-center justify-between border-b border-[#F3DEC8]/60 pb-3">
+        <div className="lg:col-span-5 bg-white border border-[#EDE8F8] rounded-3xl p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between border-b border-[#EDE8F8] pb-3">
             <h3 className="text-xs font-black text-[#1E122C] uppercase tracking-wider flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-[#D94A2A]" />
+              <BarChart3 className="w-4 h-4 text-[#DB2777]" />
               Recent Projects
             </h3>
             <span className="text-[10px] font-bold text-[#6B5E77]">Most Recently Created</span>
@@ -1625,9 +1474,9 @@ const OverviewTab: React.FC<{ projects: ProjectSummary[]; projectsLoading: boole
               <p className="text-xs font-bold text-[#6B5E77]">No projects yet — generate your first article.</p>
             )}
             {recentProjects.map((p, idx) => (
-              <div key={p.id} className="p-3.5 rounded-2xl bg-[#FCFAF8] border border-[#F3DEC8]/70 flex items-center justify-between gap-3 hover:bg-white transition-colors">
+              <div key={p.id} className="p-3.5 rounded-2xl bg-[#FAF8FE] border border-[#EDE8F8] flex items-center justify-between gap-3 hover:bg-white transition-colors">
                 <div className="flex items-center gap-3 min-w-0">
-                  <span className="w-7 h-7 rounded-xl bg-white border border-[#F3DEC8] text-xs font-black text-[#8C1F3D] flex items-center justify-center shrink-0">
+                  <span className="w-7 h-7 rounded-xl bg-white border border-[#EDE8F8] text-xs font-black text-[#DB2777] flex items-center justify-center shrink-0">
                     0{idx + 1}
                   </span>
                   <div className="min-w-0">
@@ -1648,10 +1497,10 @@ const OverviewTab: React.FC<{ projects: ProjectSummary[]; projectsLoading: boole
         </div>
 
         {/* Status Breakdown (7 Cols) */}
-        <div className="lg:col-span-7 bg-white border border-[#F3DEC8]/80 rounded-3xl p-6 shadow-[0_4px_20px_rgba(75,29,107,0.04)] space-y-5">
-          <div className="border-b border-[#F3DEC8]/60 pb-3">
+        <div className="lg:col-span-7 bg-white border border-[#EDE8F8] rounded-3xl p-6 shadow-xs space-y-5">
+          <div className="border-b border-[#EDE8F8] pb-3">
             <h3 className="text-xs font-black text-[#1E122C] uppercase tracking-wider flex items-center gap-2">
-              <PieChart className="w-4 h-4 text-[#8C1F3D]" />
+              <PieChart className="w-4 h-4 text-[#7C3AED]" />
               <span>Project Status Breakdown</span>
             </h3>
             <p className="text-[11px] text-[#6B5E77] font-medium mt-0.5">
@@ -1664,14 +1513,14 @@ const OverviewTab: React.FC<{ projects: ProjectSummary[]; projectsLoading: boole
               const count = statusCounts[status];
               const pct = Math.round((count / total) * 100);
               return (
-                <div key={status} className="p-3.5 rounded-2xl bg-[#FCFAF8] border border-[#F3DEC8]/70 space-y-2">
+                <div key={status} className="p-3.5 rounded-2xl bg-[#FAF8FE] border border-[#EDE8F8] space-y-2">
                   <div className="flex items-center justify-between text-xs font-black text-[#1E122C]">
                     <span>{PROJECT_STATUS_LABEL[status]}</span>
                     <span className="px-2 py-0.5 rounded-full text-white text-[10px] font-black" style={{ backgroundColor: color }}>
                       {count} ({pct}%)
                     </span>
                   </div>
-                  <div className="h-3 w-full bg-[#FAF5F0] rounded-full overflow-hidden p-0.5 border border-[#F3DEC8]/50">
+                  <div className="h-3 w-full bg-white rounded-full overflow-hidden p-0.5 border border-[#EDE8F8]">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${pct}%` }}
