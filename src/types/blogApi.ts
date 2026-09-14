@@ -52,6 +52,9 @@ export interface ContentGenerateRequest {
   slug_override?: string;
   indexable: boolean;
   include_sources: boolean;
+  publisher_name?: string;
+  publisher_url?: string;
+  publisher_logo_url?: string;
 }
 
 export interface ArticleSource {
@@ -155,6 +158,24 @@ export interface UsageSummary {
   completed_projects: number;
   failed_projects: number;
   total_words_written: number;
+}
+
+export interface WebflowStatusResponse {
+  connected: boolean;
+  site_id?: string | null;
+  site_name?: string | null;
+  collection_id?: string | null;
+  collection_name?: string | null;
+  title_field?: string | null;
+  slug_field?: string | null;
+  body_field?: string | null;
+  summary_field?: string | null;
+}
+
+export interface WebflowPublishResponse {
+  item_id: string;
+  status: 'draft' | 'live';
+  dashboard_url?: string | null;
 }
 
 export interface ApiErrorPayload {

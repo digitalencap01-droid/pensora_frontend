@@ -5,6 +5,8 @@ import {
   ProjectArtifactsResult,
   ProjectListResult,
   UsageSummary,
+  WebflowPublishResponse,
+  WebflowStatusResponse,
 } from '../types/blogApi';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -12,12 +14,14 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 export class BlogApiError extends Error {
   status: number;
   retryAfterSeconds?: number;
+  stage?: string;
 
-  constructor(message: string, status: number, retryAfterSeconds?: number) {
+  constructor(message: string, status: number, retryAfterSeconds?: number, stage?: string) {
     super(message);
     this.name = 'BlogApiError';
     this.status = status;
     this.retryAfterSeconds = retryAfterSeconds;
+    this.stage = stage;
   }
 }
 
@@ -51,12 +55,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       typeof detail === 'string'
         ? detail
         : detail?.message || response.statusText || 'Request failed';
+    const stage = typeof detail === 'object' ? detail?.stage : undefined;
 
     const retryAfterHeader = response.headers.get('Retry-After');
     throw new BlogApiError(
       message,
       response.status,
-      retryAfterHeader ? Number(retryAfterHeader) : undefined
+      retryAfterHeader ? Number(retryAfterHeader) : undefined,
+      stage
     );
   }
 
@@ -83,5 +89,15 @@ export const blogApi = {
 
   getUsageSummary(): Promise<UsageSummary> {
     return request<UsageSummary>('/api/v1/projects/usage-summary');
+  },
+
+  getWebflowStatus(): Promise<WebflowStatusResponse> {
+    return request<WebflowStatusResponse>('/api/v1/webflow/status');
+  },
+
+  publishToWebflow(projectId: string): Promise<WebflowPublishResponse> {
+    return request<WebflowPublishResponse>(`/api/v1/webflow/projects/${projectId}/publish`, {
+      method: 'POST',
+    });
   },
 };
