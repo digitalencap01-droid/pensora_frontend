@@ -13,38 +13,38 @@ export const LandingHero: React.FC = () => {
       icon: FileText,
       title: 'AI CONTENT CREATION',
       desc: 'High-quality content ready for your brand, in minutes.',
-      iconBg: 'bg-[#7042D9]/10',
-      iconColor: 'text-[#7042D9]',
+      iconBg: 'bg-[#118AB2]/10',
+      iconColor: 'text-[#118AB2]',
     },
     {
       icon: Target,
       title: 'SMART TARGETING',
       desc: 'Reach the right audience with data-driven insights.',
-      iconBg: 'bg-[#E93E91]/12',
-      iconColor: 'text-[#E93E91]',
+      iconBg: 'bg-[#7CD5C7]/25',
+      iconColor: 'text-[#118AB2]',
     },
     {
       icon: Layers,
       title: 'CAMPAIGN AUTOMATION',
       desc: 'Launch, manage & optimize campaigns effortlessly.',
-      iconBg: 'bg-[#FF762D]/12',
-      iconColor: 'text-[#FF762D]',
+      iconBg: 'bg-[#118AB2]/10',
+      iconColor: 'text-[#118AB2]',
     },
     {
       icon: BarChart3,
       title: 'PERFORMANCE ANALYTICS',
       desc: 'Real-time insights that drive real growth.',
-      iconBg: 'bg-[#FFB53E]/20',
-      iconColor: 'text-[#E0601A]',
+      iconBg: 'bg-[#7CD5C7]/25',
+      iconColor: 'text-[#118AB2]',
     },
   ];
 
   return (
-    <section className="relative bg-[#F7F4FA] overflow-hidden pt-[115px] sm:pt-[130px] lg:pt-[140px] pb-16 lg:pb-20 text-left">
+    <section className="relative bg-[#F2F2ED] overflow-hidden pt-[115px] sm:pt-[130px] lg:pt-[140px] pb-16 lg:pb-20 text-left">
       
       {/* Ambient background soft glowing blobs */}
-      <div className="absolute top-[8%] right-[10%] w-[580px] h-[580px] rounded-full bg-gradient-to-br from-[#7042D9]/10 via-[#E93E91]/8 to-[#FF762D]/6 filter blur-3xl pointer-events-none select-none z-0" />
-      <div className="absolute top-[35%] left-[5%] w-[480px] h-[480px] rounded-full bg-gradient-to-tr from-[#FFB53E]/8 via-[#E93E91]/6 to-[#7042D9]/6 filter blur-3xl pointer-events-none select-none z-0" />
+      <div className="absolute top-[10%] right-[12%] w-[550px] h-[550px] rounded-full bg-gradient-to-br from-[#7CD5C7]/15 to-[#118AB2]/10 filter blur-3xl pointer-events-none select-none z-0" />
+      <div className="absolute top-[40%] left-[5%] w-[450px] h-[450px] rounded-full bg-gradient-to-tr from-[#118AB2]/8 to-[#7CD5C7]/10 filter blur-3xl pointer-events-none select-none z-0" />
 
       {/* Main Hero Container */}
       <div className="max-w-[1440px] w-[calc(100%-48px)] sm:w-[calc(100%-80px)] mx-auto relative z-10">
@@ -60,26 +60,26 @@ export const LandingHero: React.FC = () => {
             transition={{ duration: 0.8, ease: cubicEase }}
           >
             {/* Pill Tag */}
-            <div className="mb-6 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#ECE6F5]/90 border border-[#7042D9]/25 text-[#3D126F] text-[11px] font-bold uppercase tracking-wider shadow-xs">
-              <span className="w-2 h-2 rounded-full bg-[#FF762D] inline-block animate-pulse" />
+            <div className="mb-6 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E5ECEC]/80 border border-[#7CD5C7]/40 text-[#464B71] text-[11px] font-bold uppercase tracking-wider shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-[#7CD5C7] inline-block animate-pulse" />
               <span>DIGITAL MARKETING, AUTOMATED</span>
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-[56px] xl:text-[64px] font-black text-[#1E122C] leading-[1.08] tracking-tight">
+            <h1 className="text-4xl sm:text-5xl lg:text-[56px] xl:text-[64px] font-black text-[#1E2538] leading-[1.08] tracking-tight">
               From Invisible<br />
               to{' '}
-              <span className="relative inline-block bg-gradient-to-r from-[#7042D9] via-[#E93E91] to-[#FF762D] bg-clip-text text-transparent">
+              <span className="relative inline-block text-[#118AB2]">
                 Unstoppable.
-                {/* Decorative underline brush in Orange */}
-                <svg className="absolute -bottom-1.5 left-0 w-full h-3.5 text-[#FF762D]" viewBox="0 0 200 12" fill="none">
+                {/* Decorative underline brush */}
+                <svg className="absolute -bottom-1.5 left-0 w-full h-3.5 text-[#7CD5C7]" viewBox="0 0 200 12" fill="none">
                   <path d="M3 9C60 2 140 2 197 8" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" />
                 </svg>
               </span>
             </h1>
 
             {/* Subtitle */}
-            <p className="mt-5 text-[#3D126F]/80 text-[15px] sm:text-[16.5px] leading-relaxed max-w-lg">
+            <p className="mt-5 text-[#464B71]/85 text-[15px] sm:text-[16.5px] leading-relaxed max-w-lg">
               AI-powered digital marketing that creates, optimizes and grows your online presence while you focus on your business.
             </p>
 
@@ -87,7 +87,7 @@ export const LandingHero: React.FC = () => {
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <button
                 onClick={() => navigate('/signup')}
-                className="px-7 py-3.5 bg-gradient-to-r from-[#3D126F] via-[#7042D9] to-[#E93E91] hover:opacity-95 text-white font-bold text-xs sm:text-sm rounded-full shadow-md hover:shadow-lg shadow-[#7042D9]/20 transition-all duration-200 flex items-center gap-2 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer shrink-0"
+                className="px-7 py-3.5 bg-[#118AB2] hover:bg-[#0e7597] text-white font-bold text-xs sm:text-sm rounded-full shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer shrink-0"
               >
                 <span>Explore Services</span>
                 <ArrowRight className="w-4 h-4" />
@@ -95,9 +95,9 @@ export const LandingHero: React.FC = () => {
               
               <a
                 href="#demo"
-                className="px-6 py-3.5 bg-white hover:bg-slate-50 border border-[#3D126F]/20 text-[#3D126F] font-bold text-xs sm:text-sm rounded-full transition-all duration-200 flex items-center gap-2.5 shadow-xs hover:-translate-y-0.5 active:translate-y-0 shrink-0"
+                className="px-6 py-3.5 bg-white/90 hover:bg-white border border-[#464B71]/20 text-[#1E2538] font-bold text-xs sm:text-sm rounded-full transition-all duration-200 flex items-center gap-2.5 shadow-xs hover:-translate-y-0.5 active:translate-y-0 shrink-0"
               >
-                <div className="w-6 h-6 rounded-full bg-[#FF762D] text-white flex items-center justify-center shadow-xs">
+                <div className="w-6 h-6 rounded-full bg-[#118AB2] text-white flex items-center justify-center">
                   <Play className="w-2.5 h-2.5 fill-current ml-0.5" />
                 </div>
                 <span>Watch Demo</span>
@@ -108,29 +108,29 @@ export const LandingHero: React.FC = () => {
             <div className="mt-8 pt-2 flex items-center gap-4">
               <div className="flex -space-x-2.5">
                 <img 
-                  className="w-9 h-9 rounded-full border-2 border-[#F7F4FA] object-cover shadow-xs" 
+                  className="w-9 h-9 rounded-full border-2 border-[#F2F2ED] object-cover shadow-xs" 
                   src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop" 
                   alt="Avatar 1" 
                 />
                 <img 
-                  className="w-9 h-9 rounded-full border-2 border-[#F7F4FA] object-cover shadow-xs" 
+                  className="w-9 h-9 rounded-full border-2 border-[#F2F2ED] object-cover shadow-xs" 
                   src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" 
                   alt="Avatar 2" 
                 />
                 <img 
-                  className="w-9 h-9 rounded-full border-2 border-[#F7F4FA] object-cover shadow-xs" 
+                  className="w-9 h-9 rounded-full border-2 border-[#F2F2ED] object-cover shadow-xs" 
                   src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" 
                   alt="Avatar 3" 
                 />
-                <div className="w-9 h-9 rounded-full border-2 border-[#F7F4FA] bg-[#E93E91] text-white text-[11px] font-black flex items-center justify-center shadow-xs">
+                <div className="w-9 h-9 rounded-full border-2 border-[#F2F2ED] bg-[#7CD5C7] text-[#1E2538] text-[11px] font-black flex items-center justify-center shadow-xs">
                   +120
                 </div>
               </div>
               <div>
-                <span className="block text-[11px] font-black uppercase tracking-wider text-[#3D126F]">
+                <span className="block text-[11px] font-black uppercase tracking-wider text-[#1E2538]">
                   TRUSTED BY GROWING BRANDS
                 </span>
-                <span className="block text-xs text-[#3D126F]/65 font-medium">
+                <span className="block text-xs text-[#464B71]/70 font-medium">
                   120+ Brands Growing with GrowWise AI
                 </span>
               </div>
@@ -147,14 +147,14 @@ export const LandingHero: React.FC = () => {
           >
             <div className="relative w-full max-w-[640px] xl:max-w-[700px] flex items-center justify-center">
               
-              {/* Ultra-Soft Purple / Magenta / Orange Ambient Atmosphere */}
-              <div className="absolute -inset-6 sm:-inset-12 bg-gradient-to-tr from-[#7042D9]/10 via-[#E93E91]/10 to-[#FFB53E]/8 rounded-full filter blur-3xl pointer-events-none -z-10" />
-              <div className="absolute top-[12%] right-[5%] w-[80%] h-[75%] bg-[#7042D9]/10 rounded-full filter blur-3xl pointer-events-none -z-10" />
+              {/* Ultra-Soft, Light & Subtle Bluish / Mint Ambient Glow */}
+              <div className="absolute -inset-6 sm:-inset-12 bg-gradient-to-tr from-[#118AB2]/10 via-[#7CD5C7]/15 to-[#118AB2]/8 rounded-full filter blur-3xl pointer-events-none -z-10" />
+              <div className="absolute top-[12%] right-[5%] w-[80%] h-[75%] bg-[#7CD5C7]/12 rounded-full filter blur-3xl pointer-events-none -z-10" />
               
               <img 
-                src="/hero-stairs-purple.png" 
+                src="/hero-stairs.png" 
                 alt="GrowWise AI Growth Staircase" 
-                className="w-full h-auto object-contain select-none pointer-events-none relative z-10 drop-shadow-[0_12px_28px_rgba(112,66,217,0.12)]"
+                className="w-full h-auto object-contain select-none pointer-events-none relative z-10 drop-shadow-[0_10px_25px_rgba(17,138,178,0.07)]"
               />
             </div>
           </motion.div>
@@ -166,9 +166,9 @@ export const LandingHero: React.FC = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.25, ease: cubicEase }}
-          className="w-full mt-12 lg:mt-16 bg-white/95 backdrop-blur-md rounded-3xl p-6 md:p-7 shadow-[0_15px_45px_rgba(61,18,111,0.06)] border border-[#EADDCF]/70"
+          className="w-full mt-12 lg:mt-16 bg-white/95 backdrop-blur-md rounded-3xl p-6 md:p-7 shadow-[0_15px_45px_rgba(70,75,113,0.07)] border border-slate-100"
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-0 lg:divide-x lg:divide-[#EADDCF]/60">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-0 lg:divide-x lg:divide-slate-200/60">
             {features.map((feat, idx) => {
               const IconComp = feat.icon;
               return (
@@ -177,10 +177,10 @@ export const LandingHero: React.FC = () => {
                     <IconComp className="w-6 h-6 stroke-[2]" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-black uppercase tracking-wider text-[#3D126F]">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-[#1E2538]">
                       {feat.title}
                     </h4>
-                    <p className="text-[11.5px] text-[#3D126F]/65 font-medium mt-0.5 leading-snug">
+                    <p className="text-[11.5px] text-[#464B71]/70 font-medium mt-0.5 leading-snug">
                       {feat.desc}
                     </p>
                   </div>
