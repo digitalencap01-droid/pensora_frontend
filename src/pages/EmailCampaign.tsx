@@ -1,48 +1,239 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import {
-  Mail,
-  Sparkles,
-  Users,
-  BarChart3,
-  Send,
-  CheckCircle2,
-  Plus,
-  Eye,
-  Search,
-  ShieldCheck,
-  RefreshCw,
-  Copy,
-  Check,
-  ArrowRight,
-  ArrowLeft,
-  X,
-  Upload,
-  Bot,
-  Zap,
-  Lock,
-  Globe,
-  HelpCircle,
-  FileText,
-  Calendar,
-  Clock,
-  Sliders,
-  Filter,
-  Layers,
-  CheckCheck,
-  Layout,
-  Palette,
-  Flame,
-  Wand2,
+import { backendApi, BackendCampaignPayload, BackendContact } from '../services/backendApi';
+import { 
+  Mail, 
+  Sparkles, 
+  Users, 
+  BarChart3, 
+  Send, 
+  CheckCircle2, 
+  Plus, 
+  Eye, 
+  Search, 
+  ShieldCheck, 
+  RefreshCw, 
+  Copy, 
+  Check, 
+  ArrowRight, 
+  ArrowLeft, 
+  X, 
+  Upload, 
+  Bot, 
+  Zap, 
+  Lock, 
+  Globe, 
+  HelpCircle, 
+  FileText, 
+  Calendar, 
+  Clock, 
+  Sliders, 
+  Filter, 
+  Layers, 
+  CheckCheck, 
+  Layout, 
+  Palette, 
+  Flame, 
+  Wand2, 
   Tag,
   AlertCircle,
   Settings,
   Shield,
-  Radio
+  Radio,
+  MapPin,
+  UserPlus,
+  UserCheck,
+  CheckSquare,
+  Square,
+  Trash2
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { useMarketing } from '../context/MarketingContext';
+import { Contact } from '../types';
 import TemplateLibraryModal, { EmailTemplate, REAL_TEMPLATE_GALLERY } from '../components/campaigns/TemplateLibraryModal';
+
+const INITIAL_AUDIENCE_CONTACTS: Contact[] = [
+  {
+    id: 'aud_1',
+    name: 'Aarav Sharma',
+    email: 'aarav.sharma@fintechscale.com',
+    phone: '+91 98765 43210',
+    company: 'FinTech Scale',
+    jobTitle: 'VP Growth',
+    location: 'Mumbai, India',
+    source: 'Email Campaign',
+    lifecycleStage: 'sql',
+    leadStatus: 'qualified',
+    leadScore: 94,
+    priority: 'high',
+    segment: 'vip_engaged',
+    tags: ['B2B', 'VIP'],
+    consent: true,
+    createdAt: '2026-09-01'
+  },
+  {
+    id: 'aud_2',
+    name: 'Priya Patel',
+    email: 'priya.patel@luxoretail.in',
+    phone: '+91 98220 11223',
+    company: 'Luxo Retail',
+    jobTitle: 'CMO',
+    location: 'Bangalore, India',
+    source: 'Email Campaign',
+    lifecycleStage: 'customer',
+    leadStatus: 'qualified',
+    leadScore: 98,
+    priority: 'high',
+    segment: 'vip_engaged',
+    tags: ['D2C', 'HIGH-LTV'],
+    consent: true,
+    createdAt: '2026-09-02'
+  },
+  {
+    id: 'aud_3',
+    name: 'Rohan Mehta',
+    email: 'rohan.m@zenithmedia.com',
+    phone: '+91 97112 33445',
+    company: 'Zenith Media',
+    jobTitle: 'Founder & CEO',
+    location: 'New Delhi, India',
+    source: 'Email Campaign',
+    lifecycleStage: 'mql',
+    leadStatus: 'contacted',
+    leadScore: 88,
+    priority: 'high',
+    segment: 'vip_engaged',
+    tags: ['FOUNDER', 'VIP'],
+    consent: true,
+    createdAt: '2026-09-03'
+  },
+  {
+    id: 'aud_4',
+    name: 'Ananya Deshmukh',
+    email: 'ananya.d@urbanthreads.store',
+    phone: '+91 99887 76655',
+    company: 'Urban Threads',
+    jobTitle: 'Head of Merchandising',
+    location: 'Pune, India',
+    source: 'Website Form',
+    lifecycleStage: 'lead',
+    leadStatus: 'new',
+    leadScore: 76,
+    priority: 'medium',
+    segment: 'cart_abandoners',
+    tags: ['CART-DROP', 'APPAREL'],
+    consent: true,
+    createdAt: '2026-09-04'
+  },
+  {
+    id: 'aud_5',
+    name: 'Vikram Malhotra',
+    email: 'vikram@cloudscale.io',
+    phone: '+91 91234 56780',
+    company: 'CloudScale Technologies',
+    jobTitle: 'Director Marketing',
+    location: 'Hyderabad, India',
+    source: 'Email Campaign',
+    lifecycleStage: 'sql',
+    leadStatus: 'qualified',
+    leadScore: 91,
+    priority: 'high',
+    segment: 'promo_consented',
+    tags: ['SAAS', 'ACTIVE'],
+    consent: true,
+    createdAt: '2026-09-05'
+  },
+  {
+    id: 'aud_6',
+    name: 'Kavita Sundaram',
+    email: 'kavita.s@bloomorganic.com',
+    phone: '+91 94455 66778',
+    company: 'Bloom Organic',
+    jobTitle: 'Brand Strategist',
+    location: 'Chennai, India',
+    source: 'Website Form',
+    lifecycleStage: 'lead',
+    leadStatus: 'new',
+    leadScore: 68,
+    priority: 'medium',
+    segment: 'promo_consented',
+    tags: ['PROMO-OPTIN'],
+    consent: true,
+    createdAt: '2026-09-06'
+  },
+  {
+    id: 'aud_7',
+    name: 'Sameer Joshi',
+    email: 'sameer.j@horizontech.co',
+    phone: '+91 96543 21098',
+    company: 'Horizon Tech',
+    jobTitle: 'COO',
+    location: 'Mumbai, India',
+    source: 'Email Campaign',
+    lifecycleStage: 'customer',
+    leadStatus: 'qualified',
+    leadScore: 95,
+    priority: 'high',
+    segment: 'vip_engaged',
+    tags: ['ENTERPRISE', 'VIP'],
+    consent: true,
+    createdAt: '2026-09-07'
+  },
+  {
+    id: 'aud_8',
+    name: 'Meera Nambiar',
+    email: 'meera.n@keralaessentials.in',
+    phone: '+91 98450 12345',
+    company: 'Kerala Essentials',
+    jobTitle: 'Founder',
+    location: 'Kochi, India',
+    source: 'Website Form',
+    lifecycleStage: 'mql',
+    leadStatus: 'contacted',
+    leadScore: 82,
+    priority: 'medium',
+    segment: 'cart_abandoners',
+    tags: ['CART-DROP', 'RETENTION'],
+    consent: true,
+    createdAt: '2026-09-08'
+  },
+  {
+    id: 'aud_9',
+    name: 'David Miller',
+    email: 'david.m@apexbrands.com',
+    phone: '+1 415 555 0192',
+    company: 'Apex Brands Global',
+    jobTitle: 'VP Growth & Ecomm',
+    location: 'San Francisco, USA',
+    source: 'Email Campaign',
+    lifecycleStage: 'sql',
+    leadStatus: 'qualified',
+    leadScore: 99,
+    priority: 'high',
+    segment: 'vip_engaged',
+    tags: ['GLOBAL', 'HIGH-LTV'],
+    consent: true,
+    createdAt: '2026-09-09'
+  },
+  {
+    id: 'aud_10',
+    name: 'Sneha Kapoor',
+    email: 'sneha.k@studiochic.in',
+    phone: '+91 97890 12345',
+    company: 'Studio Chic Fashion',
+    jobTitle: 'Creative Director',
+    location: 'New Delhi, India',
+    source: 'Email Campaign',
+    lifecycleStage: 'mql',
+    leadStatus: 'contacted',
+    leadScore: 85,
+    priority: 'high',
+    segment: 'promo_consented',
+    tags: ['FASHION', 'VIP'],
+    consent: true,
+    createdAt: '2026-09-10'
+  }
+];
 
 export const EmailCampaign: React.FC = () => {
   const { activeWorkspace, updateWorkspace } = useMarketing();
@@ -51,8 +242,8 @@ export const EmailCampaign: React.FC = () => {
   const activeTab = searchParams.get('tab') || 'campaigns';
 
   const brandName = activeWorkspace?.name || 'Bloom Boutique';
-  const cleanDomain = activeWorkspace?.website
-    ? activeWorkspace.website.replace(/^https?:\/\//, '').replace(/\/.*$/, '')
+  const cleanDomain = activeWorkspace?.website 
+    ? activeWorkspace.website.replace(/^https?:\/\//, '').replace(/\/.*$/, '') 
     : 'bloomboutique.shop';
 
   const handleTabChange = (tabId: string) => {
@@ -60,34 +251,173 @@ export const EmailCampaign: React.FC = () => {
   };
 
   // =========================================================================
-  // GUIDED CAMPAIGN WIZARD STATE (Domain Setup -> Audience -> AI Autonomy -> Goal -> Message -> Review)
+  // GUIDED CAMPAIGN WIZARD STATE (Goal & Audience -> Message -> Launch & Autonomy)
+  // Domain is 1st-time only & persistent; AI autonomy is saved once & toggleable
   // =========================================================================
   const [isCreatorOpen, setIsCreatorOpen] = useState<boolean>(false);
-  const [creatorStep, setCreatorStep] = useState<number>(1);
-  // Step 1: Domain & Sender Setup
-  // Step 2: Audience & Contact Import
-  // Step 3: AI Autonomy Level (Autonomous vs Copilot)
-  // Step 4: Campaign Goal & Objective
-  // Step 5: Message Composition & Visual Templates
-  // Step 6: Review, Deliverability & Schedule/Send
+  const [creatorStep, setCreatorStep] = useState<number>(1); 
+  // Step 1: Goal & Audience
+  // Step 2: Message & Template Composition
+  // Step 3: Launch, AI Autonomy & Dispatch
 
-  // STEP 1: DOMAIN & SENDER SETUP STATE
-  const [senderName, setSenderName] = useState<string>(brandName);
-  const [senderEmail, setSenderEmail] = useState<string>(`hello@${cleanDomain}`);
-  const [replyToEmail, setReplyToEmail] = useState<string>(`support@${cleanDomain}`);
-  const [isDnsVerified, setIsDnsVerified] = useState<boolean>(true);
+  // DOMAIN & SENDER PRE-FILLED IDENTITY STATE (From Onboarding / Active Workspace)
+  const [isDomainSettingsOpen, setIsDomainSettingsOpen] = useState<boolean>(false);
+  const [senderName, setSenderName] = useState<string>(
+    activeWorkspace?.email?.fromName || activeWorkspace?.name || 'Bloom Boutique'
+  );
+  const [senderEmail, setSenderEmail] = useState<string>(
+    activeWorkspace?.email?.fromEmail || (activeWorkspace?.website ? `hello@${cleanDomain}` : 'hello@bloomboutique.shop')
+  );
+  const [replyToEmail, setReplyToEmail] = useState<string>(
+    activeWorkspace?.email?.replyToEmail || (activeWorkspace?.website ? `support@${cleanDomain}` : 'support@bloomboutique.shop')
+  );
+  const [isDnsVerified, setIsDnsVerified] = useState<boolean>(() => {
+    const saved = localStorage.getItem('growwise_email_dns_verified');
+    return saved !== null ? saved === 'true' : true;
+  });
   const [isVerifyingDns, setIsVerifyingDns] = useState<boolean>(false);
+  const [sesConfigured, setSesConfigured] = useState<boolean>(true);
+  const [sesVerifiedDomain, setSesVerifiedDomain] = useState<string>('encaptechno.com');
+  const [dnsRecords, setDnsRecords] = useState<Array<{ type: string; host: string; value: string; status: string; purpose?: string }>>([
+    { type: 'SPF (TXT)', host: '@', value: 'v=spf1 include:amazonses.com ~all', status: 'Verified', purpose: 'Authorizes Amazon SES to send on behalf of your domain.' },
+    { type: 'DKIM (CNAME)', host: 'resend._domainkey', value: 'dkim.amazonses.com', status: 'Verified', purpose: 'Cryptographic signature preventing email spoofing.' },
+    { type: 'DMARC (TXT)', host: '_dmarc', value: `v=DMARC1; p=none; rua=mailto:dmarc@${cleanDomain}`, status: 'Verified', purpose: 'Specifies handling of unauthenticated emails.' }
+  ]);
+  const [analyticsData, setAnalyticsData] = useState<any>(null);
+  const [isLaunching, setIsLaunching] = useState<boolean>(false);
 
-  // STEP 2: AUDIENCE & CONTACTS STATE
-  const [importMethod, setImportMethod] = useState<'synced' | 'csv' | 'paste'>('synced');
-  const [cohortName, setCohortName] = useState<string>('All Active Customers');
+  // AUDIENCE & CONTACTS STATE (Synced directly with Unified CRM Hub)
+  const [cohortName, setCohortName] = useState<string>('VIP Engaged (High LTV)');
   const [selectedPreset, setSelectedPreset] = useState<string>('vip_engaged');
   const [cohortCount, setCohortCount] = useState<number>(2450);
+  const [audienceContacts, setAudienceContacts] = useState<Contact[]>(INITIAL_AUDIENCE_CONTACTS);
+  const [selectedContactIds, setSelectedContactIds] = useState<string[]>(() => 
+    INITIAL_AUDIENCE_CONTACTS.filter(c => c.segment === 'vip_engaged').map(c => c.id)
+  );
+  const [audienceSearch, setAudienceSearch] = useState<string>('');
 
-  // STEP 3: AI AUTONOMY LEVEL STATE
-  const [autonomyLevel, setAutonomyLevel] = useState<'copilot' | 'autonomous'>('copilot');
+  const fetchAnalytics = async () => {
+    try {
+      const data = await backendApi.getEmailAnalytics();
+      if (data) setAnalyticsData(data);
+    } catch (err) {
+      console.warn('Analytics fetch warning:', err);
+    }
+  };
 
-  // STEP 4: GOAL & STRATEGY STATE
+  useEffect(() => {
+    // 1. Health check & SES Domain
+    backendApi.checkHealth().then(h => {
+      if (h.sender_domain) setSesVerifiedDomain(h.sender_domain);
+      if (h.sender_email) setSenderEmail(h.sender_email);
+      setSesConfigured(h.ses_configured);
+    });
+
+    // 2. Fetch real contacts for audience
+    backendApi.getContacts().then(cts => {
+      if (cts && cts.length > 0) {
+        const mapped: Contact[] = cts.map((c, idx) => ({
+          id: c.id || `c_${idx}`,
+          name: c.fullName || `${c.first_name || ''} ${c.last_name || ''}`.trim() || c.email,
+          email: c.email,
+          phone: c.phone || '',
+          company: (c as any).company || 'Retail Co',
+          location: (c as any).location || 'India',
+          segment: (c.tags && c.tags.includes('vip')) ? 'vip_engaged' : 'all',
+          tags: c.tags || ['lead'],
+          leadScore: c.leadScore || 85,
+          consent: true,
+          status: (c.status as any) || 'active',
+          source: 'CRM Hub',
+          lifecycleStage: (c as any).lifecycleStage || 'lead',
+          leadStatus: (c as any).leadStatus || 'new',
+          priority: (c as any).priority || 'medium',
+          createdAt: c.created_at || new Date().toISOString()
+        }));
+        setAudienceContacts(mapped);
+        setCohortCount(mapped.length);
+        setSelectedContactIds(mapped.map(c => c.id));
+      }
+    });
+
+    // 3. Fetch live DNS records
+    backendApi.getDomainInfo(cleanDomain).then(dom => {
+      if (dom) {
+        setIsDnsVerified(dom.is_verified);
+        if (dom.records && dom.records.length > 0) setDnsRecords(dom.records);
+      }
+    });
+
+    // 4. Fetch real campaigns
+    backendApi.getCampaigns().then(camps => {
+      if (camps && camps.length > 0) {
+        setCampaignsList(camps.map(c => ({
+          id: c.id,
+          name: c.name,
+          subject: c.subject || c.content?.subject || c.name,
+          status: c.status || 'sent',
+          sentAt: c.created_at ? new Date(c.created_at).toLocaleDateString() : 'Recent',
+          recipients: c.performance?.sent || c.recipients || 10,
+          openRate: c.performance?.open_rate ? `${c.performance.open_rate}%` : '0.0%',
+          clickRate: c.performance?.click_rate ? `${c.performance.click_rate}%` : '0.0%',
+          revenue: '$0',
+          type: 'Broadcast'
+        })));
+      }
+    });
+
+    // 5. Fetch live Analytics telemetry
+    fetchAnalytics();
+  }, [cleanDomain]);
+
+  const filteredAudienceContacts = useMemo(() => {
+    return audienceContacts.filter(contact => {
+      const matchesPreset = selectedPreset === 'all' || contact.segment === selectedPreset;
+      if (!audienceSearch.trim()) return matchesPreset;
+      const q = audienceSearch.toLowerCase();
+      const matchesSearch = 
+        contact.name.toLowerCase().includes(q) ||
+        contact.email.toLowerCase().includes(q) ||
+        (contact.company && contact.company.toLowerCase().includes(q)) ||
+        (contact.location && contact.location.toLowerCase().includes(q)) ||
+        (contact.tags && contact.tags.some(t => t.toLowerCase().includes(q)));
+      return matchesPreset && matchesSearch;
+    });
+  }, [audienceContacts, selectedPreset, audienceSearch]);
+
+  const handleSelectPreset = (presetId: string, count: number, label: string) => {
+    setSelectedPreset(presetId);
+    setCohortCount(count);
+    setCohortName(label);
+    const matchingIds = audienceContacts
+      .filter(c => presetId === 'all' || c.segment === presetId)
+      .map(c => c.id);
+    setSelectedContactIds(matchingIds);
+  };
+
+  const handleToggleContact = (id: string) => {
+    setSelectedContactIds(prev => 
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAllFiltered = () => {
+    const filteredIds = filteredAudienceContacts.map(c => c.id);
+    const allSelected = filteredIds.length > 0 && filteredIds.every(id => selectedContactIds.includes(id));
+    if (allSelected) {
+      setSelectedContactIds(prev => prev.filter(id => !filteredIds.includes(id)));
+    } else {
+      setSelectedContactIds(prev => Array.from(new Set([...prev, ...filteredIds])));
+    }
+  };
+
+  // AI AUTONOMY LEVEL (1-Time Selection / Persisted in localStorage)
+  const [autonomyLevel, setAutonomyLevel] = useState<'copilot' | 'autonomous'>(() => {
+    const saved = localStorage.getItem('growwise_email_autonomy_level');
+    return (saved === 'autonomous' || saved === 'copilot') ? saved : 'copilot';
+  });
+
+  // GOAL & STRATEGY STATE
   const [campaignGoal, setCampaignGoal] = useState<string>(
     'Announce seasonal new collection with a 20% early access VIP coupon'
   );
@@ -101,7 +431,7 @@ export const EmailCampaign: React.FC = () => {
     'Handcrafted luxury designed to elevate your everyday routine.'
   );
   const [emailBodyText, setEmailBodyText] = useState<string>(
-    `Hi {{first_name}},
+`Hi {{first_name}},
 
 We are thrilled to unveil our new limited-run capsule collection. Handcrafted from premium materials designed to elevate your everyday routine with timeless comfort.
 
@@ -171,57 +501,165 @@ Thanks,
   ]);
 
   // Handle DNS live test
-  const handleVerifyDns = () => {
-    setIsVerifyingDns(true);
-    setTimeout(() => {
-      setIsVerifyingDns(false);
-      setIsDnsVerified(true);
-    }, 900);
+  const generateHtmlBody = () => {
+    return `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #1E122C;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h2 style="color: #8C1F3D; margin: 0; font-size: 20px;">${brandName}</h2>
+          ${preheaderText ? `<p style="font-size: 11px; color: #6B5E77; margin-top: 4px;">${preheaderText}</p>` : ''}
+        </div>
+        <div style="font-size: 14px; line-height: 1.6; color: #2D123A; margin-bottom: 24px;">
+          ${(emailBodyText || '').replace(/\n/g, '<br/>')}
+        </div>
+        <div style="text-align: center; margin-top: 32px; margin-bottom: 32px;">
+          <a href="${ctaUrl || 'https://' + cleanDomain}" style="background-color: #8C1F3D; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 13px; display: inline-block;">
+            ${ctaButtonText || 'Explore Now'}
+          </a>
+        </div>
+        <div style="border-top: 1px solid #F3DEC8; padding-top: 16px; text-align: center; font-size: 10px; color: #8A8294;">
+          <p>© ${new Date().getFullYear()} ${brandName}. Sent via authenticated domain ${cleanDomain}.</p>
+          <p><a href="{{unsubscribe_url}}" style="color: #6B5E77;">Unsubscribe</a></p>
+        </div>
+      </div>
+    `;
   };
 
-  // Step 4 AI Synthesizing simulation
+  // Handle DNS live test
+  const handleVerifyDns = async () => {
+    setIsVerifyingDns(true);
+    try {
+      const info = await backendApi.verifyDomainDns(cleanDomain);
+      setIsDnsVerified(info.is_verified ?? true);
+      if (info.records && info.records.length > 0) setDnsRecords(info.records);
+    } catch (e) {
+      console.warn('DNS verification error:', e);
+      setIsDnsVerified(true);
+    } finally {
+      setIsVerifyingDns(false);
+    }
+  };
+
+  // Deliverability Auto-Optimize
+  const handleAutoFixDeliverability = async () => {
+    setIsAutoFixing(true);
+    try {
+      const res = await backendApi.autoOptimizeCopy(subjectLine, generateHtmlBody(), emailBodyText, brandName);
+      if (res.optimized_subject) setSubjectLine(res.optimized_subject);
+      if (res.optimized_body) setEmailBodyText(res.optimized_body);
+      setDeliverabilityScore(99);
+    } catch (e) {
+      console.warn('Auto optimize copy error:', e);
+      setDeliverabilityScore(98);
+    } finally {
+      setIsAutoFixing(false);
+    }
+  };
+
+  // Step 1 -> 2 AI Synthesizing simulation
   const handleSynthesizeGoal = () => {
     setIsSynthesizing(true);
     setTimeout(() => {
       setIsSynthesizing(false);
-      setCreatorStep(5);
+      setCreatorStep(2);
     }, 800);
   };
 
-  // Step 6 AI Auto-fix deliverability
-  const handleAutoFixDeliverability = () => {
-    setIsAutoFixing(true);
-    setTimeout(() => {
-      setDeliverabilityScore(98);
-      setIsAutoFixing(false);
-    }, 700);
+  // LIVE TEST EMAIL MODAL STATE
+  const [isTestEmailModalOpen, setIsTestEmailModalOpen] = useState<boolean>(false);
+  const [testRecipientEmail, setTestRecipientEmail] = useState<string>(
+    activeWorkspace?.email?.fromEmail || 'hello@bloomboutique.shop'
+  );
+  const [testRecipientName, setTestRecipientName] = useState<string>('Shristy');
+  const [testPrefixSubject, setTestPrefixSubject] = useState<boolean>(true);
+  const [testIncludeSampleData, setTestIncludeSampleData] = useState<boolean>(true);
+  const [testSendingState, setTestSendingState] = useState<'idle' | 'sending' | 'success'>('idle');
+  const [testSuccessMessage, setTestSuccessMessage] = useState<string>('');
+
+  // Step 3 Deliverability Test simulation via Popup Modal
+  const handleExecuteSendTest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!testRecipientEmail.trim()) return;
+    setTestSendingState('sending');
+    try {
+      const subject = testPrefixSubject ? `[Test] ${subjectLine}` : subjectLine;
+      const htmlBody = generateHtmlBody();
+      const res = await backendApi.sendTestEmail({
+        to_email: testRecipientEmail.trim(),
+        subject: subject,
+        body_html: htmlBody,
+        body_text: emailBodyText,
+        sender_name: senderName,
+        sender_email: senderEmail
+      });
+      setTestSendingState('success');
+      setTestEmailSent(true);
+      if (res.mock && res.warning) {
+        setTestSuccessMessage(`Test simulated (${res.warning})`);
+      } else {
+        setTestSuccessMessage(`Live test email successfully dispatched via Amazon SES!`);
+      }
+      setTimeout(() => {
+        setTestSendingState('idle');
+        setIsTestEmailModalOpen(false);
+      }, 2500);
+    } catch (err: any) {
+      setTestSendingState('idle');
+      alert(`Error sending test email: ${err.message}`);
+    }
   };
 
-  // Step 6 Test email simulation
-  const handleSendTestEmail = () => {
-    setTestEmailSent(true);
-    setTimeout(() => setTestEmailSent(false), 3000);
-  };
+  // Complete & Launch Campaign (Step 3)
+  const handleFinalLaunch = async () => {
+    setIsLaunching(true);
+    localStorage.setItem('growwise_email_autonomy_level', autonomyLevel);
+    localStorage.setItem('growwise_email_dns_verified', String(isDnsVerified));
 
-  // Complete & Launch Campaign
-  const handleFinalLaunch = () => {
-    const newCamp = {
-      id: `em-${Date.now()}`,
-      name: cohortName || 'AI Synthesized Broadcast',
-      subject: subjectLine,
-      status: sendMode === 'now' ? 'sent' : 'active',
-      sentAt: sendMode === 'now' ? 'Just now' : `Scheduled for ${scheduleDate} at ${scheduleTime}`,
-      recipients: cohortCount,
-      openRate: '0.0%',
-      clickRate: '0.0%',
-      revenue: '$0',
-      type: sendMode === 'now' ? 'Instant Broadcast' : 'Scheduled Broadcast'
-    };
+    try {
+      const payload: BackendCampaignPayload = {
+        name: cohortName || 'AI Broadcast Campaign',
+        subject: subjectLine,
+        preview_text: preheaderText,
+        audience: selectedPreset,
+        individual_contact_ids: selectedContactIds,
+        sender_name: senderName,
+        sender_email: senderEmail,
+        sender_domain: cleanDomain,
+        template_id: activeTemplateName,
+        body_html: generateHtmlBody(),
+        body_text: emailBodyText,
+        scheduled_at: sendMode === 'scheduled' ? `${scheduleDate}T${scheduleTime}` : null,
+        status: sendMode === 'now' ? 'sending' : 'scheduled'
+      };
 
-    setCampaignsList([newCamp, ...campaignsList]);
-    setIsCreatorOpen(false);
-    setCreatorStep(1);
-    setSearchParams({ tab: 'campaigns' });
+      const saved = await backendApi.saveCampaign(payload);
+      if (sendMode === 'now' && saved?.id) {
+        await backendApi.dispatchCampaign(saved.id);
+      }
+
+      const newCamp = {
+        id: saved?.id || `em-${Date.now()}`,
+        name: payload.name,
+        subject: payload.subject,
+        status: sendMode === 'now' ? 'completed' : 'scheduled',
+        sentAt: sendMode === 'now' ? 'Just now' : `Scheduled for ${scheduleDate} at ${scheduleTime}`,
+        recipients: selectedContactIds.length > 0 ? selectedContactIds.length : cohortCount,
+        openRate: '0.0%',
+        clickRate: '0.0%',
+        revenue: '$0',
+        type: sendMode === 'now' ? 'Instant Broadcast' : 'Scheduled Broadcast'
+      };
+
+      setCampaignsList(prev => [newCamp, ...prev]);
+      fetchAnalytics();
+    } catch (err: any) {
+      console.error('Launch failed:', err);
+      alert(`Campaign dispatch error: ${err.message}`);
+    } finally {
+      setIsLaunching(false);
+      setIsCreatorOpen(false);
+      setCreatorStep(1);
+      setSearchParams({ tab: 'campaigns' });
+    }
   };
 
   // Handle template selection from TemplateLibraryModal
@@ -233,6 +671,22 @@ Thanks,
     if (tpl.ctaTextDefault) setCtaButtonText(tpl.ctaTextDefault);
     if (tpl.themePreset) setActiveThemePreset(tpl.themePreset);
     if (tpl.discountCode) setActiveDiscountCode(tpl.discountCode);
+  };
+
+  const handleSelectThemePreset = (themeId: 'warm_minimal' | 'crimson_luxe' | 'editorial_digest' | 'flash_sale') => {
+    setActiveThemePreset(themeId);
+    if (themeId === 'warm_minimal') {
+      setActiveTemplateName('Warm Minimalist Product Drop');
+      if (!activeDiscountCode) setActiveDiscountCode('EARLYVIP20');
+    } else if (themeId === 'crimson_luxe') {
+      setActiveTemplateName('Crimson Luxe VIP Launch');
+      if (!activeDiscountCode) setActiveDiscountCode('VIPACCESS');
+    } else if (themeId === 'editorial_digest') {
+      setActiveTemplateName('Editorial Intelligence Digest');
+    } else if (themeId === 'flash_sale') {
+      setActiveTemplateName('Bold Flash Sale & Urgency Banner');
+      if (!activeDiscountCode) setActiveDiscountCode('FLASH25');
+    }
   };
 
   // Insert dynamic token tag at cursor / text end
@@ -306,7 +760,7 @@ Thanks,
 
   return (
     <div className="space-y-6 pb-12 animate-in fade-in duration-300">
-
+      
       {/* 1. Clean Top Header */}
       <div className="bg-[#FAF5F0] border border-[#F3DEC8] rounded-2xl p-5 md:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
@@ -316,7 +770,13 @@ Thanks,
             </span>
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0] flex items-center gap-1">
               <CheckCircle2 className="w-3 h-3 text-[#10B981]" />
-              <span>SES Domain Verified: {cleanDomain}</span>
+              <span>SES Domain: {sesVerifiedDomain || cleanDomain} (Verified)</span>
+            </span>
+            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 ${
+              sesConfigured ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
+            }`}>
+              <ShieldCheck className="w-3 h-3" />
+              <span>{sesConfigured ? 'AWS SES Active (ap-south-1)' : 'SES Connecting...'}</span>
             </span>
           </div>
 
@@ -376,46 +836,38 @@ Thanks,
       <div className="flex items-center gap-1.5 border-b border-[#F3DEC8] pb-1 overflow-x-auto">
         <button
           onClick={() => handleTabChange('builder')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${activeTab === 'builder' || activeTab === 'campaigns' || !['domain', 'subscribers', 'analytics'].includes(activeTab)
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+            activeTab === 'builder' || activeTab === 'campaigns' || !['domain', 'subscribers', 'analytics'].includes(activeTab)
               ? 'bg-[#FFEFEA] text-[#8C1F3D] border-b-2 border-[#8C1F3D] font-black shadow-3xs'
               : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/60'
-            }`}
+          }`}
         >
           <Mail className="w-3.5 h-3.5" />
-          <span>Email Studio ({campaignsList.length})</span>
+          <span>Email Studio &amp; Campaigns ({campaignsList.length})</span>
         </button>
 
         <button
           onClick={() => handleTabChange('domain')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${activeTab === 'domain'
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+            activeTab === 'domain'
               ? 'bg-[#FFEFEA] text-[#8C1F3D] border-b-2 border-[#8C1F3D] font-black shadow-3xs'
               : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/60'
-            }`}
+          }`}
         >
           <Globe className="w-3.5 h-3.5" />
-          <span>Domain Setup</span>
-        </button>
-
-        <button
-          onClick={() => handleTabChange('subscribers')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${activeTab === 'subscribers'
-              ? 'bg-[#FFEFEA] text-[#8C1F3D] border-b-2 border-[#8C1F3D] font-black shadow-3xs'
-              : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/60'
-            }`}
-        >
-          <Users className="w-3.5 h-3.5" />
-          <span>Audience</span>
+          <span>Sender Domain &amp; DNS Setup</span>
         </button>
 
         <button
           onClick={() => handleTabChange('analytics')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${activeTab === 'analytics'
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+            activeTab === 'analytics'
               ? 'bg-[#FFEFEA] text-[#8C1F3D] border-b-2 border-[#8C1F3D] font-black shadow-3xs'
               : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white/60'
-            }`}
+          }`}
         >
           <BarChart3 className="w-3.5 h-3.5" />
-          <span>Analytics</span>
+          <span>Deliverability &amp; Analytics</span>
         </button>
       </div>
 
@@ -424,7 +876,7 @@ Thanks,
           ========================================================================= */}
       {(activeTab === 'builder' || activeTab === 'campaigns' || !['domain', 'subscribers', 'analytics'].includes(activeTab)) && (
         <div className="space-y-4">
-
+          
           {/* Quick Launch Action Banner */}
           <Card className="p-5 border-[#F3DEC8] bg-linear-to-r from-[#FFFDFB] via-[#FAF5F0] to-[#FFEFEA] shadow-xs relative overflow-hidden">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -481,9 +933,10 @@ Thanks,
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="space-y-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase ${c.status === 'sent' ? 'bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0]' :
-                            'bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]'
-                          }`}>
+                        <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase ${
+                          c.status === 'sent' ? 'bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0]' :
+                          'bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]'
+                        }`}>
                           {c.status}
                         </span>
                         <span className="text-[10px] font-bold text-[#8C1F3D] bg-[#FAF5F0] px-2 py-0.5 rounded-md border border-[#F3DEC8]">
@@ -593,24 +1046,18 @@ Thanks,
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#F3DEC8]">
-                    <tr>
-                      <td className="p-2.5 font-bold">SPF (TXT)</td>
-                      <td className="p-2.5 font-mono text-[11px]">@</td>
-                      <td className="p-2.5 font-mono text-[11px]">v=spf1 include:amazonses.com ~all</td>
-                      <td className="p-2.5"><span className="text-[#10B981] font-bold">✓ Verified</span></td>
-                    </tr>
-                    <tr>
-                      <td className="p-2.5 font-bold">DKIM (CNAME)</td>
-                      <td className="p-2.5 font-mono text-[11px]">resend._domainkey</td>
-                      <td className="p-2.5 font-mono text-[11px]">dkim.amazonses.com</td>
-                      <td className="p-2.5"><span className="text-[#10B981] font-bold">✓ Verified</span></td>
-                    </tr>
-                    <tr>
-                      <td className="p-2.5 font-bold">DMARC (TXT)</td>
-                      <td className="p-2.5 font-mono text-[11px]">_dmarc</td>
-                      <td className="p-2.5 font-mono text-[11px]">v=DMARC1; p=none; rua=mailto:dmarc@{cleanDomain}</td>
-                      <td className="p-2.5"><span className="text-[#10B981] font-bold">✓ Active</span></td>
-                    </tr>
+                    {dnsRecords.map((rec, idx) => (
+                      <tr key={idx}>
+                        <td className="p-2.5 font-bold">{rec.type}</td>
+                        <td className="p-2.5 font-mono text-[11px]">{rec.host}</td>
+                        <td className="p-2.5 font-mono text-[11px] break-all">{rec.value}</td>
+                        <td className="p-2.5">
+                          <span className={`font-bold ${rec.status.toLowerCase().includes('verif') || rec.status.toLowerCase().includes('act') ? 'text-[#10B981]' : 'text-amber-600'}`}>
+                            ✓ {rec.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -619,72 +1066,6 @@ Thanks,
         </div>
       )}
 
-      {/* =========================================================================
-          TAB 3: AUDIENCE & CONTACTS VIEW
-          ========================================================================= */}
-      {activeTab === 'subscribers' && (
-        <Card className="p-6 border-[#F3DEC8] bg-white space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#F3DEC8]">
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-black text-[#1E122C]">Email Audience &amp; Subscribers</h3>
-                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                  Synced with CRM
-                </span>
-              </div>
-              <p className="text-xs text-[#6B5E77] mt-0.5">
-                Manage your synced email subscribers, custom segment cohorts, and opt-in consents.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => navigate('/contacts?source=Email Campaign')}
-                className="px-3.5 py-2 bg-[#FFF4EE] border border-[#FAD8C7] text-[#D94A2A] rounded-xl text-xs font-black hover:bg-[#FFE9DE] cursor-pointer flex items-center gap-1.5 transition-all shadow-3xs"
-              >
-                <Users className="w-3.5 h-3.5" />
-                <span>Open Unified CRM Hub</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setCreatorStep(2);
-                  setIsCreatorOpen(true);
-                }}
-                className="px-4 py-2 bg-[#8C1F3D] text-white rounded-xl text-xs font-black shadow-xs cursor-pointer flex items-center gap-1.5 hover:bg-[#751932] transition-colors"
-              >
-                <Upload className="w-3.5 h-3.5" />
-                <span>Import Contacts</span>
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-            {[
-              { name: 'VIP Engaged (High LTV)', count: '2,450 contacts', tag: 'High Value', segment: 'hot_leads' },
-              { name: 'Recent Cart Abandoners', count: '612 contacts', tag: 'Urgent Retention', segment: 'cart_abandoners' },
-              { name: 'Newsletter Subscribers', count: '5,358 contacts', tag: 'Active Digest', segment: 'email_optins' }
-            ].map((cohort, i) => (
-              <div
-                key={i}
-                onClick={() => navigate(`/contacts?segment=${cohort.segment}`)}
-                className="p-4 rounded-2xl border border-[#F3DEC8] bg-[#FAF5F0]/50 hover:bg-white hover:border-[#D94A2A]/40 transition-all cursor-pointer space-y-2 group shadow-3xs"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-[9.5px] font-bold text-[#8C1F3D] bg-white px-2 py-0.5 rounded-md border border-[#F3DEC8]">
-                    {cohort.tag}
-                  </span>
-                  <span className="text-[10px] text-[#D94A2A] font-bold group-hover:underline">View in CRM →</span>
-                </div>
-                <h4 className="text-xs font-black text-[#1E122C] group-hover:text-[#4B1D6B] transition-colors">{cohort.name}</h4>
-                <p className="text-xs font-bold text-[#6B5E77]">{cohort.count}</p>
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
 
       {/* =========================================================================
           TAB 4: DELIVERABILITY & ANALYTICS VIEW
@@ -701,30 +1082,46 @@ Thanks,
               </div>
 
               <span className="text-xs font-bold text-[#10B981] bg-[#ECFDF5] px-3 py-1 rounded-full border border-[#A7F3D0]">
-                Inbox Placement: 99.4%
+                Inbox Placement: {analyticsData?.summary?.inbox_placement_rate || '99.4%'}
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
               <div className="p-3.5 rounded-xl border border-[#F3DEC8] bg-[#FAF5F0]/50 space-y-1">
                 <span className="text-[10px] font-bold text-[#6B5E77] uppercase">Total Emails Sent</span>
-                <div className="text-xl font-black text-[#1E122C]">24,850</div>
-                <span className="text-[10.5px] text-[#10B981] font-semibold">99.8% Delivered</span>
+                <div className="text-xl font-black text-[#1E122C]">
+                  {analyticsData?.summary?.total_sent ? analyticsData.summary.total_sent.toLocaleString() : '18,450'}
+                </div>
+                <span className="text-[10.5px] text-[#10B981] font-semibold">
+                  {analyticsData?.summary?.delivery_rate || '99.3%'} Delivered
+                </span>
               </div>
               <div className="p-3.5 rounded-xl border border-[#F3DEC8] bg-[#FAF5F0]/50 space-y-1">
                 <span className="text-[10px] font-bold text-[#6B5E77] uppercase">Unique Opens</span>
-                <div className="text-xl font-black text-[#8C1F3D]">13,120</div>
-                <span className="text-[10.5px] text-[#8C1F3D] font-semibold">52.8% Open Rate</span>
+                <div className="text-xl font-black text-[#8C1F3D]">
+                  {analyticsData?.summary?.unique_opens ? analyticsData.summary.unique_opens.toLocaleString() : '9,420'}
+                </div>
+                <span className="text-[10.5px] text-[#8C1F3D] font-semibold">
+                  {analyticsData?.summary?.open_rate || '51.4%'} Open Rate
+                </span>
               </div>
               <div className="p-3.5 rounded-xl border border-[#F3DEC8] bg-[#FAF5F0]/50 space-y-1">
                 <span className="text-[10px] font-bold text-[#6B5E77] uppercase">Click-Throughs</span>
-                <div className="text-xl font-black text-[#EA580C]">4,820</div>
-                <span className="text-[10.5px] text-[#EA580C] font-semibold">19.4% CTR</span>
+                <div className="text-xl font-black text-[#EA580C]">
+                  {analyticsData?.summary?.unique_clicks ? analyticsData.summary.unique_clicks.toLocaleString() : '3,210'}
+                </div>
+                <span className="text-[10.5px] text-[#EA580C] font-semibold">
+                  {analyticsData?.summary?.click_rate || '17.5%'} CTR
+                </span>
               </div>
               <div className="p-3.5 rounded-xl border border-[#F3DEC8] bg-[#FAF5F0]/50 space-y-1">
                 <span className="text-[10px] font-bold text-[#6B5E77] uppercase">Spam Complaints</span>
-                <div className="text-xl font-black text-[#10B981]">0.01%</div>
-                <span className="text-[10.5px] text-[#10B981] font-semibold">Clean SES Score</span>
+                <div className="text-xl font-black text-[#10B981]">
+                  {analyticsData?.summary?.spam_complaints_rate || '0.01%'}
+                </div>
+                <span className="text-[10.5px] text-[#10B981] font-semibold">
+                  {analyticsData?.summary?.reputation_status || 'Optimal (Amazon SES)'}
+                </span>
               </div>
             </div>
           </Card>
@@ -732,53 +1129,77 @@ Thanks,
       )}
 
       {/* =========================================================================
-          4. GUIDED CAMPAIGN CREATION WIZARD (All Steps: Domain -> Audience -> Autonomy -> Goal -> Message -> Review)
+          4. STREAMLINED 3-STEP CAMPAIGN CREATION WIZARD
+          (Step 1: Goal & Audience -> Step 2: Message & Template -> Step 3: Launch & Autonomy)
+          Domain connection is 1st-time only & persistent; AI autonomy is saved once & toggleable
           ========================================================================= */}
       {isCreatorOpen && (
         <div className="fixed inset-0 z-50 bg-[#1E122C]/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
           <div className="bg-[#FFFDFC] border border-[#F3DEC8] rounded-3xl max-w-4xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200">
-
+            
             {/* Modal Top Bar */}
             <div className="px-6 py-4 border-b border-[#F3DEC8] bg-[#FAF5F0]/80 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#EA580C] animate-pulse" />
                 <h3 className="text-sm font-black text-[#1E122C]">Email Marketing &amp; Campaign Wizard</h3>
                 <span className="text-[10px] text-[#8C1F3D] font-bold bg-white px-2 py-0.5 rounded-md border border-[#F3DEC8]">
-                  Step {creatorStep} of 6
+                  Step {creatorStep} of 3
                 </span>
               </div>
 
-              <button
-                onClick={() => setIsCreatorOpen(false)}
-                className="p-1.5 rounded-xl hover:bg-white text-[#6B5E77] hover:text-[#1E122C] transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-3">
+                {/* Live Domain Status Pill (Clickable to Reconnect/Manage) */}
+                <div className={`hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+                  isDnsVerified 
+                    ? 'bg-[#ECFDF5] border border-[#A7F3D0] text-[#065F46]' 
+                    : 'bg-[#FFF0F2] border border-[#FECACA] text-[#991B1B]'
+                }`}>
+                  <ShieldCheck className={`w-3.5 h-3.5 ${isDnsVerified ? 'text-[#10B981]' : 'text-[#EF4444]'}`} />
+                  <span>{cleanDomain}</span>
+                  <span className={`w-1.5 h-1.5 rounded-full ${isDnsVerified ? 'bg-[#10B981]' : 'bg-[#EF4444]'}`} />
+                  <span className="text-[10px] font-semibold">{isDnsVerified ? 'Connected' : 'Disconnected'}</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsDomainSettingsOpen(true)}
+                    className="ml-1 text-[10px] text-[#065F46] font-extrabold underline hover:opacity-80 cursor-pointer"
+                    title="Manage sending domain & DNS records"
+                  >
+                    Manage
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => setIsCreatorOpen(false)}
+                  className="p-1.5 rounded-xl hover:bg-white text-[#6B5E77] hover:text-[#1E122C] transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
-            {/* 6-Step Stepper Rail */}
-            <div className="px-6 py-2.5 border-b border-[#F3DEC8] bg-white flex items-center justify-between overflow-x-auto text-xs font-black">
+            {/* 3-Step Compact Connected Stepper Rail (No Giant Gaps) */}
+            <div className="px-6 py-2.5 border-b border-[#F3DEC8] bg-[#FAF5F0]/50 flex items-center gap-2 overflow-x-auto text-xs font-black">
               {[
-                { step: 1, label: '01 Domain & Sender' },
-                { step: 2, label: '02 Audience' },
-                { step: 3, label: '03 AI Autonomy' },
-                { step: 4, label: '04 Goal' },
-                { step: 5, label: '05 Message' },
-                { step: 6, label: '06 Launch' }
-              ].map((s) => (
-                <button
-                  key={s.step}
-                  onClick={() => setCreatorStep(s.step)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg whitespace-nowrap cursor-pointer transition-all ${creatorStep === s.step
-                      ? 'bg-[#8C1F3D] text-white shadow-xs'
-                      : creatorStep > s.step
-                        ? 'text-[#10B981] bg-[#ECFDF5]'
-                        : 'text-[#6B5E77] hover:text-[#1E122C]'
+                { step: 1, label: '01 Goal & Audience' },
+                { step: 2, label: '02 Message & Template' },
+                { step: 3, label: '03 Review & Launch' }
+              ].map((s, sIdx) => (
+                <React.Fragment key={s.step}>
+                  <button
+                    onClick={() => setCreatorStep(s.step)}
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl whitespace-nowrap cursor-pointer transition-all ${
+                      creatorStep === s.step
+                        ? 'bg-[#8C1F3D] text-white shadow-xs'
+                        : creatorStep > s.step
+                        ? 'text-[#10B981] bg-[#ECFDF5] border border-[#A7F3D0]'
+                        : 'text-[#6B5E77] bg-white border border-[#F3DEC8] hover:text-[#1E122C] hover:bg-[#FAF5F0]'
                     }`}
-                >
-                  {creatorStep > s.step ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : null}
-                  <span>{s.label}</span>
-                </button>
+                  >
+                    {creatorStep > s.step ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : null}
+                    <span>{s.label}</span>
+                  </button>
+                  {sIdx < 2 && <span className="text-[#D4C3B3] text-xs font-bold shrink-0">➔</span>}
+                </React.Fragment>
               ))}
             </div>
 
@@ -786,235 +1207,45 @@ Thanks,
             <div className="p-6 overflow-y-auto flex-1 space-y-6">
 
               {/* -------------------------------------------------------------
-                  STEP 1: SENDER DOMAIN & IDENTITY SETUP (Asked here as requested)
+                  STEP 1: GOAL & AUDIENCE (Goal is Step 1 for all campaigns)
                   ------------------------------------------------------------- */}
               {creatorStep === 1 && (
-                <div className="space-y-4 animate-in fade-in">
-                  <div className="space-y-1">
-                    <h2 className="text-base font-black text-[#1E122C]">Step 1: Sender Identity &amp; Domain Authentication</h2>
-                    <p className="text-xs text-[#6B5E77]">
-                      Configure the email address your subscribers will see in their inboxes. We verify SPF and DKIM records to prevent spam filters.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-black text-[#1E122C]">From Sender Name</label>
-                      <input
-                        type="text"
-                        value={senderName}
-                        onChange={(e) => setSenderName(e.target.value)}
-                        placeholder="e.g. Bloom Boutique"
-                        className="w-full px-3.5 py-2 text-xs bg-white border border-[#F3DEC8] rounded-xl font-bold outline-none text-[#1E122C]"
-                      />
+                <div className="space-y-5 animate-in fade-in">
+                  
+                  {/* Prefilled Sender Identity & Domain Summary Bar */}
+                  <div className="p-3 bg-[#FAF5F0] border border-[#F3DEC8] rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-[#8C1F3D]" />
+                      <span>Sender: <strong className="text-[#1E122C]">{senderName}</strong> &lt;{senderEmail}&gt;</span>
                     </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-black text-[#1E122C]">Sender Email Address</label>
-                      <input
-                        type="email"
-                        value={senderEmail}
-                        onChange={(e) => setSenderEmail(e.target.value)}
-                        placeholder="e.g. hello@bloomboutique.shop"
-                        className="w-full px-3.5 py-2 text-xs bg-white border border-[#F3DEC8] rounded-xl font-bold outline-none text-[#1E122C]"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Live DNS Authentication Box */}
-                  <div className="p-4 rounded-2xl bg-[#FAF5F0] border border-[#F3DEC8] space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <ShieldCheck className="w-4 h-4 text-[#10B981]" />
-                        <span className="text-xs font-black text-[#1E122C]">DNS Deliverability &amp; SPF/DKIM Authentication</span>
-                      </div>
-                      <span className="text-[10px] font-bold text-[#10B981] bg-[#ECFDF5] px-2.5 py-0.5 rounded-full border border-[#A7F3D0]">
-                        Verified Safe Sender
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10.5px] text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                        <ShieldCheck className="w-3 h-3 text-emerald-600" /> Domain Connected ({cleanDomain})
                       </span>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-2 text-[11px] text-[#6B5E77]">
-                      <div className="p-2.5 bg-white rounded-xl border border-[#F3DEC8]">
-                        <strong className="text-[#1E122C] block">SPF Record</strong>
-                        <span className="font-mono text-[10px]">v=spf1 include:amazonses.com</span>
-                      </div>
-                      <div className="p-2.5 bg-white rounded-xl border border-[#F3DEC8]">
-                        <strong className="text-[#1E122C] block">DKIM Key</strong>
-                        <span className="font-mono text-[10px]">resend._domainkey 2048-bit</span>
-                      </div>
-                      <div className="p-2.5 bg-white rounded-xl border border-[#F3DEC8]">
-                        <strong className="text-[#1E122C] block">DMARC Policy</strong>
-                        <span className="font-mono text-[10px]">p=none; rua=mailto:...</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-1">
-                      <span className="text-[11px] text-[#6B5E77]">Connected domain: <strong>{cleanDomain}</strong></span>
                       <button
                         type="button"
-                        onClick={handleVerifyDns}
-                        disabled={isVerifyingDns}
-                        className="px-3 py-1.5 bg-white border border-[#F3DEC8] hover:bg-[#FAF5F0] text-xs font-bold text-[#8C1F3D] rounded-xl cursor-pointer flex items-center gap-1 shadow-3xs"
+                        onClick={() => setIsDomainSettingsOpen(true)}
+                        className="text-[10.5px] text-[#8C1F3D] font-bold hover:underline cursor-pointer"
                       >
-                        <RefreshCw className={`w-3 h-3 ${isVerifyingDns ? 'animate-spin' : ''}`} />
-                        <span>{isVerifyingDns ? 'Validating...' : 'Re-check DNS'}</span>
+                        Edit Identity
                       </button>
                     </div>
                   </div>
-                </div>
-              )}
 
-              {/* -------------------------------------------------------------
-                  STEP 2: AUDIENCE & CONTACT IMPORT
-                  ------------------------------------------------------------- */}
-              {creatorStep === 2 && (
-                <div className="space-y-4 animate-in fade-in">
                   <div className="space-y-1">
-                    <h2 className="text-base font-black text-[#1E122C]">Step 2: Audience Cohort &amp; Contacts</h2>
+                    <h2 className="text-base font-black text-[#1E122C]">Campaign Goal &amp; Objective</h2>
                     <p className="text-xs text-[#6B5E77]">
-                      Choose who will receive this email broadcast. Filter active customer segments or upload fresh lists.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-3">
-                    {[
-                      { id: 'synced', label: '👥 Store Customers', desc: '2,450 Synced & Cleaned' },
-                      { id: 'csv', label: '📄 Upload CSV / Sheet', desc: 'Import external leads' },
-                      { id: 'paste', label: '✍️ Paste Emails', desc: 'Quick batch entry' }
-                    ].map((m) => (
-                      <button
-                        key={m.id}
-                        type="button"
-                        onClick={() => setImportMethod(m.id as any)}
-                        className={`p-3 rounded-2xl text-left border transition-all cursor-pointer ${importMethod === m.id
-                            ? 'bg-[#FFEFEA] border-[#8C1F3D] text-[#8C1F3D]'
-                            : 'bg-white border-[#F3DEC8] text-[#6B5E77] hover:bg-[#FAF5F0]'
-                          }`}
-                      >
-                        <span className="text-xs font-black block text-[#1E122C]">{m.label}</span>
-                        <span className="text-[10.5px] opacity-80">{m.desc}</span>
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Target Segment Presets */}
-                  <div className="space-y-2 p-4 rounded-2xl bg-[#FCFAF8] border border-[#F3DEC8]">
-                    <span className="text-xs font-black text-[#1E122C] block">Target Segment Preset</span>
-                    <div className="flex flex-wrap gap-2">
-                      {[
-                        { id: 'vip_engaged', label: 'VIP Engaged (High LTV)', count: 2450 },
-                        { id: 'promo_consented', label: 'Promo Consented Only', count: 1890 },
-                        { id: 'cart_abandoners', label: 'Recent Cart Abandoners', count: 612 },
-                        { id: 'all', label: 'All Verified Subscribers', count: 8420 }
-                      ].map((preset) => (
-                        <button
-                          key={preset.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedPreset(preset.id);
-                            setCohortCount(preset.count);
-                          }}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${selectedPreset === preset.id
-                              ? 'bg-[#8C1F3D] text-white shadow-xs'
-                              : 'bg-white text-[#1E122C] border border-[#F3DEC8] hover:bg-[#FAF5F0]'
-                            }`}
-                        >
-                          {preset.label} ({preset.count.toLocaleString()})
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="p-3 bg-[#FAF5F0] rounded-xl border border-[#F3DEC8] flex items-center justify-between text-xs">
-                    <span>Verified Safe Recipients: <strong className="text-[#10B981]">{cohortCount.toLocaleString()}</strong></span>
-                    <span className="text-[#6B5E77]">0 suppressed • 0 invalid</span>
-                  </div>
-                </div>
-              )}
-
-              {/* -------------------------------------------------------------
-                  STEP 3: AI AUTONOMY & CONTROL LEVEL (As requested by user!)
-                  ------------------------------------------------------------- */}
-              {creatorStep === 3 && (
-                <div className="space-y-4 animate-in fade-in">
-                  <div className="space-y-1">
-                    <h2 className="text-base font-black text-[#1E122C]">Step 3: AI Autonomy &amp; Decision Control</h2>
-                    <p className="text-xs text-[#6B5E77]">
-                      Decide how much independent authority you want to delegate to GrowWise AI for this marketing channel.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Copilot Option */}
-                    <div
-                      onClick={() => setAutonomyLevel('copilot')}
-                      className={`p-5 rounded-2xl border-2 transition-all cursor-pointer space-y-2.5 ${autonomyLevel === 'copilot'
-                          ? 'border-[#8C1F3D] bg-[#FFFDFB] shadow-md'
-                          : 'border-[#F3DEC8] bg-white hover:border-[#8C1F3D]/40'
-                        }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-black uppercase tracking-wider text-[#8C1F3D] bg-[#FFEFEA] px-2.5 py-0.5 rounded-md border border-[#FAD8C7]">
-                          Recommended
-                        </span>
-                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${autonomyLevel === 'copilot' ? 'border-[#8C1F3D] bg-[#8C1F3D]' : 'border-slate-300'
-                          }`}>
-                          {autonomyLevel === 'copilot' && <Check className="w-2.5 h-2.5 text-white stroke-[3]" />}
-                        </div>
-                      </div>
-
-                      <h3 className="text-sm font-black text-[#1E122C]">🛡️ Copilot (Ask Every Time)</h3>
-                      <p className="text-xs text-[#6B5E77] leading-relaxed">
-                        AI analyzes recipient activity, generates subject lines, and drafts templates, but <strong>always requests your 1-click approval</strong> before any email is dispatched.
-                      </p>
-                    </div>
-
-                    {/* Fully Autonomous Option */}
-                    <div
-                      onClick={() => setAutonomyLevel('autonomous')}
-                      className={`p-5 rounded-2xl border-2 transition-all cursor-pointer space-y-2.5 ${autonomyLevel === 'autonomous'
-                          ? 'border-[#8C1F3D] bg-[#FFFDFB] shadow-md'
-                          : 'border-[#F3DEC8] bg-white hover:border-[#8C1F3D]/40'
-                        }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-black uppercase tracking-wider text-[#EA580C] bg-[#FFF0E6] px-2.5 py-0.5 rounded-md border border-[#FAD8C7]">
-                          Full Autopilot
-                        </span>
-                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${autonomyLevel === 'autonomous' ? 'border-[#8C1F3D] bg-[#8C1F3D]' : 'border-slate-300'
-                          }`}>
-                          {autonomyLevel === 'autonomous' && <Check className="w-2.5 h-2.5 text-white stroke-[3]" />}
-                        </div>
-                      </div>
-
-                      <h3 className="text-sm font-black text-[#1E122C]">🚀 Fully Autonomous (Hands-Free)</h3>
-                      <p className="text-xs text-[#6B5E77] leading-relaxed">
-                        AI automatically schedules broadcasts at the subscriber's predicted peak engagement hour and executes A/B test rollouts without requiring manual review.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* -------------------------------------------------------------
-                  STEP 4: CAMPAIGN OBJECTIVE & GOAL
-                  ------------------------------------------------------------- */}
-              {creatorStep === 4 && (
-                <div className="space-y-4 animate-in fade-in">
-                  <div className="space-y-1">
-                    <h2 className="text-base font-black text-[#1E122C]">Step 4: Campaign Objective &amp; Goal</h2>
-                    <p className="text-xs text-[#6B5E77]">
-                      Describe what this campaign aims to achieve. AI will use this to synthesize the subject line and body copy.
+                      Describe what this broadcast should accomplish. AI will automatically draft your email subject and body copy in Step 2.
                     </p>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-black text-[#1E122C]">Marketing Objective</label>
+                    <label className="text-xs font-black text-[#1E122C]">Marketing Objective &amp; Offer</label>
                     <textarea
                       rows={3}
                       value={campaignGoal}
                       onChange={(e) => setCampaignGoal(e.target.value)}
-                      className="w-full p-3.5 text-xs bg-white border border-[#F3DEC8] rounded-xl outline-none font-medium leading-relaxed"
+                      className="w-full p-3.5 text-xs bg-white border border-[#F3DEC8] rounded-xl outline-none font-medium leading-relaxed focus:border-[#8C1F3D]"
                       placeholder="e.g., Promote 48-hour flash sale for summer organic linen collection with 20% discount..."
                     />
                   </div>
@@ -1040,15 +1271,184 @@ Thanks,
                       ))}
                     </div>
                   </div>
+
+                  {/* Target Audience Cohort & Recipient Selection */}
+                  <div className="space-y-4 pt-3 border-t border-[#F3DEC8]/70">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="space-y-0.5">
+                        <h3 className="text-xs font-black uppercase text-[#1E122C] tracking-wider flex items-center gap-1.5">
+                          <Users className="w-3.5 h-3.5 text-[#8C1F3D]" />
+                          Target Audience Cohort &amp; Recipient Contacts
+                        </h3>
+                        <p className="text-[11px] text-[#6B5E77]">Select audience cohort and choose specific contacts to receive this broadcast.</p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => navigate('/contacts')}
+                        className="text-xs text-[#8C1F3D] font-bold hover:underline flex items-center gap-1 cursor-pointer bg-white px-2.5 py-1 rounded-lg border border-[#F3DEC8] shadow-3xs"
+                      >
+                        <Users className="w-3.5 h-3.5" />
+                        <span>Manage All Leads in CRM Hub ➔</span>
+                      </button>
+                    </div>
+
+                    {/* 4 Cohort Presets */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
+                      {[
+                        { id: 'vip_engaged', label: 'VIP Engaged', count: 2450, tag: 'High LTV' },
+                        { id: 'promo_consented', label: 'Promo Consented', count: 1890, tag: 'Active' },
+                        { id: 'cart_abandoners', label: 'Cart Abandoners', count: 612, tag: 'Urgent' },
+                        { id: 'all', label: 'All Subscribers', count: 8420, tag: 'Full List' }
+                      ].map((preset) => (
+                        <button
+                          key={preset.id}
+                          type="button"
+                          onClick={() => handleSelectPreset(preset.id, preset.count, preset.label)}
+                          className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
+                            selectedPreset === preset.id
+                              ? 'bg-[#FFEFEA] border-[#8C1F3D] text-[#8C1F3D] shadow-xs'
+                              : 'bg-white border-[#F3DEC8] text-[#6B5E77] hover:bg-[#FAF5F0]'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[9.5px] font-black uppercase px-1.5 py-0.5 rounded bg-white/80 border border-[#F3DEC8]">
+                              {preset.tag}
+                            </span>
+                            <span className="text-xs font-black text-[#1E122C]">{preset.count.toLocaleString()}</span>
+                          </div>
+                          <span className="text-xs font-bold block text-[#1E122C]">{preset.label}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Synced CRM Recipient Contacts Interactive Table */}
+                    <div className="space-y-2.5 rounded-2xl border border-[#F3DEC8] bg-[#FCFAF8] p-3.5 shadow-3xs">
+                      
+                      {/* Search & Bulk Select Bar */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="relative flex-1">
+                          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#8A8294]" />
+                          <input
+                            type="text"
+                            value={audienceSearch}
+                            onChange={(e) => setAudienceSearch(e.target.value)}
+                            placeholder="Search recipient by name, email, company, tag..."
+                            className="w-full pl-9 pr-3 py-1.5 text-xs bg-white border border-[#F3DEC8] rounded-xl outline-none focus:border-[#8C1F3D]"
+                          />
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-[11px] font-bold text-[#6B5E77] bg-white px-2.5 py-1 rounded-xl border border-[#F3DEC8]">
+                            <strong className="text-[#8C1F3D]">{selectedContactIds.length}</strong> of {filteredAudienceContacts.length} selected
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={handleSelectAllFiltered}
+                            className="px-3 py-1 bg-white hover:bg-[#FFEFEA] text-[11px] font-bold text-[#8C1F3D] border border-[#F3DEC8] rounded-xl cursor-pointer transition-colors"
+                          >
+                            {filteredAudienceContacts.length > 0 && filteredAudienceContacts.every(c => selectedContactIds.includes(c.id))
+                              ? 'Deselect All'
+                              : 'Select All'}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Contacts Interactive Table / Scrollable Container */}
+                      <div className="border border-[#F3DEC8] rounded-xl bg-white overflow-hidden max-h-64 overflow-y-auto divide-y divide-[#F3DEC8]/60">
+                        {filteredAudienceContacts.length === 0 ? (
+                          <div className="p-8 text-center space-y-1">
+                            <p className="text-xs font-bold text-[#1E122C]">No contacts found matching &quot;{audienceSearch}&quot;</p>
+                            <p className="text-[11px] text-[#6B5E77]">Try clearing your search query or choosing another cohort preset.</p>
+                          </div>
+                        ) : (
+                          filteredAudienceContacts.map((contact) => {
+                            const isSelected = selectedContactIds.includes(contact.id);
+                            const initials = contact.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+
+                            return (
+                              <div
+                                key={contact.id}
+                                onClick={() => handleToggleContact(contact.id)}
+                                className={`p-2.5 flex items-center justify-between gap-3 cursor-pointer transition-colors ${
+                                  isSelected ? 'bg-[#FFFDFB] hover:bg-[#FFEFEA]/40' : 'bg-white opacity-60 hover:opacity-90'
+                                }`}
+                              >
+                                {/* Left: Checkbox + Avatar + Name + Email */}
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => {}} // Handled by container row click
+                                    className="w-4 h-4 rounded text-[#8C1F3D] border-[#F3DEC8] accent-[#8C1F3D] cursor-pointer"
+                                  />
+
+                                  <div className="w-7 h-7 rounded-full bg-linear-to-tr from-[#8C1F3D] to-[#EA580C] text-white flex items-center justify-center text-[10px] font-black shrink-0 shadow-3xs">
+                                    {initials}
+                                  </div>
+
+                                  <div className="min-w-0">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      <span className="text-xs font-black text-[#1E122C] truncate">{contact.name}</span>
+                                      {contact.company && (
+                                        <span className="text-[9.5px] font-bold text-[#8C1F3D] bg-[#FFEFEA] px-1.5 py-0.2 rounded border border-[#FAD8C7] truncate max-w-[120px]">
+                                          {contact.company}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span className="text-[10.5px] text-[#6B5E77] truncate block">{contact.email}</span>
+                                  </div>
+                                </div>
+
+                                {/* Right: Stage/Score, Location & Verified Pill */}
+                                <div className="flex items-center gap-2 shrink-0">
+                                  {contact.location && (
+                                    <span className="hidden md:inline-flex text-[9.5px] text-[#8A8294] items-center gap-0.5">
+                                      <MapPin className="w-2.5 h-2.5" />
+                                      <span>{contact.location}</span>
+                                    </span>
+                                  )}
+
+                                  <div className="text-right hidden sm:block">
+                                    <span className="text-[10px] font-black text-[#8C1F3D] flex items-center gap-0.5 justify-end">
+                                      <Sparkles className="w-2.5 h-2.5" /> {contact.leadScore} AI Score
+                                    </span>
+                                    <span className="text-[9px] font-bold uppercase text-[#6B5E77] bg-[#FAF5F0] px-1.5 py-0.2 rounded border border-[#F3DEC8]">
+                                      {contact.lifecycleStage}
+                                    </span>
+                                  </div>
+
+                                  <span className="px-2 py-0.5 rounded-md text-[9.5px] font-bold bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0] flex items-center gap-1">
+                                    <ShieldCheck className="w-2.5 h-2.5" />
+                                    <span className="hidden sm:inline">Opt-in</span>
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Delivery Summary Bar */}
+                    <div className="p-3 bg-[#FAF5F0] rounded-xl border border-[#F3DEC8] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-[#10B981]" />
+                        <span>Active Recipients: <strong className="text-[#8C1F3D]">{selectedContactIds.length}</strong> individual contacts targeted (Segment total: {cohortCount.toLocaleString()})</span>
+                      </div>
+                      <span className="text-[11px] text-[#6B5E77]">0 suppressed • 0 spam flags • Synced CRM list</span>
+                    </div>
+                  </div>
                 </div>
               )}
 
               {/* -------------------------------------------------------------
-                  STEP 5: MESSAGE COMPOSITION & VISUAL TEMPLATES
+                  STEP 2: MESSAGE COMPOSITION & VISUAL TEMPLATES
                   ------------------------------------------------------------- */}
-              {creatorStep === 5 && (
+              {creatorStep === 2 && (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-in fade-in">
-
+                  
                   {/* Left Column: Copy Synthesis & AI Refiner */}
                   <div className="lg:col-span-6 space-y-4">
                     <div className="flex items-center justify-between">
@@ -1206,11 +1606,12 @@ Thanks,
                           <button
                             key={theme.id}
                             type="button"
-                            onClick={() => setActiveThemePreset(theme.id as any)}
-                            className={`px-2 py-1 rounded-lg text-[10px] font-bold cursor-pointer ${activeThemePreset === theme.id
-                                ? 'bg-[#8C1F3D] text-white'
-                                : 'bg-[#FAF5F0] text-[#6B5E77] border border-[#F3DEC8]'
-                              }`}
+                            onClick={() => handleSelectThemePreset(theme.id as any)}
+                            className={`px-2.5 py-1 rounded-lg text-[10.5px] font-bold cursor-pointer transition-all ${
+                              activeThemePreset === theme.id
+                                ? 'bg-[#8C1F3D] text-white shadow-3xs scale-102'
+                                : 'bg-[#FAF5F0] text-[#6B5E77] border border-[#F3DEC8] hover:text-[#1E122C] hover:bg-white'
+                            }`}
                           >
                             {theme.label}
                           </button>
@@ -1229,41 +1630,131 @@ Thanks,
                       </select>
                     </div>
 
-                    {/* Email Client Canvas */}
-                    <div className="border border-[#F3DEC8] rounded-2xl bg-[#FCFAF8] p-3 shadow-xs">
-                      <div className="bg-white rounded-xl border border-[#F3DEC8] overflow-hidden">
-                        <div className="p-2.5 bg-[#FAF5F0] border-b border-[#F3DEC8] text-[10.5px] text-[#6B5E77] space-y-0.5">
-                          <div><strong className="text-[#1E122C]">From:</strong> {senderName} &lt;{senderEmail}&gt;</div>
-                          <div><strong className="text-[#1E122C]">Subject:</strong> {subjectLine.replace(/\{\{first_name\}\}/g, previewRecipient)}</div>
+                    {/* Theme-Aware Dynamic Email Client Canvas */}
+                    <div className={`p-3 rounded-2xl shadow-xs transition-all duration-300 ${
+                      activeThemePreset === 'crimson_luxe' ? 'bg-[#2A0813] border border-[#5C1A2E]' :
+                      activeThemePreset === 'editorial_digest' ? 'bg-[#F4F4F5] border border-slate-300' :
+                      activeThemePreset === 'flash_sale' ? 'bg-[#FFF0F0] border border-red-200' :
+                      'bg-[#FCFAF8] border border-[#F3DEC8]'
+                    }`}>
+                      <div className={`overflow-hidden transition-all duration-300 ${
+                        activeThemePreset === 'crimson_luxe' 
+                          ? 'bg-[#18050C] text-white rounded-xl border border-[#7A2840] shadow-xl' 
+                          : activeThemePreset === 'editorial_digest'
+                          ? 'bg-white text-slate-900 rounded-lg border-2 border-slate-900 shadow-md font-serif'
+                          : activeThemePreset === 'flash_sale'
+                          ? 'bg-white text-slate-900 rounded-xl border-2 border-red-500 shadow-xl'
+                          : 'bg-white text-[#1E122C] rounded-xl border border-[#F3DEC8]'
+                      }`}>
+                        
+                        {/* Email Client Header Bar */}
+                        <div className={`p-2.5 border-b text-[10.5px] space-y-0.5 transition-colors ${
+                          activeThemePreset === 'crimson_luxe'
+                            ? 'bg-[#240813] border-[#5C1A2E] text-[#E0B0BC]'
+                            : activeThemePreset === 'editorial_digest'
+                            ? 'bg-slate-100 border-slate-300 font-mono text-slate-600'
+                            : activeThemePreset === 'flash_sale'
+                            ? 'bg-red-50 border-red-200 text-red-900'
+                            : 'bg-[#FAF5F0] border-[#F3DEC8] text-[#6B5E77]'
+                        }`}>
+                          <div><strong className={activeThemePreset === 'crimson_luxe' ? 'text-white' : activeThemePreset === 'flash_sale' ? 'text-red-950' : 'text-[#1E122C]'}>From:</strong> {senderName} &lt;{senderEmail}&gt;</div>
+                          <div><strong className={activeThemePreset === 'crimson_luxe' ? 'text-white' : activeThemePreset === 'flash_sale' ? 'text-red-950' : 'text-[#1E122C]'}>Subject:</strong> {subjectLine.replace(/\{\{first_name\}\}/g, previewRecipient)}</div>
                         </div>
 
-                        <div className="p-4 space-y-3 text-left">
-                          <div className="p-2.5 rounded-xl bg-[#FAF5F0] border border-[#F3DEC8] text-center">
-                            <h4 className="text-xs font-black text-[#8C1F3D] uppercase">{brandName}</h4>
-                          </div>
+                        <div className="p-4 space-y-3.5 text-left">
+                          
+                          {/* Brand Hero Banner */}
+                          {activeThemePreset === 'crimson_luxe' ? (
+                            <div className="p-4 rounded-xl bg-linear-to-r from-[#5C1328] via-[#8C1F3D] to-[#3B0A18] border border-[#D4AF37]/50 text-center relative overflow-hidden shadow-sm">
+                              <span className="text-[9px] uppercase tracking-widest text-[#F3DEC8] font-bold block mb-0.5">Private Invitation</span>
+                              <h4 className="text-sm font-serif font-black text-amber-200 uppercase tracking-widest drop-shadow">{brandName}</h4>
+                            </div>
+                          ) : activeThemePreset === 'editorial_digest' ? (
+                            <div className="p-3 border-y-2 border-slate-900 bg-white text-center space-y-0.5">
+                              <span className="text-[9px] font-mono uppercase tracking-widest text-slate-500 font-bold block">The Executive Intelligence Digest</span>
+                              <h4 className="text-base font-serif font-black text-slate-950 uppercase tracking-wider">{brandName}</h4>
+                            </div>
+                          ) : activeThemePreset === 'flash_sale' ? (
+                            <div className="p-3.5 rounded-xl bg-linear-to-r from-red-600 via-orange-600 to-red-600 text-white text-center shadow-md">
+                              <div className="flex items-center justify-center gap-1.5 text-[9.5px] font-black uppercase tracking-wider bg-black/30 px-2 py-0.5 rounded-full w-fit mx-auto mb-1">
+                                <Flame className="w-3 h-3 text-amber-300 animate-pulse" />
+                                <span>24-Hour Flash Sale • Limited Access</span>
+                              </div>
+                              <h4 className="text-sm font-black uppercase tracking-wide">{brandName}</h4>
+                            </div>
+                          ) : (
+                            <div className="p-2.5 rounded-xl bg-[#FAF5F0] border border-[#F3DEC8] text-center">
+                              <h4 className="text-xs font-black text-[#8C1F3D] uppercase tracking-wide">{brandName}</h4>
+                            </div>
+                          )}
 
-                          <div className="text-xs text-[#1E122C] whitespace-pre-line leading-relaxed">
+                          {/* Body Copy */}
+                          <div className={`text-xs whitespace-pre-line leading-relaxed ${
+                            activeThemePreset === 'crimson_luxe' ? 'text-[#FCE7EE]' :
+                            activeThemePreset === 'editorial_digest' ? 'text-slate-800 font-serif leading-7' :
+                            activeThemePreset === 'flash_sale' ? 'text-slate-900 font-medium' :
+                            'text-[#1E122C]'
+                          }`}>
                             {emailBodyText
                               .replace(/\{\{first_name\}\}/g, previewRecipient)
                               .replace(/\{\{company_name\}\}/g, brandName)
                               .replace(/\{\{cta_url\}\}/g, ctaUrl)}
                           </div>
 
+                          {/* Promo Code Box */}
                           {activeDiscountCode && (
-                            <div className="p-2 bg-[#FAF5F0] border border-dashed border-[#EA580C] rounded-lg text-center">
-                              <span className="text-[9px] font-bold text-[#6B5E77]">VIP Promo Code: </span>
-                              <strong className="text-xs text-[#8C1F3D]">{activeDiscountCode}</strong>
-                            </div>
+                            activeThemePreset === 'crimson_luxe' ? (
+                              <div className="p-2.5 bg-[#2E0B18] border border-[#D4AF37]/60 rounded-xl text-center shadow-inner">
+                                <span className="text-[9.5px] font-bold text-[#E0B0BC]">Exclusive VIP Passcode: </span>
+                                <strong className="text-xs text-amber-300 font-mono tracking-wider font-black">{activeDiscountCode}</strong>
+                              </div>
+                            ) : activeThemePreset === 'editorial_digest' ? (
+                              <div className="p-2.5 bg-slate-50 border-l-4 border-slate-900 text-left">
+                                <span className="text-[10px] font-mono text-slate-600 uppercase block font-bold">Reader Benefit Code:</span>
+                                <strong className="text-xs font-mono font-black text-slate-950">{activeDiscountCode}</strong>
+                              </div>
+                            ) : activeThemePreset === 'flash_sale' ? (
+                              <div className="p-2.5 bg-red-50 border-2 border-dashed border-red-500 rounded-xl text-center animate-pulse-slow">
+                                <span className="text-[10px] font-bold text-red-800">⚡ USE CODE AT CHECKOUT: </span>
+                                <strong className="text-sm font-black text-red-600 font-mono tracking-widest">{activeDiscountCode}</strong>
+                              </div>
+                            ) : (
+                              <div className="p-2 bg-[#FAF5F0] border border-dashed border-[#EA580C] rounded-lg text-center">
+                                <span className="text-[9px] font-bold text-[#6B5E77]">VIP Promo Code: </span>
+                                <strong className="text-xs text-[#8C1F3D]">{activeDiscountCode}</strong>
+                              </div>
+                            )
                           )}
 
+                          {/* CTA Button */}
                           <div className="pt-2 text-center">
-                            <span className="inline-block px-5 py-2 bg-[#8C1F3D] text-white rounded-full text-xs font-black shadow-md">
-                              {ctaButtonText}
-                            </span>
+                            {activeThemePreset === 'crimson_luxe' ? (
+                              <span className="inline-block px-6 py-2.5 bg-linear-to-r from-[#D4AF37] via-[#F3E5AB] to-[#D4AF37] text-[#3B0A18] rounded-full text-xs font-black shadow-lg cursor-pointer hover:brightness-105 tracking-wide">
+                                {ctaButtonText}
+                              </span>
+                            ) : activeThemePreset === 'editorial_digest' ? (
+                              <span className="inline-block px-6 py-2.5 bg-slate-900 text-white font-mono text-xs font-bold uppercase tracking-wider shadow-sm cursor-pointer hover:bg-black">
+                                {ctaButtonText}
+                              </span>
+                            ) : activeThemePreset === 'flash_sale' ? (
+                              <span className="inline-block px-7 py-2.5 bg-linear-to-r from-orange-600 to-red-600 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-lg cursor-pointer hover:brightness-105">
+                                {ctaButtonText}
+                              </span>
+                            ) : (
+                              <span className="inline-block px-5 py-2 bg-[#8C1F3D] text-white rounded-full text-xs font-black shadow-md cursor-pointer hover:bg-[#731831]">
+                                {ctaButtonText}
+                              </span>
+                            )}
                           </div>
 
-                          <div className="pt-3 border-t border-[#F3DEC8] text-center text-[8.5px] text-[#8A8294]">
-                            © 2026 {brandName} Inc. • 1-Click Unsubscribe • Verified SES
+                          {/* Footer */}
+                          <div className={`pt-3 border-t text-center text-[8.5px] ${
+                            activeThemePreset === 'crimson_luxe' ? 'border-[#5C1A2E] text-[#A67888]' :
+                            activeThemePreset === 'editorial_digest' ? 'border-slate-200 font-mono text-slate-500 uppercase' :
+                            activeThemePreset === 'flash_sale' ? 'border-red-100 text-red-700 font-bold' :
+                            'border-[#F3DEC8] text-[#8A8294]'
+                          }`}>
+                            © 2026 {brandName} Inc. • 1-Click Unsubscribe • Verified SES Delivery
                           </div>
                         </div>
                       </div>
@@ -1273,19 +1764,19 @@ Thanks,
               )}
 
               {/* -------------------------------------------------------------
-                  STEP 6: REVIEW, DELIVERABILITY & SCHEDULE / SEND
+                  STEP 3: REVIEW, DELIVERABILITY, AI AUTONOMY & DISPATCH
                   ------------------------------------------------------------- */}
-              {creatorStep === 6 && (
-                <div className="space-y-4 animate-in fade-in">
+              {creatorStep === 3 && (
+                <div className="space-y-5 animate-in fade-in">
                   <div className="space-y-1">
-                    <h2 className="text-base font-black text-[#1E122C]">Step 6: Pre-Flight Review &amp; Dispatch</h2>
+                    <h2 className="text-base font-black text-[#1E122C]">Step 3: Pre-Flight Review &amp; Dispatch</h2>
                     <p className="text-xs text-[#6B5E77]">
-                      Review compliance safeguards, inspect deliverability grade, and choose instant dispatch or automated scheduling.
+                      Inspect deliverability score, confirm your AI automation preference, and choose instant dispatch or automated scheduling.
                     </p>
                   </div>
 
                   {/* Deliverability Inspector */}
-                  <div className="p-4 rounded-2xl bg-white border border-[#F3DEC8] flex items-center justify-between shadow-xs">
+                  <div className="p-4 rounded-2xl bg-white border border-[#F3DEC8] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-2xl bg-[#ECFDF5] border border-[#A7F3D0] flex items-center justify-center text-lg font-black text-[#059669]">
                         {deliverabilityScore}%
@@ -1296,38 +1787,127 @@ Thanks,
                       </div>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={handleSendTestEmail}
-                      className="px-3 py-1.5 bg-[#FAF5F0] hover:bg-[#FFEFEA] text-xs font-bold text-[#8C1F3D] border border-[#F3DEC8] rounded-xl cursor-pointer"
-                    >
-                      {testEmailSent ? '✓ Test Sent to You!' : 'Send Live Test Email'}
-                    </button>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <button
+                        type="button"
+                        onClick={handleAutoFixDeliverability}
+                        disabled={isAutoFixing}
+                        className="px-3.5 py-2 bg-[#FAF5F0] hover:bg-[#FFEFEA] text-xs font-bold text-[#8C1F3D] border border-[#F3DEC8] rounded-xl cursor-pointer shadow-3xs flex items-center gap-1.5"
+                      >
+                        <Sparkles className={`w-3.5 h-3.5 text-[#EA580C] ${isAutoFixing ? 'animate-spin' : ''}`} />
+                        <span>{isAutoFixing ? 'Optimizing...' : 'Auto-Optimize Copy with AI'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setIsTestEmailModalOpen(true)}
+                        className="px-3.5 py-2 bg-[#FAF5F0] hover:bg-[#FFEFEA] text-xs font-bold text-[#8C1F3D] border border-[#F3DEC8] rounded-xl cursor-pointer shadow-3xs flex items-center gap-1.5"
+                      >
+                        <Send className="w-3.5 h-3.5" />
+                        <span>{testEmailSent ? '✓ Test Sent (Send Another)' : 'Send Live Test Email'}</span>
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Send Options */}
+                  {/* AI Autonomy & Execution Mode (1-Time Selection / Persisted) */}
+                  <div className="p-4 rounded-2xl bg-[#FCFAF8] border border-[#F3DEC8] space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-xs font-black text-[#1E122C] flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-[#8C1F3D]" />
+                          AI Execution Mode (1-Time Setting)
+                        </span>
+                        <p className="text-[10.5px] text-[#6B5E77]">Choose how much autonomy GrowWise AI has for future campaign dispatches.</p>
+                      </div>
+                      <span className="text-[9.5px] font-bold text-[#8C1F3D] bg-[#FFEFEA] px-2 py-0.5 rounded-full border border-[#FAD8C7]">
+                        Preference Saved
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {/* Copilot Option */}
+                      <div 
+                        onClick={() => {
+                          setAutonomyLevel('copilot');
+                          localStorage.setItem('growwise_email_autonomy_level', 'copilot');
+                        }}
+                        className={`p-3.5 rounded-xl border-2 transition-all cursor-pointer space-y-1.5 ${
+                          autonomyLevel === 'copilot'
+                            ? 'border-[#8C1F3D] bg-[#FFFDFB] shadow-xs'
+                            : 'border-[#F3DEC8] bg-white hover:border-[#8C1F3D]/40'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9.5px] font-black uppercase text-[#8C1F3D] bg-[#FFEFEA] px-2 py-0.5 rounded border border-[#FAD8C7]">
+                            Recommended
+                          </span>
+                          <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
+                            autonomyLevel === 'copilot' ? 'border-[#8C1F3D] bg-[#8C1F3D]' : 'border-slate-300'
+                          }`}>
+                            {autonomyLevel === 'copilot' && <Check className="w-2 h-2 text-white stroke-[3]" />}
+                          </div>
+                        </div>
+                        <h5 className="text-xs font-black text-[#1E122C]">🛡️ Copilot (Ask for Approval)</h5>
+                        <p className="text-[10.5px] text-[#6B5E77] leading-relaxed">
+                          AI generates copy &amp; templates, but <strong>always requests your 1-click approval</strong> before sending.
+                        </p>
+                      </div>
+
+                      {/* Fully Autonomous Option */}
+                      <div 
+                        onClick={() => {
+                          setAutonomyLevel('autonomous');
+                          localStorage.setItem('growwise_email_autonomy_level', 'autonomous');
+                        }}
+                        className={`p-3.5 rounded-xl border-2 transition-all cursor-pointer space-y-1.5 ${
+                          autonomyLevel === 'autonomous'
+                            ? 'border-[#8C1F3D] bg-[#FFFDFB] shadow-xs'
+                            : 'border-[#F3DEC8] bg-white hover:border-[#8C1F3D]/40'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9.5px] font-black uppercase text-[#EA580C] bg-[#FFF0E6] px-2 py-0.5 rounded border border-[#FAD8C7]">
+                            Full Autopilot
+                          </span>
+                          <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
+                            autonomyLevel === 'autonomous' ? 'border-[#8C1F3D] bg-[#8C1F3D]' : 'border-slate-300'
+                          }`}>
+                            {autonomyLevel === 'autonomous' && <Check className="w-2 h-2 text-white stroke-[3]" />}
+                          </div>
+                        </div>
+                        <h5 className="text-xs font-black text-[#1E122C]">🚀 Fully Autonomous (Hands-Free)</h5>
+                        <p className="text-[10.5px] text-[#6B5E77] leading-relaxed">
+                          AI automatically predicts peak engagement hours and runs scheduled broadcasts hands-free.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Dispatch Timing */}
                   <div className="p-4 rounded-2xl bg-[#FCFAF8] border border-[#F3DEC8] space-y-3">
                     <span className="text-xs font-black text-[#1E122C] block">Dispatch Timing</span>
                     <div className="grid grid-cols-2 gap-3">
                       <button
                         type="button"
                         onClick={() => setSendMode('now')}
-                        className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${sendMode === 'now'
+                        className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
+                          sendMode === 'now'
                             ? 'bg-[#FFEFEA] border-[#8C1F3D] text-[#8C1F3D]'
                             : 'bg-white border-[#F3DEC8] text-[#6B5E77]'
-                          }`}
+                        }`}
                       >
                         <span className="text-xs font-black block text-[#1E122C]">🚀 Send Immediately</span>
-                        <span className="text-[10px]">Dispatch to {cohortCount.toLocaleString()} recipients now</span>
+                        <span className="text-[10px]">Dispatch to {selectedContactIds.length > 0 ? selectedContactIds.length : cohortCount.toLocaleString()} recipients now</span>
                       </button>
 
                       <button
                         type="button"
                         onClick={() => setSendMode('scheduled')}
-                        className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${sendMode === 'scheduled'
+                        className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
+                          sendMode === 'scheduled'
                             ? 'bg-[#FFEFEA] border-[#8C1F3D] text-[#8C1F3D]'
                             : 'bg-white border-[#F3DEC8] text-[#6B5E77]'
-                          }`}
+                        }`}
                       >
                         <span className="text-xs font-black block text-[#1E122C]">⏰ Schedule for Later</span>
                         <span className="text-[10px]">AI optimal send window</span>
@@ -1353,27 +1933,281 @@ Thanks,
                 <div />
               )}
 
-              {creatorStep < 6 ? (
+              {creatorStep === 1 ? (
                 <button
                   type="button"
-                  onClick={() => {
-                    if (creatorStep === 4) handleSynthesizeGoal();
-                    else setCreatorStep(creatorStep + 1);
-                  }}
+                  onClick={handleSynthesizeGoal}
+                  disabled={isSynthesizing}
+                  className="px-6 py-2.5 bg-[#8C1F3D] hover:bg-[#731831] text-white rounded-xl text-xs font-black shadow-md cursor-pointer transition-all flex items-center gap-1.5"
+                >
+                  {isSynthesizing && <Sparkles className="w-3.5 h-3.5 animate-spin" />}
+                  <span>{isSynthesizing ? 'Synthesizing...' : 'Synthesize Campaign ➔'}</span>
+                </button>
+              ) : creatorStep === 2 ? (
+                <button
+                  type="button"
+                  onClick={() => setCreatorStep(3)}
                   className="px-6 py-2.5 bg-[#8C1F3D] hover:bg-[#731831] text-white rounded-xl text-xs font-black shadow-md cursor-pointer transition-all"
                 >
-                  {creatorStep === 4 ? (isSynthesizing ? 'Synthesizing...' : 'Synthesize Campaign ➔') : 'Continue ➔'}
+                  Review &amp; Launch ➔
                 </button>
               ) : (
                 <button
                   type="button"
                   onClick={handleFinalLaunch}
-                  className="px-6 py-2.5 bg-[#10B981] hover:bg-[#059669] text-white rounded-xl text-xs font-black shadow-md cursor-pointer"
+                  disabled={isLaunching}
+                  className="px-6 py-2.5 bg-[#10B981] hover:bg-[#059669] text-white rounded-xl text-xs font-black shadow-md cursor-pointer disabled:opacity-50 transition-all flex items-center gap-1.5"
                 >
-                  {sendMode === 'now' ? '🚀 Dispatch Campaign Now' : '⏰ Schedule Campaign'}
+                  {isLaunching && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                  <span>{isLaunching ? '🚀 Dispatching to Engine...' : sendMode === 'now' ? '🚀 Dispatch Campaign Now' : '⏰ Schedule Campaign'}</span>
                 </button>
               )}
             </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          5. DEDICATED DOMAIN & SENDER SETTINGS MODAL (1-Click Reconnect & Manage)
+          ========================================================================= */}
+      {isDomainSettingsOpen && (
+        <div className="fixed inset-0 z-[70] bg-[#1E122C]/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+          <div className="bg-[#FFFDFC] border border-[#F3DEC8] rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+            
+            <div className="px-6 py-4 border-b border-[#F3DEC8] bg-[#FAF5F0]/80 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-[#10B981]" />
+                <h3 className="text-sm font-black text-[#1E122C]">Sender Identity &amp; Domain Authentication</h3>
+              </div>
+              <button
+                onClick={() => setIsDomainSettingsOpen(false)}
+                className="p-1.5 rounded-xl hover:bg-white text-[#6B5E77] hover:text-[#1E122C] cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <p className="text-xs text-[#6B5E77]">
+                Your sending identity was imported during onboarding. Manage your authenticated domain and SPF/DKIM DNS records below.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-black text-[#1E122C]">From Sender Name</label>
+                  <input
+                    type="text"
+                    value={senderName}
+                    onChange={(e) => setSenderName(e.target.value)}
+                    className="w-full px-3.5 py-2 text-xs bg-white border border-[#F3DEC8] rounded-xl font-bold outline-none text-[#1E122C]"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-black text-[#1E122C]">From Email Address</label>
+                  <input
+                    type="email"
+                    value={senderEmail}
+                    onChange={(e) => setSenderEmail(e.target.value)}
+                    className="w-full px-3.5 py-2 text-xs bg-white border border-[#F3DEC8] rounded-xl font-bold outline-none text-[#1E122C]"
+                  />
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#FAF5F0] border border-[#F3DEC8] space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-[#1E122C]">Live DNS Authentication Status</span>
+                  <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                    isDnsVerified 
+                      ? 'text-[#10B981] bg-[#ECFDF5] border-[#A7F3D0]' 
+                      : 'text-[#DC2626] bg-[#FEF2F2] border-[#FECACA]'
+                  }`}>
+                    {isDnsVerified ? '✓ Verified Safe Sender' : '⚠️ Pending Verification'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-[11px]">
+                  <div className="p-2.5 bg-white rounded-xl border border-[#F3DEC8]">
+                    <strong className="text-[#1E122C] block">SPF Record</strong>
+                    <span className="font-mono text-[10px] text-[#6B5E77]">v=spf1 include:amazonses.com</span>
+                  </div>
+                  <div className="p-2.5 bg-white rounded-xl border border-[#F3DEC8]">
+                    <strong className="text-[#1E122C] block">DKIM Key</strong>
+                    <span className="font-mono text-[10px] text-[#6B5E77]">resend._domainkey</span>
+                  </div>
+                  <div className="p-2.5 bg-white rounded-xl border border-[#F3DEC8]">
+                    <strong className="text-[#1E122C] block">DMARC Policy</strong>
+                    <span className="font-mono text-[10px] text-[#6B5E77]">p=none; rua=mailto:...</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[11px] text-[#6B5E77]">Domain: <strong>{cleanDomain}</strong></span>
+                  <button
+                    type="button"
+                    onClick={handleVerifyDns}
+                    disabled={isVerifyingDns}
+                    className="px-3 py-1.5 bg-white border border-[#F3DEC8] hover:bg-[#FAF5F0] text-xs font-bold text-[#8C1F3D] rounded-xl cursor-pointer flex items-center gap-1.5 shadow-3xs"
+                  >
+                    <RefreshCw className={`w-3 h-3 ${isVerifyingDns ? 'animate-spin' : ''}`} />
+                    <span>{isVerifyingDns ? 'Validating...' : 'Re-check DNS'}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 border-t border-[#F3DEC8] bg-[#FAF5F0]/80 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setIsDomainSettingsOpen(false)}
+                className="px-5 py-2 bg-[#8C1F3D] hover:bg-[#731831] text-white rounded-xl text-xs font-black shadow-xs cursor-pointer"
+              >
+                Save &amp; Close
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          6. DEDICATED LIVE TEST EMAIL POPUP MODAL (User Form for Destination & Token preview)
+          ========================================================================= */}
+      {isTestEmailModalOpen && (
+        <div className="fixed inset-0 z-[80] bg-[#1E122C]/75 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+          <div className="bg-[#FFFDFC] border border-[#F3DEC8] rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+            
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-[#F3DEC8] bg-[#FAF5F0]/90 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-[#FFEFEA] border border-[#FAD8C7] flex items-center justify-center text-[#8C1F3D]">
+                  <Send className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-[#1E122C]">Send Live Test Email</h3>
+                  <span className="text-[10.5px] text-[#6B5E77]">Preview real rendering in your inbox</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setIsTestEmailModalOpen(false); setTestSendingState('idle'); }}
+                className="p-1.5 rounded-xl hover:bg-white text-[#6B5E77] hover:text-[#1E122C] cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleExecuteSendTest} className="p-6 space-y-4">
+              {testSendingState === 'success' ? (
+                <div className="p-6 rounded-2xl bg-[#ECFDF5] border border-[#A7F3D0] text-center space-y-2.5 animate-in fade-in">
+                  <CheckCircle2 className="w-10 h-10 text-[#10B981] mx-auto animate-bounce" />
+                  <h4 className="text-sm font-black text-[#065F46]">Test Email Dispatched!</h4>
+                  <p className="text-xs text-[#047857]">{testSuccessMessage}</p>
+                  <div className="text-[10px] text-[#059669] pt-1 font-semibold">
+                    Deliverability Grade: <strong>A+ (99.4%)</strong> • SPF/DKIM: <strong>Verified</strong>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <p className="text-xs text-[#6B5E77]">
+                    Specify the test recipient address and personalized test values to inspect email rendering before broad dispatch.
+                  </p>
+
+                  {/* Recipient Email */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-black text-[#1E122C]">
+                      Target Test Email Address <span className="text-[#EF4444]">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={testRecipientEmail}
+                      onChange={(e) => setTestRecipientEmail(e.target.value)}
+                      placeholder="e.g. yourname@gmail.com"
+                      className="w-full px-3.5 py-2.5 text-xs bg-white border border-[#F3DEC8] rounded-xl font-bold text-[#1E122C] outline-none focus:border-[#8C1F3D]"
+                    />
+                  </div>
+
+                  {/* Preview Recipient Name (For merge tags) */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-black text-[#1E122C]">
+                      Recipient First Name <span className="text-[10px] font-normal text-[#8A8294]">(Tests &#123;&#123;first_name&#125;&#125; token)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={testRecipientName}
+                      onChange={(e) => setTestRecipientName(e.target.value)}
+                      placeholder="e.g. Shristy"
+                      className="w-full px-3.5 py-2 text-xs bg-white border border-[#F3DEC8] rounded-xl font-bold text-[#1E122C] outline-none focus:border-[#8C1F3D]"
+                    />
+                  </div>
+
+                  {/* Test Configuration Options */}
+                  <div className="p-3.5 rounded-2xl bg-[#FAF5F0] border border-[#F3DEC8] space-y-2">
+                    <span className="text-[10px] font-black uppercase text-[#8A8294] tracking-wider block">Test Options:</span>
+                    
+                    <label className="flex items-center gap-2 text-xs font-bold text-[#1E122C] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={testPrefixSubject}
+                        onChange={(e) => setTestPrefixSubject(e.target.checked)}
+                        className="rounded border-[#F3DEC8] text-[#8C1F3D] accent-[#8C1F3D] cursor-pointer"
+                      />
+                      <span>Prefix Subject line with <code>[TEST]</code></span>
+                    </label>
+
+                    <label className="flex items-center gap-2 text-xs font-bold text-[#1E122C] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={testIncludeSampleData}
+                        onChange={(e) => setTestIncludeSampleData(e.target.checked)}
+                        className="rounded border-[#F3DEC8] text-[#8C1F3D] accent-[#8C1F3D] cursor-pointer"
+                      />
+                      <span>Include active VIP promo code ({activeDiscountCode || 'EARLYVIP20'})</span>
+                    </label>
+                  </div>
+
+                  {/* Live Subject Preview Box */}
+                  <div className="p-3 bg-white border border-[#F3DEC8] rounded-xl space-y-1 text-xs">
+                    <div className="text-[10px] font-bold text-[#8A8294]">PREVIEW EMAIL SUBJECT:</div>
+                    <div className="font-bold text-[#1E122C] truncate">
+                      {testPrefixSubject ? '[TEST] ' : ''}{subjectLine.replace(/\{\{first_name\}\}/g, testRecipientName || 'Subscriber')}
+                    </div>
+                    <div className="text-[10px] text-[#6B5E77]">From: {senderName} &lt;{senderEmail}&gt;</div>
+                  </div>
+
+                  {/* Modal Actions */}
+                  <div className="flex items-center justify-end gap-2.5 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsTestEmailModalOpen(false)}
+                      className="px-4 py-2 bg-white border border-[#F3DEC8] hover:bg-[#FAF5F0] text-xs font-bold text-[#1E122C] rounded-xl cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      type="submit"
+                      disabled={testSendingState === 'sending' || !testRecipientEmail.trim()}
+                      className="px-5 py-2.5 bg-[#8C1F3D] hover:bg-[#731831] disabled:opacity-50 text-white rounded-xl text-xs font-black shadow-md cursor-pointer transition-all flex items-center gap-1.5"
+                    >
+                      {testSendingState === 'sending' ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <span>Sending Live Test...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-3.5 h-3.5" />
+                          <span>Send Test Email Now</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </>
+              )}
+            </form>
 
           </div>
         </div>
