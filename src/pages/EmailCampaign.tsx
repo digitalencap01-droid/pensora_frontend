@@ -687,10 +687,12 @@ Thanks,
           <span className="text-[10px] font-bold text-[#6B5E77] uppercase tracking-wider block">Average Open Rate</span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-black text-[#8C1F3D]">
-              {analyticsData?.summary?.open_rate !== undefined ? `${analyticsData.summary.open_rate}%` : '0.0%'}
+              {analyticsData?.summary?.open_rate 
+                ? (String(analyticsData.summary.open_rate).endsWith('%') ? analyticsData.summary.open_rate : `${analyticsData.summary.open_rate}%`) 
+                : '0.0%'}
             </span>
             <span className="text-xs font-bold text-[#10B981]">
-              {(analyticsData?.summary?.open_rate || 0) > 20 ? 'Optimal' : 'Standard'}
+              {parseFloat(analyticsData?.summary?.open_rate || '0') > 20 ? 'Optimal' : 'Standard'}
             </span>
           </div>
           <p className="text-[11px] text-[#6B5E77]">
