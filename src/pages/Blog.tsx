@@ -128,6 +128,14 @@ const LANGUAGE_CODE_MAP: Record<string, string> = {
   Hindi: 'hi'
 };
 
+const COUNTRY_LABEL_MAP: Record<string, string> = {
+  IN: '🇮🇳 India',
+  US: '🇺🇸 United States',
+  GB: '🇬🇧 United Kingdom',
+  CA: '🇨🇦 Canada',
+  AU: '🇦🇺 Australia'
+};
+
 function summaryToArticle(p: ProjectSummary): BlogArticle {
   const excerptByStatus: Record<ProjectStatus, string> = {
     generating: 'The AI pipeline is still researching and writing this article…',
@@ -245,6 +253,13 @@ export const Blog: React.FC = () => {
 
   // Studio Step Switcher: 1 (Topic & Intel) | 2 (Audience & Voice) | 3 (Cover & Grounding) | 4 (Publish & Integrations)
   const [activeStep, setActiveStep] = useState<number>(1);
+  const [maxStepReached, setMaxStepReached] = useState<number>(1);
+
+  useEffect(() => {
+    if (activeStep > maxStepReached) {
+      setMaxStepReached(activeStep);
+    }
+  }, [activeStep, maxStepReached]);
 
   // Target Destination Platform
   const [targetPlatform, setTargetPlatform] = useState<PublishingPlatformId>('webflow');
@@ -1332,12 +1347,27 @@ export const Blog: React.FC = () => {
               <div className="bg-white border border-[#EDE8F8] rounded-3xl overflow-hidden shadow-[0_8px_30px_rgba(219,39,119,0.08)] sticky top-6">
                 
                 {/* Hero Banner Preview */}
-                <div className="h-44 w-full relative bg-slate-100 overflow-hidden">
-                  <img src={mainImage} alt="Hero Banner" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-between p-4">
+                <div className="h-44 w-full relative bg-slate-900 overflow-hidden">
+                  {mainImage ? (
+                    <img src={mainImage} alt={topic || 'Cover Banner'} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-[#1E122C] via-[#351433] to-[#1E122C] flex items-center justify-center relative overflow-hidden">
+                      <div className="absolute -top-10 -right-10 w-44 h-44 bg-[#DB2777]/20 rounded-full blur-2xl" />
+                      <div className="absolute -bottom-10 -left-10 w-44 h-44 bg-[#7C3AED]/20 rounded-full blur-2xl" />
+                      <div className="flex items-center gap-2 text-white/50 text-xs font-semibold z-10">
+                        <ImageIcon className="w-4 h-4 text-pink-300" />
+                        <span>{activeStep >= 3 ? 'No cover image selected' : 'Cover image selected in Step 3'}</span>
+                      </div>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/20 flex flex-col justify-between p-4 z-20">
                     <div className="flex items-center justify-between">
-                      <span className="px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-xs text-[10px] font-black text-[#1E122C] shadow-sm uppercase tracking-wider flex items-center gap-1">
-                        <Sparkles className="w-3 h-3 text-[#DB2777]" />
+                      <span className="px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-xs text-[10px] font-black text-[#1E122C] shadow-sm uppercase tracking-wider flex items-center gap-1.5">
+                        {targetPlatform === 'webflow' ? (
+                          <span className="w-2 h-2 rounded-full bg-[#DB2777]" />
+                        ) : (
+                          <Linkedin className="w-3.5 h-3.5 text-[#0077B5]" />
+                        )}
                         {platformConnections.find(p => p.id === targetPlatform)?.name.toUpperCase() || targetPlatform.toUpperCase()}
                       </span>
                       <span className={`px-2.5 py-1 rounded-full text-white text-[10px] font-black shadow-sm ${
@@ -1348,58 +1378,273 @@ export const Blog: React.FC = () => {
                     </div>
 
                     <div className="text-white space-y-0.5">
-                      <span className="text-[10px] font-bold text-pink-200 uppercase tracking-wider">Blueprint Preview</span>
-                      <h3 className="text-sm font-black line-clamp-1 leading-snug">
-                        {topic || 'Your Target Article Headline'}
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-pink-200 uppercase tracking-wider">Blueprint Preview</span>
+                        <span className="text-[10px] font-bold text-white/70">Stage {activeStep} of 4</span>
+                      </div>
+                      <h3 className="text-sm font-black line-clamp-2 leading-snug">
+                        {topic.trim() ? topic.trim() : <span className="text-white/50 italic font-medium">Your Target Article Headline</span>}
                       </h3>
                     </div>
                   </div>
                 </div>
 
-                {/* Blueprint Specs & Gauge */}
-                <div className="p-5 sm:p-6 space-y-4">
-                  {/* Live Meta Spec Badges */}
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div className="p-2.5 rounded-2xl bg-[#FAF8FE] border border-[#EDE8F8]">
-                      <span className="text-[9.5px] font-black uppercase text-[#6B5E77] block">Length</span>
-                      <span className="text-xs font-black text-[#1E122C]">{targetWordCount}w</span>
-                    </div>
-                    <div className="p-2.5 rounded-2xl bg-[#FAF8FE] border border-[#EDE8F8]">
-                      <span className="text-[9.5px] font-black uppercase text-[#6B5E77] block">Read Time</span>
-                      <span className="text-xs font-black text-[#1E122C]">~{Math.ceil(targetWordCount / 250)} min</span>
-                    </div>
-                    <div className="p-2.5 rounded-2xl bg-[#FAF8FE] border border-[#EDE8F8]">
-                      <span className="text-[9.5px] font-black uppercase text-[#6B5E77] block">Tone</span>
-                      <span className="text-xs font-black text-[#DB2777] capitalize">{tone}</span>
-                    </div>
+                {/* Blueprint Specs & Progressive Steps */}
+                <div className="p-5 sm:p-6 space-y-3.5">
+                  <div className="flex items-center justify-between border-b border-[#EDE8F8] pb-2.5">
+                    <span className="text-[10.5px] font-black uppercase tracking-wider text-[#6B5E77]">
+                      Live Selections Summary
+                    </span>
+                    <span className="text-[10.5px] font-bold text-[#DB2777]">
+                      {activeStep === 1 && 'Step 1: Topic & Intel'}
+                      {activeStep === 2 && 'Step 2: Voice & Audience'}
+                      {activeStep === 3 && 'Step 3: Cover & Media'}
+                      {activeStep === 4 && 'Step 4: Publishing & Integrations'}
+                    </span>
                   </div>
 
-                  {/* 5-Chapter Outline Architecture */}
-                  <div className="space-y-2">
+                  {/* 1. Topic & Search Intel (Step 1) */}
+                  <div className={`p-3 rounded-2xl border transition-all ${
+                    activeStep === 1 ? 'bg-[#FDF2F8]/70 border-[#DB2777]/30 ring-1 ring-[#DB2777]/20' : 'bg-[#FAF8FE] border-[#EDE8F8]'
+                  }`}>
                     <div className="flex items-center justify-between">
-                      <span className="text-[10.5px] font-black uppercase tracking-wider text-[#6B5E77]">
-                        AI Outline Structure (5 Chapters)
-                      </span>
-                      <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
-                        <Check className="w-3 h-3" /> Auto-Optimized
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${
+                          topic.trim() ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-[#6B5E77]'
+                        }`}>
+                          {topic.trim() ? '✓' : '1'}
+                        </span>
+                        <span className="text-[11px] font-black text-[#1E122C] uppercase tracking-wide">
+                          1. Topic & Research Intel
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setActiveStep(1)}
+                        className="text-[10.5px] font-bold text-[#DB2777] hover:underline cursor-pointer"
+                      >
+                        {activeStep === 1 ? 'Active' : 'Edit →'}
+                      </button>
                     </div>
 
-                    <div className="space-y-1.5 text-xs font-bold text-[#1E122C]">
-                      {[
-                        '1. Executive Summary & Intent Hook',
-                        '2. Industry Benchmarks & Landscape Analysis',
-                        '3. Tactical Step-by-Step Implementation Framework',
-                        '4. Common Pitfalls & High-Converting Solutions',
-                        '5. Conclusion & Action Plan'
-                      ].map((chap, idx) => (
-                        <div key={idx} className="p-2 rounded-xl bg-[#FAF8FE]/80 border border-[#EDE8F8] flex items-center justify-between">
-                          <span className="truncate pr-2">{chap}</span>
-                          <span className="text-[10px] text-[#DB2777] font-mono">H2</span>
+                    {topic.trim() ? (
+                      <div className="mt-2 pl-7 space-y-1.5">
+                        <p className="text-xs font-black text-[#1E122C] leading-snug line-clamp-2">
+                          "{topic}"
+                        </p>
+                        <div className="flex flex-wrap gap-1.5 text-[10px] font-bold">
+                          <span className="px-2 py-0.5 rounded-md bg-white border border-[#EDE8F8] text-[#6B5E77]">
+                            {COUNTRY_LABEL_MAP[country] || country}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-md bg-white border border-[#EDE8F8] text-[#6B5E77]">
+                            {language}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-md bg-white border border-[#EDE8F8] text-[#6B5E77]">
+                            {searchQueriesCount} Live Queries
+                          </span>
+                          <span className="px-2 py-0.5 rounded-md bg-white border border-[#EDE8F8] text-[#6B5E77]">
+                            Freshness: {freshness}
+                          </span>
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ) : (
+                      <p className="mt-1.5 pl-7 text-[11px] text-[#9E92A6] italic">
+                        Enter an article topic on the left to activate research crawl.
+                      </p>
+                    )}
                   </div>
+
+                  {/* 2. Audience & Voice (Step 2) */}
+                  <div className={`p-3 rounded-2xl border transition-all ${
+                    activeStep === 2 ? 'bg-[#FDF2F8]/70 border-[#DB2777]/30 ring-1 ring-[#DB2777]/20' : 'bg-[#FAF8FE] border-[#EDE8F8]'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${
+                          activeStep >= 2 || maxStepReached >= 2 ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-[#6B5E77]'
+                        }`}>
+                          {activeStep >= 2 || maxStepReached >= 2 ? '✓' : '2'}
+                        </span>
+                        <span className="text-[11px] font-black text-[#1E122C] uppercase tracking-wide">
+                          2. Audience & Voice
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setActiveStep(2)}
+                        className="text-[10.5px] font-bold text-[#DB2777] hover:underline cursor-pointer"
+                      >
+                        {activeStep === 2 ? 'Active' : (activeStep > 2 || maxStepReached >= 2) ? 'Edit →' : 'Next Step →'}
+                      </button>
+                    </div>
+
+                    {(activeStep >= 2 || maxStepReached >= 2) ? (
+                      <div className="mt-2 pl-7 space-y-2">
+                        <div className="grid grid-cols-3 gap-1.5 text-center">
+                          <div className="p-1.5 rounded-xl bg-white border border-[#EDE8F8]">
+                            <span className="text-[9px] font-bold text-[#6B5E77] block uppercase">Length</span>
+                            <span className="text-xs font-black text-[#1E122C]">{targetWordCount}w</span>
+                          </div>
+                          <div className="p-1.5 rounded-xl bg-white border border-[#EDE8F8]">
+                            <span className="text-[9px] font-bold text-[#6B5E77] block uppercase">Read Time</span>
+                            <span className="text-xs font-black text-[#1E122C]">~{Math.ceil(targetWordCount / 250)} min</span>
+                          </div>
+                          <div className="p-1.5 rounded-xl bg-white border border-[#EDE8F8]">
+                            <span className="text-[9px] font-bold text-[#6B5E77] block uppercase">Tone</span>
+                            <span className="text-xs font-black text-[#DB2777] capitalize">{tone}</span>
+                          </div>
+                        </div>
+
+                        {targetAudience.trim() && (
+                          <p className="text-[11px] text-[#6B5E77] truncate">
+                            <span className="font-bold text-[#1E122C]">Audience:</span> {targetAudience}
+                          </p>
+                        )}
+                        {callToAction.trim() && (
+                          <p className="text-[11px] text-[#6B5E77] truncate">
+                            <span className="font-bold text-[#1E122C]">CTA:</span> {callToAction}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="mt-1.5 pl-7 text-[11px] text-[#9E92A6] italic">
+                        Length, tone, and audience will be selected in Step 2.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* 3. Cover & Knowledge Grounding (Step 3) */}
+                  <div className={`p-3 rounded-2xl border transition-all ${
+                    activeStep === 3 ? 'bg-[#FDF2F8]/70 border-[#DB2777]/30 ring-1 ring-[#DB2777]/20' : 'bg-[#FAF8FE] border-[#EDE8F8]'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${
+                          activeStep >= 3 || maxStepReached >= 3 ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-[#6B5E77]'
+                        }`}>
+                          {activeStep >= 3 || maxStepReached >= 3 ? '✓' : '3'}
+                        </span>
+                        <span className="text-[11px] font-black text-[#1E122C] uppercase tracking-wide">
+                          3. Cover & Grounding
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setActiveStep(3)}
+                        className="text-[10.5px] font-bold text-[#DB2777] hover:underline cursor-pointer"
+                      >
+                        {activeStep === 3 ? 'Active' : (activeStep > 3 || maxStepReached >= 3) ? 'Edit →' : 'Step 3 →'}
+                      </button>
+                    </div>
+
+                    {(activeStep >= 3 || maxStepReached >= 3) ? (
+                      <div className="mt-2 pl-7 space-y-1 text-[11px]">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[#6B5E77]">Grounding Source:</span>
+                          <span className="font-bold text-[#1E122C] capitalize">
+                            {groundingMode === 'web' ? 'Live Web Crawl' : groundingMode === 'doc' ? `Document (${uploadedDocName || 'File'})` : 'Visual Diagrams'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[#6B5E77]">Featured Cover:</span>
+                          <span className="font-bold text-[#1E122C]">
+                            {mainImage ? 'Custom Banner Selected' : 'AI generated cover'}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="mt-1.5 pl-7 text-[11px] text-[#9E92A6] italic">
+                        Cover image & grounding sources will be set in Step 3.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* 4. Publishing & Integrations (Step 4) */}
+                  <div className={`p-3 rounded-2xl border transition-all ${
+                    activeStep === 4 ? 'bg-[#FDF2F8]/70 border-[#DB2777]/30 ring-1 ring-[#DB2777]/20' : 'bg-[#FAF8FE] border-[#EDE8F8]'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${
+                          activeStep >= 4 || maxStepReached >= 4 ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-[#6B5E77]'
+                        }`}>
+                          {activeStep >= 4 || maxStepReached >= 4 ? '✓' : '4'}
+                        </span>
+                        <span className="text-[11px] font-black text-[#1E122C] uppercase tracking-wide">
+                          4. Destination & Publishing
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setActiveStep(4)}
+                        className="text-[10.5px] font-bold text-[#DB2777] hover:underline cursor-pointer"
+                      >
+                        {activeStep === 4 ? 'Active' : (activeStep > 4 || maxStepReached >= 4) ? 'Edit →' : 'Step 4 →'}
+                      </button>
+                    </div>
+
+                    {(activeStep >= 4 || maxStepReached >= 4) ? (
+                      <div className="mt-2 pl-7 space-y-1 text-[11px]">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[#6B5E77]">Target Channel:</span>
+                          <span className="font-bold text-[#1E122C]">
+                            {platformConnections.find(p => p.id === targetPlatform)?.name}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[#6B5E77]">URL Path:</span>
+                          <span className="font-mono text-[10.5px] font-bold text-[#1E122C]">
+                            /{articlePathPrefix || 'blog'}/{slugOverride || 'auto-slug'}
+                          </span>
+                        </div>
+                        {authorName.trim() && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-[#6B5E77]">Author:</span>
+                            <span className="font-bold text-[#1E122C]">{authorName}</span>
+                          </div>
+                        )}
+                        {brandName.trim() && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-[#6B5E77]">Brand:</span>
+                            <span className="font-bold text-[#1E122C]">{brandName}</span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="mt-1.5 pl-7 text-[11px] text-[#9E92A6] italic">
+                        Destination ({platformConnections.find(p => p.id === targetPlatform)?.name}) & advanced settings in Step 4.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Dynamic AI Outline Section (Only when topic is entered) */}
+                  {topic.trim().length >= 3 && (
+                    <div className="space-y-2 pt-2 border-t border-[#EDE8F8]">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10.5px] font-black uppercase tracking-wider text-[#6B5E77]">
+                          AI Outline Architecture
+                        </span>
+                        <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
+                          <Sparkles className="w-3 h-3 text-[#DB2777]" /> Auto-Synthesized
+                        </span>
+                      </div>
+
+                      <div className="space-y-1.5 text-xs font-bold text-[#1E122C]">
+                        {[
+                          `1. Executive Overview & Intent Hook for "${topic.slice(0, 30)}${topic.length > 30 ? '...' : ''}"`,
+                          `2. Current Market Benchmarks & Landscape Analysis`,
+                          `3. Step-by-Step Strategic Implementation Framework`,
+                          `4. Common Pitfalls & High-Converting Solutions`,
+                          `5. Key Takeaways, ROI Metrics & Action Plan`
+                        ].map((chap, idx) => (
+                          <div key={idx} className="p-2 rounded-xl bg-white border border-[#EDE8F8] flex items-center justify-between shadow-3xs">
+                            <span className="truncate pr-2 text-[11px] font-bold">{chap}</span>
+                            <span className="text-[9.5px] text-[#DB2777] font-mono shrink-0">H2</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Big Glowing Launch Button */}
                   <div className="pt-2">
@@ -1418,10 +1663,15 @@ export const Blog: React.FC = () => {
                           <RefreshCw className="w-4 h-4 animate-spin" />
                           <span>Generating 6-Stage Article Pipeline...</span>
                         </>
-                      ) : (
+                      ) : topic.trim().length >= 3 ? (
                         <>
                           <Sparkles className="w-4 h-4 text-pink-100" />
                           <span>Generate Complete Article</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4 text-slate-400" />
+                          <span>Enter Topic to Generate Article</span>
                         </>
                       )}
                     </button>
