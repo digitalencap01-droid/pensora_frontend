@@ -237,6 +237,9 @@ const generateSeedContacts = (): Contact[] => {
 };
 
 const getApiBase = () => {
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
   if (typeof window !== 'undefined' && window.location.hostname) {
     return `http://${window.location.hostname}:8004`;
   }
