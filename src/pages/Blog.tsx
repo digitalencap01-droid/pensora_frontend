@@ -471,6 +471,185 @@ export const Blog: React.FC = () => {
   const [isIndexable, setIsIndexable] = useState<boolean>(true);
   const [includeSources, setIncludeSources] = useState<boolean>(true);
 
+  // =========================================================================
+  // FORM VALIDATION SYSTEM
+  // =========================================================================
+  interface FormErrors {
+    topic?: string;
+    country?: string;
+    language?: string;
+    targetAudience?: string;
+    callToAction?: string;
+    additionalInstructions?: string;
+    mainImage?: string;
+    thumbnailImage?: string;
+    articlePathPrefix?: string;
+    slugOverride?: string;
+    brandName?: string;
+    authorName?: string;
+    publisherName?: string;
+    publisherUrl?: string;
+    publisherLogoUrl?: string;
+  }
+
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [validationBanner, setValidationBanner] = useState<string | null>(null);
+
+  const isValidHttpUrl = (str: string): boolean => {
+    if (!str.trim()) return true;
+    try {
+      const url = new URL(str.trim());
+      return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
+
+  const isValidSlug = (str: string): boolean => {
+    if (!str.trim()) return true;
+    return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(str.trim());
+  };
+
+  const validateStep = (step: number): FormErrors => {
+    const stepErrors: FormErrors = {};
+
+    if (step === 1) {
+      const trimmed = topic.trim();
+      if (!trimmed) {
+        stepErrors.topic = 'Article topic is required.';
+      } else if (trimmed.length < 3) {
+        stepErrors.topic = 'Topic must be at least 3 characters long.';
+      } else if (trimmed.length > 500) {
+        stepErrors.topic = 'Topic cannot exceed 500 characters.';
+      }
+      if (!country) {
+        stepErrors.country = 'Please select a target country.';
+      }
+      if (!language) {
+        stepErrors.language = 'Please select a language.';
+      }
+    } else if (step === 2) {
+      if (targetAudience.length > 500) {
+        stepErrors.targetAudience = 'Target audience cannot exceed 500 characters.';
+      }
+      if (callToAction.length > 500) {
+        stepErrors.callToAction = 'Call to action cannot exceed 500 characters.';
+      }
+      if (additionalInstructions.length > 1500) {
+        stepErrors.additionalInstructions = 'Additional instructions cannot exceed 1,500 characters.';
+      }
+    } else if (step === 3) {
+      if (mainImage.trim() && !isValidHttpUrl(mainImage)) {
+        stepErrors.mainImage = 'Please enter a valid HTTP or HTTPS URL (e.g. https://images.unsplash.com/...)';
+      }
+      if (thumbnailImage.trim() && !isValidHttpUrl(thumbnailImage)) {
+        stepErrors.thumbnailImage = 'Please enter a valid HTTP or HTTPS URL for the thumbnail.';
+      }
+    } else if (step === 4) {
+      if (articlePathPrefix.trim()) {
+        if (!articlePathPrefix.trim().startsWith('/')) {
+          stepErrors.articlePathPrefix = "Article path prefix must start with '/' (e.g. /blog or /insights).";
+        } else if (/\s/.test(articlePathPrefix.trim())) {
+          stepErrors.articlePathPrefix = 'Article path prefix cannot contain spaces.';
+        } else if (articlePathPrefix.trim().length > 100) {
+          stepErrors.articlePathPrefix = 'Article path prefix cannot exceed 100 characters.';
+        }
+      }
+      if (slugOverride.trim()) {
+        if (!isValidSlug(slugOverride)) {
+          stepErrors.slugOverride = 'Slug must only contain lowercase letters, numbers, and hyphens (e.g. my-first-post).';
+        } else if (slugOverride.trim().length > 150) {
+          stepErrors.slugOverride = 'Slug override cannot exceed 150 characters.';
+        }
+      }
+      if (brandName.length > 200) {
+        stepErrors.brandName = 'Brand name cannot exceed 200 characters.';
+      }
+      if (authorName.trim()) {
+        if (authorName.trim().length < 2) {
+          stepErrors.authorName = 'Author name must be at least 2 characters long.';
+        } else if (authorName.trim().length > 200) {
+          stepErrors.authorName = 'Author name cannot exceed 200 characters.';
+        }
+      }
+      if (publisherName.length > 200) {
+        stepErrors.publisherName = 'Publisher name cannot exceed 200 characters.';
+      }
+      if (publisherUrl.trim() && !isValidHttpUrl(publisherUrl)) {
+        stepErrors.publisherUrl = 'Please enter a valid URL (e.g. https://yourcompany.com).';
+      }
+      if (publisherLogoUrl.trim() && !isValidHttpUrl(publisherLogoUrl)) {
+        stepErrors.publisherLogoUrl = 'Please enter a valid logo URL (e.g. https://yourcompany.com/logo.png).';
+      }
+    }
+
+    return stepErrors;
+  };
+
+  const validateAll = (): { isValid: boolean; errors: FormErrors; firstErrorStep: number | null } => {
+    let allErrors: FormErrors = {};
+    let firstErrorStep: number | null = null;
+
+    for (let s = 1; s <= 4; s++) {
+      const sErrors = validateStep(s);
+      if (Object.keys(sErrors).length > 0) {
+        allErrors = { ...allErrors, ...sErrors };
+        if (firstErrorStep === null) {
+          firstErrorStep = s;
+        }
+      }
+    }
+
+    return {
+      isValid: Object.keys(allErrors).length === 0,
+      errors: allErrors,
+      firstErrorStep
+    };
+  };
+
+  const handleNextStep = () => {
+    const stepErrors = validateStep(activeStep);
+    if (Object.keys(stepErrors).length > 0) {
+      setErrors(prev => ({ ...prev, ...stepErrors }));
+      setValidationBanner(`Please fix the errors in Step ${activeStep} before continuing.`);
+      return;
+    }
+    setValidationBanner(null);
+    if (activeStep < 4) {
+      setActiveStep(prev => prev + 1);
+    }
+  };
+
+  const handleStepClick = (targetStep: number) => {
+    if (targetStep <= activeStep) {
+      setValidationBanner(null);
+      setActiveStep(targetStep);
+      return;
+    }
+
+    // Moving forward: validate all intermediate steps
+    for (let s = 1; s < targetStep; s++) {
+      const sErrors = validateStep(s);
+      if (Object.keys(sErrors).length > 0) {
+        setErrors(prev => ({ ...prev, ...sErrors }));
+        setValidationBanner(`Please fix the errors in Step ${s} before proceeding to Step ${targetStep}.`);
+        setActiveStep(s);
+        return;
+      }
+    }
+
+    setValidationBanner(null);
+    setActiveStep(targetStep);
+  };
+
+  const stepHasError = (stepNum: number): boolean => {
+    if (stepNum === 1) return !!(errors.topic || errors.country || errors.language);
+    if (stepNum === 2) return !!(errors.targetAudience || errors.callToAction || errors.additionalInstructions);
+    if (stepNum === 3) return !!(errors.mainImage || errors.thumbnailImage);
+    if (stepNum === 4) return !!(errors.articlePathPrefix || errors.slugOverride || errors.brandName || errors.authorName || errors.publisherName || errors.publisherUrl || errors.publisherLogoUrl);
+    return false;
+  };
+
   // Generation & Pipeline State
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [generationStage, setGenerationStage] = useState<number>(0);
@@ -571,8 +750,19 @@ export const Blog: React.FC = () => {
   // the staged log below is a cosmetic ticker to reassure the user during the
   // real wait; the final result always comes from the actual API response.
   const handleGenerateArticle = async () => {
-    if (topic.trim().length < 3 || isGenerating) return;
+    const { isValid, errors: allErrors, firstErrorStep } = validateAll();
+    if (!isValid) {
+      setErrors(allErrors);
+      setValidationBanner('Please fix the highlighted form errors before generating.');
+      if (firstErrorStep) {
+        setActiveStep(firstErrorStep);
+      }
+      return;
+    }
 
+    if (isGenerating) return;
+
+    setValidationBanner(null);
     setGenerationError(null);
     setIsGenerating(true);
     setGenerationStage(1);
@@ -716,23 +906,48 @@ export const Blog: React.FC = () => {
                   { num: 2, label: 'Audience & Voice', icon: SlidersHorizontal },
                   { num: 3, label: 'Cover & Media', icon: ImageIcon },
                   { num: 4, label: 'Publish & Integrations', icon: Share2 }
-                ].map(step => (
-                  <button
-                    key={step.num}
-                    type="button"
-                    onClick={() => setActiveStep(step.num)}
-                    className={`flex-1 py-2.5 px-2.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                      activeStep === step.num
-                        ? 'bg-gradient-to-r from-[#BE185D] via-[#DB2777] to-[#EC4899] text-white shadow-xs'
-                        : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white'
-                    }`}
-                  >
-                    <step.icon className="w-3.5 h-3.5 shrink-0" />
-                    <span className="hidden md:inline">{step.label}</span>
-                    <span className="md:hidden">Step {step.num}</span>
-                  </button>
-                ))}
+                ].map(step => {
+                  const hasErr = stepHasError(step.num);
+                  return (
+                    <button
+                      key={step.num}
+                      type="button"
+                      onClick={() => handleStepClick(step.num)}
+                      className={`flex-1 py-2.5 px-2.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 relative ${
+                        activeStep === step.num
+                          ? 'bg-gradient-to-r from-[#BE185D] via-[#DB2777] to-[#EC4899] text-white shadow-xs'
+                          : hasErr
+                          ? 'text-rose-600 bg-rose-50/70 border border-rose-200 hover:bg-rose-100/50'
+                          : 'text-[#6B5E77] hover:text-[#1E122C] hover:bg-white'
+                      }`}
+                    >
+                      <step.icon className="w-3.5 h-3.5 shrink-0" />
+                      <span className="hidden md:inline">{step.label}</span>
+                      <span className="md:hidden">Step {step.num}</span>
+                      {hasErr && (
+                        <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" title="Validation error in this step" />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
+
+              {/* Validation Warning Alert Banner */}
+              {validationBanner && (
+                <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-xs font-bold text-rose-700 flex items-center justify-between gap-2 animate-in fade-in">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+                    <span>{validationBanner}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setValidationBanner(null)}
+                    className="text-rose-500 hover:text-rose-700 p-1 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
 
               {/* =========================================================================
                   STEP 1: TOPIC & LIVE SEARCH INTEL
@@ -752,10 +967,26 @@ export const Blog: React.FC = () => {
                     <textarea
                       rows={3}
                       value={topic}
-                      onChange={(e) => setTopic(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setTopic(val);
+                        if (errors.topic && val.trim().length >= 3 && val.trim().length <= 500) {
+                          setErrors(prev => ({ ...prev, topic: undefined }));
+                        }
+                      }}
                       placeholder="e.g. How small businesses can use AI for autonomous customer support"
-                      className="w-full bg-[#FAF8FE]/60 border border-[#EDE8F8] rounded-2xl p-4 text-xs sm:text-sm font-bold text-[#1E122C] placeholder-[#9E92A6] outline-none focus:border-[#DB2777] focus:bg-white focus:ring-4 focus:ring-[#DB2777]/10 transition-all resize-none shadow-3xs"
+                      className={`w-full rounded-2xl p-4 text-xs sm:text-sm font-bold placeholder-[#9E92A6] outline-none transition-all resize-none shadow-3xs ${
+                        errors.topic
+                          ? 'bg-rose-50/40 border-2 border-rose-400 text-rose-900 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10'
+                          : 'bg-[#FAF8FE]/60 border border-[#EDE8F8] text-[#1E122C] focus:border-[#DB2777] focus:bg-white focus:ring-4 focus:ring-[#DB2777]/10'
+                      }`}
                     />
+                    {errors.topic && (
+                      <p className="text-[11px] font-bold text-rose-600 flex items-center gap-1.5 animate-in fade-in">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        <span>{errors.topic}</span>
+                      </p>
+                    )}
 
                     {/* Fast Topic Ideas */}
                     <div className="flex flex-wrap gap-1.5 pt-1">
@@ -768,7 +999,10 @@ export const Blog: React.FC = () => {
                         <button
                           key={chip}
                           type="button"
-                          onClick={() => setTopic(chip)}
+                          onClick={() => {
+                            setTopic(chip);
+                            setErrors(prev => ({ ...prev, topic: undefined }));
+                          }}
                           className="px-3 py-1 rounded-xl bg-[#FAF8FE] hover:bg-[#FDF2F8] border border-[#EDE8F8] hover:border-[#DB2777]/40 text-[11px] font-bold text-[#6B5E77] hover:text-[#DB2777] transition-all cursor-pointer"
                         >
                           + {chip}
@@ -785,7 +1019,7 @@ export const Blog: React.FC = () => {
                       </label>
                       <button
                         type="button"
-                        onClick={() => setActiveStep(4)}
+                        onClick={() => handleStepClick(4)}
                         className="text-[11px] font-bold text-[#DB2777] hover:underline cursor-pointer flex items-center gap-1"
                       >
                         Manage Connections →
@@ -829,8 +1063,15 @@ export const Blog: React.FC = () => {
                       <label className="text-[11px] font-bold text-[#6B5E77] block">Target Country</label>
                       <select
                         value={country}
-                        onChange={(e) => setCountry(e.target.value)}
-                        className="w-full bg-[#FAF8FE]/60 border border-[#EDE8F8] rounded-xl px-3 py-2.5 text-xs font-bold text-[#1E122C] outline-none focus:border-[#DB2777] cursor-pointer"
+                        onChange={(e) => {
+                          setCountry(e.target.value);
+                          if (errors.country) setErrors(prev => ({ ...prev, country: undefined }));
+                        }}
+                        className={`w-full rounded-xl px-3 py-2.5 text-xs font-bold text-[#1E122C] outline-none cursor-pointer ${
+                          errors.country
+                            ? 'border-2 border-rose-400 bg-rose-50/40'
+                            : 'bg-[#FAF8FE]/60 border border-[#EDE8F8] focus:border-[#DB2777]'
+                        }`}
                       >
                         <option value="IN">🇮🇳 India (IN)</option>
                         <option value="US">🇺🇸 United States (US)</option>
@@ -838,14 +1079,27 @@ export const Blog: React.FC = () => {
                         <option value="CA">🇨🇦 Canada (CA)</option>
                         <option value="AU">🇦🇺 Australia (AU)</option>
                       </select>
+                      {errors.country && (
+                        <p className="text-[10px] font-bold text-rose-600 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3 shrink-0" />
+                          <span>{errors.country}</span>
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-1.5">
                       <label className="text-[11px] font-bold text-[#6B5E77] block">Language</label>
                       <select
                         value={language}
-                        onChange={(e) => setLanguage(e.target.value)}
-                        className="w-full bg-[#FAF8FE]/60 border border-[#EDE8F8] rounded-xl px-3 py-2.5 text-xs font-bold text-[#1E122C] outline-none focus:border-[#DB2777] cursor-pointer"
+                        onChange={(e) => {
+                          setLanguage(e.target.value);
+                          if (errors.language) setErrors(prev => ({ ...prev, language: undefined }));
+                        }}
+                        className={`w-full rounded-xl px-3 py-2.5 text-xs font-bold text-[#1E122C] outline-none cursor-pointer ${
+                          errors.language
+                            ? 'border-2 border-rose-400 bg-rose-50/40'
+                            : 'bg-[#FAF8FE]/60 border border-[#EDE8F8] focus:border-[#DB2777]'
+                        }`}
                       >
                         <option value="English">English</option>
                         <option value="Spanish">Spanish</option>
@@ -853,6 +1107,12 @@ export const Blog: React.FC = () => {
                         <option value="German">German</option>
                         <option value="Hindi">Hindi</option>
                       </select>
+                      {errors.language && (
+                        <p className="text-[10px] font-bold text-rose-600 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3 shrink-0" />
+                          <span>{errors.language}</span>
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-1.5 col-span-2 sm:col-span-1">
@@ -946,38 +1206,95 @@ export const Blog: React.FC = () => {
                   {/* Audience & CTA */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     <div className="space-y-1">
-                      <label className="text-[10.5px] font-bold text-[#6B5E77]">Target Audience</label>
+                      <div className="flex items-center justify-between">
+                        <label className="text-[10.5px] font-bold text-[#6B5E77]">Target Audience (Optional)</label>
+                        <span className="text-[10px] text-[#9E92A6]">{targetAudience.length}/500</span>
+                      </div>
                       <input
                         type="text"
                         value={targetAudience}
-                        onChange={(e) => setTargetAudience(e.target.value)}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setTargetAudience(val);
+                          if (errors.targetAudience && val.length <= 500) {
+                            setErrors(prev => ({ ...prev, targetAudience: undefined }));
+                          }
+                        }}
                         placeholder="e.g. Founders, marketers, technical buyers"
-                        className="w-full bg-[#FAF8FE]/60 border border-[#EDE8F8] rounded-xl px-3 py-2 text-xs font-bold text-[#1E122C] outline-none focus:border-[#DB2777]"
+                        className={`w-full rounded-xl px-3 py-2 text-xs font-bold text-[#1E122C] outline-none transition-all ${
+                          errors.targetAudience
+                            ? 'border-2 border-rose-400 bg-rose-50/40 focus:border-rose-500'
+                            : 'bg-[#FAF8FE]/60 border border-[#EDE8F8] focus:border-[#DB2777]'
+                        }`}
                       />
+                      {errors.targetAudience && (
+                        <p className="text-[10.5px] font-bold text-rose-600 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3 shrink-0" />
+                          <span>{errors.targetAudience}</span>
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[10.5px] font-bold text-[#6B5E77]">Custom Call to Action</label>
+                      <div className="flex items-center justify-between">
+                        <label className="text-[10.5px] font-bold text-[#6B5E77]">Custom Call to Action (Optional)</label>
+                        <span className="text-[10px] text-[#9E92A6]">{callToAction.length}/500</span>
+                      </div>
                       <input
                         type="text"
                         value={callToAction}
-                        onChange={(e) => setCallToAction(e.target.value)}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCallToAction(val);
+                          if (errors.callToAction && val.length <= 500) {
+                            setErrors(prev => ({ ...prev, callToAction: undefined }));
+                          }
+                        }}
                         placeholder="e.g. Book a live demo or start free trial"
-                        className="w-full bg-[#FAF8FE]/60 border border-[#EDE8F8] rounded-xl px-3 py-2 text-xs font-bold text-[#1E122C] outline-none focus:border-[#DB2777]"
+                        className={`w-full rounded-xl px-3 py-2 text-xs font-bold text-[#1E122C] outline-none transition-all ${
+                          errors.callToAction
+                            ? 'border-2 border-rose-400 bg-rose-50/40 focus:border-rose-500'
+                            : 'bg-[#FAF8FE]/60 border border-[#EDE8F8] focus:border-[#DB2777]'
+                        }`}
                       />
+                      {errors.callToAction && (
+                        <p className="text-[10.5px] font-bold text-rose-600 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3 shrink-0" />
+                          <span>{errors.callToAction}</span>
+                        </p>
+                      )}
                     </div>
                   </div>
 
                   {/* Additional Instructions */}
                   <div className="space-y-1">
-                    <label className="text-[10.5px] font-bold text-[#6B5E77]">Additional Editorial Instructions (Optional)</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10.5px] font-bold text-[#6B5E77]">Additional Editorial Instructions (Optional)</label>
+                      <span className="text-[10px] text-[#9E92A6]">{additionalInstructions.length}/1500</span>
+                    </div>
                     <textarea
                       rows={2}
                       value={additionalInstructions}
-                      onChange={(e) => setAdditionalInstructions(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setAdditionalInstructions(val);
+                        if (errors.additionalInstructions && val.length <= 1500) {
+                          setErrors(prev => ({ ...prev, additionalInstructions: undefined }));
+                        }
+                      }}
                       placeholder="e.g. Include specific case studies, avoid buzzwords, emphasize ROI..."
-                      className="w-full bg-[#FAF8FE]/60 border border-[#EDE8F8] rounded-xl p-3 text-xs font-bold text-[#1E122C] outline-none focus:border-[#DB2777] resize-none"
+                      className={`w-full rounded-xl p-3 text-xs font-bold text-[#1E122C] outline-none resize-none transition-all ${
+                        errors.additionalInstructions
+                          ? 'border-2 border-rose-400 bg-rose-50/40 focus:border-rose-500'
+                          : 'bg-[#FAF8FE]/60 border border-[#EDE8F8] focus:border-[#DB2777]'
+                      }`}
                     />
+                    {errors.additionalInstructions && (
+                      <p className="text-[10.5px] font-bold text-rose-600 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3 shrink-0" />
+                        <span>{errors.additionalInstructions}</span>
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
@@ -1068,7 +1385,11 @@ export const Blog: React.FC = () => {
                       ].map((imgUrl, i) => (
                         <div
                           key={i}
-                          onClick={() => { setMainImage(imgUrl); setThumbnailImage(imgUrl); }}
+                          onClick={() => {
+                            setMainImage(imgUrl);
+                            setThumbnailImage(imgUrl);
+                            setErrors(prev => ({ ...prev, mainImage: undefined, thumbnailImage: undefined }));
+                          }}
                           className={`h-18 rounded-xl overflow-hidden border-2 cursor-pointer transition-all relative ${
                             mainImage === imgUrl ? 'border-[#DB2777] ring-2 ring-[#DB2777]/20' : 'border-[#EDE8F8] opacity-70 hover:opacity-100'
                           }`}
@@ -1083,10 +1404,27 @@ export const Blog: React.FC = () => {
                       <input
                         type="url"
                         value={mainImage}
-                        onChange={(e) => { setMainImage(e.target.value); setThumbnailImage(e.target.value); }}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setMainImage(val);
+                          setThumbnailImage(val);
+                          if (errors.mainImage && (!val.trim() || isValidHttpUrl(val))) {
+                            setErrors(prev => ({ ...prev, mainImage: undefined, thumbnailImage: undefined }));
+                          }
+                        }}
                         placeholder="https://images.unsplash.com/photo-..."
-                        className="w-full bg-[#FAF8FE]/60 border border-[#EDE8F8] rounded-xl px-3 py-2 text-xs font-semibold text-[#1E122C] outline-none focus:border-[#DB2777]"
+                        className={`w-full rounded-xl px-3 py-2 text-xs font-semibold text-[#1E122C] outline-none transition-all ${
+                          errors.mainImage
+                            ? 'border-2 border-rose-400 bg-rose-50/40 focus:border-rose-500'
+                            : 'bg-[#FAF8FE]/60 border border-[#EDE8F8] focus:border-[#DB2777]'
+                        }`}
                       />
+                      {errors.mainImage && (
+                        <p className="text-[10.5px] font-bold text-rose-600 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3 shrink-0" />
+                          <span>{errors.mainImage}</span>
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1203,10 +1541,26 @@ export const Blog: React.FC = () => {
                         <input
                           type="text"
                           value={articlePathPrefix}
-                          onChange={(e) => setArticlePathPrefix(e.target.value)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setArticlePathPrefix(val);
+                            if (errors.articlePathPrefix && (!val.trim() || (val.trim().startsWith('/') && !/\s/.test(val.trim()) && val.trim().length <= 100))) {
+                              setErrors(prev => ({ ...prev, articlePathPrefix: undefined }));
+                            }
+                          }}
                           placeholder="/blog"
-                          className="w-full bg-white border border-[#EDE8F8] rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none focus:border-[#DB2777] focus:ring-2 focus:ring-[#DB2777]/10 transition-all shadow-3xs"
+                          className={`w-full rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none transition-all shadow-3xs ${
+                            errors.articlePathPrefix
+                              ? 'border-2 border-rose-400 bg-rose-50/40 focus:border-rose-500'
+                              : 'bg-white border border-[#EDE8F8] focus:border-[#DB2777] focus:ring-2 focus:ring-[#DB2777]/10'
+                          }`}
                         />
+                        {errors.articlePathPrefix && (
+                          <p className="text-[10.5px] font-bold text-rose-600 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3 shrink-0" />
+                            <span>{errors.articlePathPrefix}</span>
+                          </p>
+                        )}
                       </div>
 
                       {/* Right 1: Brand name (optional) */}
@@ -1215,10 +1569,26 @@ export const Blog: React.FC = () => {
                         <input
                           type="text"
                           value={brandName}
-                          onChange={(e) => setBrandName(e.target.value)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setBrandName(val);
+                            if (errors.brandName && val.length <= 200) {
+                              setErrors(prev => ({ ...prev, brandName: undefined }));
+                            }
+                          }}
                           placeholder=""
-                          className="w-full bg-white border border-[#EDE8F8] rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none focus:border-[#DB2777] focus:ring-2 focus:ring-[#DB2777]/10 transition-all shadow-3xs"
+                          className={`w-full rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none transition-all shadow-3xs ${
+                            errors.brandName
+                              ? 'border-2 border-rose-400 bg-rose-50/40 focus:border-rose-500'
+                              : 'bg-white border border-[#EDE8F8] focus:border-[#DB2777] focus:ring-2 focus:ring-[#DB2777]/10'
+                          }`}
                         />
+                        {errors.brandName && (
+                          <p className="text-[10.5px] font-bold text-rose-600 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3 shrink-0" />
+                            <span>{errors.brandName}</span>
+                          </p>
+                        )}
                       </div>
 
                       {/* Left 2: Author name (optional) */}
@@ -1227,10 +1597,26 @@ export const Blog: React.FC = () => {
                         <input
                           type="text"
                           value={authorName}
-                          onChange={(e) => setAuthorName(e.target.value)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setAuthorName(val);
+                            if (errors.authorName && (!val.trim() || (val.trim().length >= 2 && val.trim().length <= 200))) {
+                              setErrors(prev => ({ ...prev, authorName: undefined }));
+                            }
+                          }}
                           placeholder=""
-                          className="w-full bg-white border border-[#EDE8F8] rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none focus:border-[#DB2777] focus:ring-2 focus:ring-[#DB2777]/10 transition-all shadow-3xs"
+                          className={`w-full rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none transition-all shadow-3xs ${
+                            errors.authorName
+                              ? 'border-2 border-rose-400 bg-rose-50/40 focus:border-rose-500'
+                              : 'bg-white border border-[#EDE8F8] focus:border-[#DB2777] focus:ring-2 focus:ring-[#DB2777]/10'
+                          }`}
                         />
+                        {errors.authorName && (
+                          <p className="text-[10.5px] font-bold text-rose-600 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3 shrink-0" />
+                            <span>{errors.authorName}</span>
+                          </p>
+                        )}
                       </div>
 
                       {/* Right 2: Slug override (optional) */}
@@ -1239,10 +1625,26 @@ export const Blog: React.FC = () => {
                         <input
                           type="text"
                           value={slugOverride}
-                          onChange={(e) => setSlugOverride(e.target.value)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setSlugOverride(val);
+                            if (errors.slugOverride && (!val.trim() || isValidSlug(val))) {
+                              setErrors(prev => ({ ...prev, slugOverride: undefined }));
+                            }
+                          }}
                           placeholder=""
-                          className="w-full bg-white border border-[#EDE8F8] rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none focus:border-[#DB2777] focus:ring-2 focus:ring-[#DB2777]/10 transition-all shadow-3xs"
+                          className={`w-full rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none transition-all shadow-3xs ${
+                            errors.slugOverride
+                              ? 'border-2 border-rose-400 bg-rose-50/40 focus:border-rose-500'
+                              : 'bg-white border border-[#EDE8F8] focus:border-[#DB2777] focus:ring-2 focus:ring-[#DB2777]/10'
+                          }`}
                         />
+                        {errors.slugOverride && (
+                          <p className="text-[10.5px] font-bold text-rose-600 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3 shrink-0" />
+                            <span>{errors.slugOverride}</span>
+                          </p>
+                        )}
                       </div>
 
                       {/* Left 3: Publisher name (optional) */}
@@ -1251,10 +1653,26 @@ export const Blog: React.FC = () => {
                         <input
                           type="text"
                           value={publisherName}
-                          onChange={(e) => setPublisherName(e.target.value)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setPublisherName(val);
+                            if (errors.publisherName && val.length <= 200) {
+                              setErrors(prev => ({ ...prev, publisherName: undefined }));
+                            }
+                          }}
                           placeholder=""
-                          className="w-full bg-white border border-[#EDE8F8] rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none focus:border-[#DB2777] focus:ring-2 focus:ring-[#DB2777]/10 transition-all shadow-3xs"
+                          className={`w-full rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none transition-all shadow-3xs ${
+                            errors.publisherName
+                              ? 'border-2 border-rose-400 bg-rose-50/40 focus:border-rose-500'
+                              : 'bg-white border border-[#EDE8F8] focus:border-[#DB2777] focus:ring-2 focus:ring-[#DB2777]/10'
+                          }`}
                         />
+                        {errors.publisherName && (
+                          <p className="text-[10.5px] font-bold text-rose-600 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3 shrink-0" />
+                            <span>{errors.publisherName}</span>
+                          </p>
+                        )}
                       </div>
 
                       {/* Right 3: Publisher URL (optional) */}
@@ -1263,10 +1681,26 @@ export const Blog: React.FC = () => {
                         <input
                           type="url"
                           value={publisherUrl}
-                          onChange={(e) => setPublisherUrl(e.target.value)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setPublisherUrl(val);
+                            if (errors.publisherUrl && (!val.trim() || isValidHttpUrl(val))) {
+                              setErrors(prev => ({ ...prev, publisherUrl: undefined }));
+                            }
+                          }}
                           placeholder=""
-                          className="w-full bg-white border border-[#EDE8F8] rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none focus:border-[#DB2777] focus:ring-2 focus:ring-[#DB2777]/10 transition-all shadow-3xs"
+                          className={`w-full rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none transition-all shadow-3xs ${
+                            errors.publisherUrl
+                              ? 'border-2 border-rose-400 bg-rose-50/40 focus:border-rose-500'
+                              : 'bg-white border border-[#EDE8F8] focus:border-[#DB2777] focus:ring-2 focus:ring-[#DB2777]/10'
+                          }`}
                         />
+                        {errors.publisherUrl && (
+                          <p className="text-[10.5px] font-bold text-rose-600 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3 shrink-0" />
+                            <span>{errors.publisherUrl}</span>
+                          </p>
+                        )}
                       </div>
 
                       {/* Left 4: Publisher logo URL (optional) */}
@@ -1275,10 +1709,26 @@ export const Blog: React.FC = () => {
                         <input
                           type="url"
                           value={publisherLogoUrl}
-                          onChange={(e) => setPublisherLogoUrl(e.target.value)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setPublisherLogoUrl(val);
+                            if (errors.publisherLogoUrl && (!val.trim() || isValidHttpUrl(val))) {
+                              setErrors(prev => ({ ...prev, publisherLogoUrl: undefined }));
+                            }
+                          }}
                           placeholder=""
-                          className="w-full bg-white border border-[#EDE8F8] rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none focus:border-[#DB2777] focus:ring-2 focus:ring-[#DB2777]/10 transition-all shadow-3xs"
+                          className={`w-full rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none transition-all shadow-3xs ${
+                            errors.publisherLogoUrl
+                              ? 'border-2 border-rose-400 bg-rose-50/40 focus:border-rose-500'
+                              : 'bg-white border border-[#EDE8F8] focus:border-[#DB2777] focus:ring-2 focus:ring-[#DB2777]/10'
+                          }`}
                         />
+                        {errors.publisherLogoUrl && (
+                          <p className="text-[10.5px] font-bold text-rose-600 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3 shrink-0" />
+                            <span>{errors.publisherLogoUrl}</span>
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -1314,7 +1764,10 @@ export const Blog: React.FC = () => {
                   {activeStep > 1 && (
                     <button
                       type="button"
-                      onClick={() => setActiveStep(prev => prev - 1)}
+                      onClick={() => {
+                        setValidationBanner(null);
+                        setActiveStep(prev => prev - 1);
+                      }}
                       className="px-4 py-2 bg-[#FAF8FE] hover:bg-slate-50 border border-[#EDE8F8] text-xs font-black text-[#6B5E77] rounded-xl cursor-pointer transition-colors"
                     >
                       ← Back
@@ -1323,7 +1776,7 @@ export const Blog: React.FC = () => {
                   {activeStep < 4 && (
                     <button
                       type="button"
-                      onClick={() => setActiveStep(prev => prev + 1)}
+                      onClick={handleNextStep}
                       className="px-4 py-2 bg-white hover:bg-[#FDF4F8] border border-[#EDE8F8] hover:border-[#DB2777] text-xs font-black text-[#1E122C] rounded-xl cursor-pointer transition-colors"
                     >
                       Next Step →
@@ -1420,7 +1873,7 @@ export const Blog: React.FC = () => {
                       </div>
                       <button
                         type="button"
-                        onClick={() => setActiveStep(1)}
+                        onClick={() => handleStepClick(1)}
                         className="text-[10.5px] font-bold text-[#DB2777] hover:underline cursor-pointer"
                       >
                         {activeStep === 1 ? 'Active' : 'Edit →'}
@@ -1471,7 +1924,7 @@ export const Blog: React.FC = () => {
                       </div>
                       <button
                         type="button"
-                        onClick={() => setActiveStep(2)}
+                        onClick={() => handleStepClick(2)}
                         className="text-[10.5px] font-bold text-[#DB2777] hover:underline cursor-pointer"
                       >
                         {activeStep === 2 ? 'Active' : (activeStep > 2 || maxStepReached >= 2) ? 'Edit →' : 'Next Step →'}
@@ -1530,7 +1983,7 @@ export const Blog: React.FC = () => {
                       </div>
                       <button
                         type="button"
-                        onClick={() => setActiveStep(3)}
+                        onClick={() => handleStepClick(3)}
                         className="text-[10.5px] font-bold text-[#DB2777] hover:underline cursor-pointer"
                       >
                         {activeStep === 3 ? 'Active' : (activeStep > 3 || maxStepReached >= 3) ? 'Edit →' : 'Step 3 →'}
@@ -1576,7 +2029,7 @@ export const Blog: React.FC = () => {
                       </div>
                       <button
                         type="button"
-                        onClick={() => setActiveStep(4)}
+                        onClick={() => handleStepClick(4)}
                         className="text-[10.5px] font-bold text-[#DB2777] hover:underline cursor-pointer"
                       >
                         {activeStep === 4 ? 'Active' : (activeStep > 4 || maxStepReached >= 4) ? 'Edit →' : 'Step 4 →'}
@@ -1619,15 +2072,15 @@ export const Blog: React.FC = () => {
 
 
                   {/* Big Glowing Launch Button */}
-                  <div className="pt-2">
+                  <div className="pt-2 space-y-2">
                     <button
                       type="button"
-                      disabled={topic.trim().length < 3 || isGenerating}
+                      disabled={isGenerating}
                       onClick={handleGenerateArticle}
-                      className={`w-full py-4 rounded-2xl font-black text-xs text-white shadow-lg flex items-center justify-center gap-2.5 transition-all ${
-                        topic.trim().length >= 3 && !isGenerating
-                          ? 'bg-gradient-to-r from-[#BE185D] via-[#DB2777] to-[#EC4899] hover:shadow-[0_8px_25px_rgba(219,39,119,0.35)] hover:scale-102 active:scale-98 cursor-pointer'
-                          : 'bg-slate-300 opacity-60 cursor-not-allowed shadow-none'
+                      className={`w-full py-4 rounded-2xl font-black text-xs text-white shadow-lg flex items-center justify-center gap-2.5 transition-all cursor-pointer ${
+                        isGenerating
+                          ? 'bg-slate-300 opacity-60 cursor-not-allowed shadow-none'
+                          : 'bg-gradient-to-r from-[#BE185D] via-[#DB2777] to-[#EC4899] hover:shadow-[0_8px_25px_rgba(219,39,119,0.35)] hover:scale-102 active:scale-98'
                       }`}
                     >
                       {isGenerating ? (
@@ -1635,18 +2088,19 @@ export const Blog: React.FC = () => {
                           <RefreshCw className="w-4 h-4 animate-spin" />
                           <span>Generating 6-Stage Article Pipeline...</span>
                         </>
-                      ) : topic.trim().length >= 3 ? (
+                      ) : (
                         <>
                           <Sparkles className="w-4 h-4 text-pink-100" />
                           <span>Generate Complete Article</span>
                         </>
-                      ) : (
-                        <>
-                          <Sparkles className="w-4 h-4 text-slate-400" />
-                          <span>Enter Topic to Generate Article</span>
-                        </>
                       )}
                     </button>
+                    {Object.keys(errors).length > 0 && !isGenerating && (
+                      <p className="text-center text-[10.5px] font-bold text-rose-600 flex items-center justify-center gap-1 animate-in fade-in">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        <span>Please fix {Object.keys(errors).length} invalid field{Object.keys(errors).length > 1 ? 's' : ''} to proceed</span>
+                      </p>
+                    )}
                   </div>
 
                   {/* AI Generation Live Simulation */}
