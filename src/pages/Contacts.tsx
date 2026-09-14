@@ -808,7 +808,12 @@ export const Contacts: React.FC = () => {
   const handleDeleteContact = async (id: string) => {
     if (confirm('Are you sure you want to delete this contact?')) {
       try {
-        await axios.delete(`http://localhost:8004/api/v1/leads/${id}`);
+        const res = await fetch(`http://127.0.0.1:8004/api/v1/leads/${id}`, {
+          method: 'DELETE',
+        });
+        if (!res.ok) {
+          console.error('Failed to delete lead from server:', res.statusText);
+        }
       } catch (err) {
         console.error('Error deleting lead from backend/Supabase:', err);
       }
@@ -818,6 +823,7 @@ export const Contacts: React.FC = () => {
         setContactDetailOpen(false);
       }
       triggerNotification('Contact deleted from CRM and Database.');
+      await fetchLeads();
     }
   };
 
@@ -856,13 +862,20 @@ export const Contacts: React.FC = () => {
     if (confirm(`Are you sure you want to delete the ${selectedIds.length} selected contacts?`)) {
       const idsToDelete = [...selectedIds];
       try {
-        await Promise.all(idsToDelete.map(id => axios.delete(`http://localhost:8004/api/v1/leads/${id}`)));
+        await Promise.all(
+          idsToDelete.map(id =>
+            fetch(`http://127.0.0.1:8004/api/v1/leads/${id}`, {
+              method: 'DELETE',
+            })
+          )
+        );
       } catch (err) {
         console.error('Error deleting selected leads from backend/Supabase:', err);
       }
       setContacts(prev => prev.filter(c => !idsToDelete.includes(c.id)));
       setSelectedIds([]);
       triggerNotification('Selected contacts deleted from CRM and Database.');
+      await fetchLeads();
     }
   };
 
