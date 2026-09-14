@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { 
   Users, 
@@ -241,7 +241,48 @@ export const Contacts: React.FC = () => {
   const navigate = useNavigate();
 
   // Core contact list state
-  const [contacts, setContacts] = useState<Contact[]>(() => generateSeedContacts());
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const fetchLeads = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetch('http://127.0.0.1:8004/api/v1/leads?page_size=250');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.items) {
+          const mapped: Contact[] = data.items.map((item: any) => ({
+            id: item.id,
+            name: item.full_name || `${item.first_name || ''} ${item.last_name || ''}`.trim() || 'Unnamed Lead',
+            email: item.email || '',
+            phone: item.phone || '',
+            company: item.company_name || 'Direct Lead',
+            jobTitle: item.job_title || 'Lead',
+            location: 'India',
+            source: item.source || 'CSV Import',
+            lifecycleStage: 'lead',
+            leadStatus: item.status || 'new',
+            leadScore: item.lead_score || 50,
+            priority: item.lead_score >= 80 ? 'high' : item.lead_score >= 50 ? 'medium' : 'low',
+            tags: item.tags || [],
+            consent: item.is_subscribed_email ?? true,
+            createdAt: item.created_at ? new Date(item.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
+          }));
+          setContacts(mapped);
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('Backend leads API connection error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+    setContacts([]);
+  }, []);
+
+  React.useEffect(() => {
+    fetchLeads();
+  }, [fetchLeads]);
   
   // Custom Segments state (Built-in + User created)
   const [segments, setSegments] = useState<CustomSegment[]>(() => {
@@ -319,8 +360,28 @@ export const Contacts: React.FC = () => {
   const [bulkSegmentInput, setBulkSegmentInput] = useState('');
   
   // CSV Import States
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploadingFile, setIsUploadingFile] = useState<boolean>(false);
   const [csvText, setCsvText] = useState('');
   const [csvParseError, setCsvParseError] = useState('');
+
+  const handleFileSelected = async (file: File) => {
+    setSelectedFile(file);
+    setCsvParseError('');
+
+    // If CSV or TXT, extract text for live preview and frontend parser fallback
+    if (file.name.endsWith('.csv') || file.name.endsWith('.txt') || file.type.includes('csv') || file.type.includes('text')) {
+      try {
+        const text = await file.text();
+        setCsvText(text);
+      } catch (err) {
+        console.warn('Could not read file text:', err);
+      }
+    } else {
+      setCsvText(`[Selected File: ${file.name}]`);
+    }
+  };
 
   // ----------------------------------------------------
   // SYNC WITH URL SEARCH PARAMS (?source=LinkedIn etc.)
@@ -792,87 +853,49 @@ export const Contacts: React.FC = () => {
     triggerNotification(`Exported ${listToExport.length} contacts to CSV.`);
   };
 
-  const handleImportCSV = (e: React.FormEvent) => {
+  const handleImportCSV = async (e: React.FormEvent) => {
     e.preventDefault();
     setCsvParseError('');
-    if (!csvText.trim()) return;
+    setIsUploadingFile(true);
 
     try {
-      const lines = csvText.split('\n');
-      if (lines.length < 2) {
-        setCsvParseError('CSV must contain a header row and at least one contact row.');
+      const formData = new FormData();
+      if (selectedFile) {
+        formData.append('file', selectedFile);
+      } else if (csvText.trim()) {
+        formData.append('csv_text', csvText.trim());
+      } else {
+        setCsvParseError('Please select a file or paste CSV content.');
+        setIsUploadingFile(false);
         return;
       }
 
-      const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
-      const parsedContacts: Contact[] = [];
+      const res = await fetch('http://127.0.0.1:8004/api/v1/leads/import/direct', {
+        method: 'POST',
+        body: formData,
+      });
 
-      for (let i = 1; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
-
-        const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-        const cells = matches ? matches.map(c => c.trim().replace(/^"|"$/g, '')) : line.split(',');
-
-        if (cells.length < 2) continue;
-
-        const rowMap: Record<string, string> = {};
-        headers.forEach((h, idx) => {
-          if (idx < cells.length) {
-            rowMap[h] = cells[idx];
-          }
-        });
-
-        const name = rowMap['name'] || rowMap['first name'] || 'Imported Lead';
-        const email = (rowMap['email'] || 'lead@example.com').toLowerCase().trim();
-        let phone = rowMap['phone'] || '';
-        if (/^\d{10}$/.test(phone)) {
-          phone = `+91 ${phone.substring(0, 5)} ${phone.substring(5)}`;
-        }
-
-        const score = Number(rowMap['lead score'] || rowMap['score'] || 65);
-        const stage = (rowMap['lifecycle stage'] || rowMap['stage'] || 'lead').toLowerCase();
-        const status = (rowMap['lead status'] || rowMap['status'] || 'new').toLowerCase();
-        const priority = (rowMap['priority'] || 'medium').toLowerCase();
-        const source = rowMap['source'] || 'CSV Import';
-        const tags = rowMap['tags'] ? rowMap['tags'].split(';').map(t => t.trim()) : ['imported'];
-
-        parsedContacts.push({
-          id: `c_csv_${Date.now()}_${i}`,
-          name,
-          email,
-          phone,
-          company: rowMap['company'] || undefined,
-          jobTitle: rowMap['job title'] || rowMap['role'] || undefined,
-          location: rowMap['location'] || rowMap['city'] || undefined,
-          source,
-          lifecycleStage: ['lead', 'mql', 'sql', 'customer'].includes(stage) ? stage as any : 'lead',
-          leadStatus: ['new', 'contacted', 'qualified', 'lost'].includes(status) ? status as any : 'new',
-          leadScore: isNaN(score) ? 50 : score,
-          priority: ['high', 'medium', 'low'].includes(priority) ? priority as any : 'medium',
-          segment: rowMap['segment'] || undefined,
-          tags,
-          owner: rowMap['owner'] || 'AI Agent',
-          consent: (rowMap['consent'] || 'yes').toLowerCase() === 'yes',
-          createdAt: new Date().toISOString()
-        });
+      if (res.ok) {
+        const data = await res.json();
+        const count = data.successful_rows ?? 0;
+        triggerNotification(`Successfully imported ${count} contacts directly into Database!`);
+        setIsImportModalOpen(false);
+        setSelectedFile(null);
+        setCsvText('');
+        await fetchLeads();
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        setCsvParseError(errData.detail || 'Failed to save leads to database.');
       }
-
-      if (parsedContacts.length === 0) {
-        setCsvParseError('No valid contact rows could be parsed.');
-        return;
-      }
-
-      setContacts(prev => [...parsedContacts, ...prev]);
-      setIsImportModalOpen(false);
-      setCsvText('');
-      triggerNotification(`Successfully imported ${parsedContacts.length} contacts!`);
     } catch (err) {
-      setCsvParseError('Failed parsing CSV format. Please verify column dividers.');
+      console.error('Import failed:', err);
+      setCsvParseError('Could not connect to backend server (port 8004).');
+    } finally {
+      setIsUploadingFile(false);
     }
   };
 
-  const handleLoadImportTemplate = () => {
+    const handleLoadImportTemplate = () => {
     const template = `Name,Email,Phone,Company,Job Title,Location,Source,Lifecycle Stage,Lead Score,Priority,Consent,Tags\n"Rohit Khurana","rohit@fintechscale.com","9876543210","FinTech Scale","VP Growth","Mumbai","LinkedIn","mql",88,"high","yes","linkedin-prospect;growth"\n"Pooja Mehta","pooja@zenithretail.in","9988776655","Zenith Retail","CMO","New Delhi","Email Campaign","sql",92,"high","yes","newsletter;vip"`;
     setCsvText(template);
   };
@@ -2692,16 +2715,63 @@ export const Contacts: React.FC = () => {
 
             <form onSubmit={handleImportCSV} className="space-y-4">
               
-              {/* Drag and Drop Zone Simulator */}
+              {/* Hidden File Input */}
+              <input 
+                type="file"
+                ref={fileInputRef}
+                accept=".csv, .xlsx, .xls, .txt"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFileSelected(file);
+                }}
+              />
+
+              {/* Drag and Drop Zone */}
               <div 
-                className="border-2 border-dashed border-[#F3DEC8] rounded-2xl p-6 text-center hover:bg-[#FFF8F5] transition-colors cursor-pointer bg-[#FAF5F0]/50" 
-                onClick={handleLoadImportTemplate}
+                className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${
+                  selectedFile 
+                    ? 'border-[#D94A2A] bg-[#FFF8F5]' 
+                    : 'border-[#F3DEC8] hover:border-[#D94A2A] hover:bg-[#FFF8F5] bg-[#FAF5F0]/50'
+                }`} 
+                onClick={() => fileInputRef.current?.click()}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const file = e.dataTransfer.files?.[0];
+                  if (file) handleFileSelected(file);
+                }}
               >
                 <div className="w-12 h-12 rounded-2xl bg-[#FFF1EB] text-[#D94A2A] flex items-center justify-center mx-auto mb-2.5 shadow-2xs">
                   <Upload className="w-6 h-6" />
                 </div>
-                <span className="text-xs font-black text-[#1E122C] block">Click here to paste / load template CSV</span>
-                <span className="text-[10px] text-[#6B5E77] font-bold block mt-1">Accepts Name, Email, Phone, Company, Role, Channel, Score, Consent, Tags</span>
+                {selectedFile ? (
+                  <div className="space-y-1">
+                    <span className="text-xs font-black text-[#D94A2A] block truncate max-w-xs mx-auto">
+                      📄 Selected File: {selectedFile.name}
+                    </span>
+                    <span className="text-[10px] text-[#6B5E77] font-bold block">
+                      {(selectedFile.size / 1024).toFixed(1)} KB • Click or drag to change file
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedFile(null);
+                        setCsvText('');
+                        if (fileInputRef.current) fileInputRef.current.value = '';
+                      }}
+                      className="text-[10px] text-rose-600 underline font-bold mt-1 hover:text-rose-700 bg-transparent border-0 cursor-pointer"
+                    >
+                      Remove selected file
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <span className="text-xs font-black text-[#1E122C] block">Click here to select CSV / Excel file from computer</span>
+                    <span className="text-[10px] text-[#6B5E77] font-bold block mt-1">Accepts .csv, .xlsx, .xls (Name, Email, Phone, Company, Role, Score, Tags)</span>
+                  </>
+                )}
               </div>
 
               {/* CSV Parsing Error */}
@@ -2713,9 +2783,18 @@ export const Contacts: React.FC = () => {
 
               {/* Text Area for copy paste csv */}
               <div className="space-y-1">
-                <label className="text-[9px] font-black text-[#6B5E77] uppercase tracking-widest block">Paste CSV Contents</label>
+                <div className="flex justify-between items-center">
+                  <label className="text-[9px] font-black text-[#6B5E77] uppercase tracking-widest block">File / CSV Content Preview</label>
+                  <button 
+                    type="button" 
+                    onClick={handleLoadImportTemplate}
+                    className="text-[10px] font-extrabold text-[#D94A2A] hover:underline bg-transparent border-0 cursor-pointer"
+                  >
+                    Load Sample Template
+                  </button>
+                </div>
                 <textarea 
-                  rows={5}
+                  rows={4}
                   value={csvText}
                   onChange={(e) => setCsvText(e.target.value)}
                   className="w-full px-3.5 py-2 border border-[#F3DEC8] rounded-xl text-xs font-mono text-[#1E122C] bg-[#FAF5F0]/40 focus:outline-none focus:ring-2 focus:ring-[#D94A2A]/20 focus:border-[#D94A2A]"
@@ -2725,27 +2804,35 @@ export const Contacts: React.FC = () => {
 
               {/* Action Buttons */}
               <div className="pt-2 border-t border-[#F3DEC8] flex justify-between items-center">
-                <button 
-                  type="button" 
-                  onClick={handleLoadImportTemplate}
-                  className="text-xs font-black text-[#D94A2A] hover:underline bg-transparent border-0 cursor-pointer"
-                >
-                  Load Sample Data
-                </button>
+                <div />
                 
                 <div className="flex gap-2.5">
                   <button 
                     type="button" 
-                    onClick={() => setIsImportModalOpen(false)}
+                    onClick={() => {
+                      setIsImportModalOpen(false);
+                      setSelectedFile(null);
+                      setCsvText('');
+                      setCsvParseError('');
+                      if (fileInputRef.current) fileInputRef.current.value = '';
+                    }}
                     className="px-4 py-2 border border-[#F3DEC8] hover:bg-[#FAF5F0] text-[#6B5E77] text-xs font-extrabold rounded-xl cursor-pointer transition-colors"
                   >
                     Cancel
                   </button>
                   <button 
                     type="submit"
-                    className="px-5 py-2 bg-gradient-to-r from-[#2B0847] via-[#48115B] to-[#801B48] hover:opacity-95 text-white text-xs font-black rounded-xl shadow-xs cursor-pointer border-0 transition-opacity"
+                    disabled={isUploadingFile}
+                    className="px-5 py-2 bg-gradient-to-r from-[#2B0847] via-[#48115B] to-[#801B48] hover:opacity-95 text-white text-xs font-black rounded-xl shadow-xs cursor-pointer border-0 transition-opacity disabled:opacity-50 flex items-center gap-2"
                   >
-                    Import Contacts
+                    {isUploadingFile ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      'Import Contacts'
+                    )}
                   </button>
                 </div>
               </div>
