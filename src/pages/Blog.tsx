@@ -417,9 +417,9 @@ export const Blog: React.FC = () => {
   };
 
   // =========================================================================
-  // CORE FORM STATE
+  // CORE FORM STATE (Defaults set to empty so inputs are not pre-filled)
   // =========================================================================
-  const [topic, setTopic] = useState<string>('How small businesses can use AI for autonomous customer support');
+  const [topic, setTopic] = useState<string>('');
   const [country, setCountry] = useState<string>('IN');
   const [language, setLanguage] = useState<string>('English');
   const [freshness, setFreshness] = useState<string>('30d');
@@ -431,24 +431,24 @@ export const Blog: React.FC = () => {
   const [uploadedImageName, setUploadedImageName] = useState<string>('');
 
   // Media
-  const [mainImage, setMainImage] = useState<string>('https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=800&auto=format&fit=crop&q=60');
-  const [thumbnailImage, setThumbnailImage] = useState<string>('https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=400&auto=format&fit=crop&q=60');
+  const [mainImage, setMainImage] = useState<string>('');
+  const [thumbnailImage, setThumbnailImage] = useState<string>('');
 
   // Strategy & Specs
-  const [siteName, setSiteName] = useState<string>(activeWorkspace?.name || 'GrowWise Marketing');
-  const [siteUrl, setSiteUrl] = useState<string>(activeWorkspace?.website || 'https://growwise.ai');
+  const [siteName, setSiteName] = useState<string>('');
+  const [siteUrl, setSiteUrl] = useState<string>('');
   const [articleType, setArticleType] = useState<ArticleType>('blog');
   const [tone, setTone] = useState<ToneType>('authoritative');
   const [contentGoal, setContentGoal] = useState<ContentGoal>('organic_traffic');
   const [targetWordCount, setTargetWordCount] = useState<number>(2500);
-  const [targetAudience, setTargetAudience] = useState<string>('Mid-to-senior business executives, founders, and marketing leads');
-  const [callToAction, setCallToAction] = useState<string>('Start scaling with GrowWise AI free trial');
+  const [targetAudience, setTargetAudience] = useState<string>('');
+  const [callToAction, setCallToAction] = useState<string>('');
   const [additionalInstructions, setAdditionalInstructions] = useState<string>('');
 
   // Advanced publishing (From Reference Screenshot)
-  const [articlePathPrefix, setArticlePathPrefix] = useState<string>('/blog');
-  const [brandName, setBrandName] = useState<string>(activeWorkspace?.name || 'GrowWise AI');
-  const [authorName, setAuthorName] = useState<string>('AI Marketing Specialist');
+  const [articlePathPrefix, setArticlePathPrefix] = useState<string>('');
+  const [brandName, setBrandName] = useState<string>('');
+  const [authorName, setAuthorName] = useState<string>('');
   const [slugOverride, setSlugOverride] = useState<string>('');
   const [publisherName, setPublisherName] = useState<string>('');
   const [publisherUrl, setPublisherUrl] = useState<string>('');
@@ -507,7 +507,8 @@ export const Blog: React.FC = () => {
   const activeReadingArticle = activeReadingSummary ? projectToArticle(activeReadingSummary) : null;
 
   const buildGenerateRequest = (): ContentGenerateRequest => {
-    const normalizedSiteUrl = /^https?:\/\//i.test(siteUrl.trim()) ? siteUrl.trim() : `https://${siteUrl.trim()}`;
+    const rawSiteUrl = siteUrl.trim() || activeWorkspace?.website || '';
+    const normalizedSiteUrl = rawSiteUrl ? (/^https?:\/\//i.test(rawSiteUrl) ? rawSiteUrl : `https://${rawSiteUrl}`) : undefined;
     const isValidImageUrl = (url: string) => /^https?:\/\//i.test(url.trim());
 
     return {
@@ -525,7 +526,7 @@ export const Blog: React.FC = () => {
       call_to_action: callToAction.trim() || undefined,
       additional_instructions: additionalInstructions.trim() || undefined,
       brand_name: brandName.trim() || undefined,
-      site_name: siteName.trim() || undefined,
+      site_name: siteName.trim() || activeWorkspace?.name || undefined,
       site_url: normalizedSiteUrl,
       article_path_prefix: articlePathPrefix.trim() || '/blog',
       authors: authorName.trim().length >= 2 ? [{ name: authorName.trim() }] : [],
