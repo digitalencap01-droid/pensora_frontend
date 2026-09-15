@@ -278,6 +278,7 @@ export const Blog: React.FC = () => {
     return DEFAULT_CONNECTIONS;
   });
 
+  const [isManageConnectionsOpen, setIsManageConnectionsOpen] = useState<boolean>(false);
   const [configuringPlatform, setConfiguringPlatform] = useState<PlatformConnection | null>(null);
   const [configForm, setConfigForm] = useState<{
     siteUrl: string;
@@ -1039,7 +1040,7 @@ export const Blog: React.FC = () => {
                       </label>
                       <button
                         type="button"
-                        onClick={() => handleStepClick(4)}
+                        onClick={() => setIsManageConnectionsOpen(true)}
                         className="text-[11px] font-bold text-[#DB2777] hover:underline cursor-pointer flex items-center gap-1"
                       >
                         Manage Connections →
@@ -2605,10 +2606,139 @@ export const Blog: React.FC = () => {
       })()}
 
       {/* =========================================================================
+          MANAGE PUBLISHING CONNECTIONS MODAL (POPUP DIRECTLY FROM STEP 1 & ANY STEP)
+          ========================================================================= */}
+      {isManageConnectionsOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
+          <div
+            className="fixed inset-0 bg-[#1E122C]/60 backdrop-blur-xs transition-opacity"
+            onClick={() => setIsManageConnectionsOpen(false)}
+          />
+
+          <div className="relative bg-white rounded-[32px] max-w-xl w-full p-6 sm:p-7 shadow-2xl border border-[#EDE8F8] z-10 space-y-6 animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-[#EDE8F8] pb-3.5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-[#BE185D] via-[#DB2777] to-[#EC4899] text-white flex items-center justify-center shadow-[0_4px_16px_rgba(219,39,119,0.2)]">
+                  <Globe className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-black text-[#1E122C]">
+                    Manage Publishing Connections
+                  </h3>
+                  <p className="text-[11px] text-[#6B5E77] font-medium mt-0.5">
+                    Connect and configure Webflow CMS and LinkedIn publishing integrations.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsManageConnectionsOpen(false)}
+                className="p-2 hover:bg-[#FAF8FE] rounded-xl text-[#6B5E77] hover:text-[#1E122C] cursor-pointer transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Platforms List in Modal */}
+            <div className="space-y-3">
+              {platformConnections.map(platform => {
+                const isSelected = targetPlatform === platform.id;
+                return (
+                  <div
+                    key={platform.id}
+                    className={`p-4 rounded-2xl border transition-all ${
+                      isSelected
+                        ? 'bg-[#FDF2F8]/70 border-[#DB2777] ring-1 ring-[#DB2777]/20 shadow-xs'
+                        : 'bg-white border-[#EDE8F8] hover:border-[#DB2777]/40'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 ${
+                          isSelected ? 'bg-[#DB2777] text-white' : 'bg-[#FAF8FE] text-[#1E122C] border border-[#EDE8F8]'
+                        }`}>
+                          {platform.id === 'webflow' && 'W'}
+                          {platform.id === 'linkedin' && <Linkedin className="w-5 h-5 text-[#0077B5]" />}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-xs font-black text-[#1E122C]">{platform.name}</h4>
+                            <span className="text-[10px] text-[#6B5E77] font-semibold">({platform.category})</span>
+                            {isSelected && (
+                              <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-[#DB2777] text-white">
+                                Active Target
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-[#6B5E77] mt-1 font-medium">
+                            {platform.connected && platform.siteUrl
+                              ? `Connected Site: ${platform.siteUrl}`
+                              : platform.description}
+                          </p>
+                          <div className="flex items-center gap-2.5 mt-2 text-[10.5px] font-bold">
+                            <span className={`px-2 py-0.5 rounded-full ${
+                              platform.connected
+                                ? 'bg-emerald-50 border border-emerald-200 text-emerald-700'
+                                : 'bg-slate-100 text-slate-500'
+                            }`}>
+                              {platform.connected ? '● Connected' : '○ Not Connected'}
+                            </span>
+                            <span className="text-[#9E92A6]">•</span>
+                            <span className="text-[#6B5E77]">
+                              Mode: {platform.statusMode === 'live' ? 'Published' : 'Draft Post'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 shrink-0">
+                        {!isSelected && (
+                          <button
+                            type="button"
+                            onClick={() => setTargetPlatform(platform.id)}
+                            className="px-3 py-1.5 rounded-xl bg-[#FAF8FE] hover:bg-white border border-[#EDE8F8] hover:border-[#DB2777] text-[11px] font-bold text-[#1E122C] transition-all cursor-pointer"
+                          >
+                            Set as Target
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => openPlatformConfig(platform)}
+                          className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#BE185D] via-[#DB2777] to-[#EC4899] text-white text-[11px] font-bold hover:shadow-xs transition-all cursor-pointer"
+                        >
+                          {platform.connected ? 'Configure' : 'Connect +'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-between pt-3 border-t border-[#EDE8F8]">
+              <p className="text-[11px] text-[#6B5E77] font-medium">
+                Changes take effect immediately. No form reload or step advance required.
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsManageConnectionsOpen(false)}
+                className="px-5 py-2 bg-[#1E122C] hover:bg-black text-white text-xs font-black rounded-xl transition-all cursor-pointer"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
           PLATFORM CONNECTION CONFIGURATION MODAL
           ========================================================================= */}
       {configuringPlatform && (
-        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[60] overflow-y-auto flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-[#1E122C]/50 backdrop-blur-xs" onClick={() => setConfiguringPlatform(null)} />
 
           <div className="relative bg-white rounded-[32px] max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-[#EDE8F8] z-10 space-y-5 animate-in zoom-in-95 duration-200">
