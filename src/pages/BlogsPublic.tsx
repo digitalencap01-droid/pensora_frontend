@@ -17,7 +17,6 @@ import {
   Bookmark
 } from 'lucide-react';
 import LandingNavbar from '../components/landing/LandingNavbar';
-import LandingHero from '../components/landing/LandingHeroCyan';
 import LandingFooter from '../components/landing/LandingFooter';
 import SmoothScroll from '../components/landing/SmoothScroll';
 
@@ -207,19 +206,16 @@ export const BlogsPublic: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F2F2ED] text-[#1E2538] selection:bg-[#118AB2] selection:text-white antialiased overflow-x-hidden relative">
+    <div className="min-h-screen bg-[#FFFDFC] text-[#1E2538] selection:bg-[#118AB2] selection:text-white antialiased overflow-x-hidden relative">
       <SmoothScroll />
 
       {/* Navigation */}
       <LandingNavbar />
 
-      {/* Hero Section (Reused directly as requested) */}
-      <LandingHero />
-
       {/* ========================================================
           PUBLIC BLOGS & EDITORIAL CONTENT SECTION
           ======================================================== */}
-      <section className="py-16 sm:py-24 bg-[#FFFDFC] border-t border-[#464B71]/10 relative z-10 text-left">
+      <section className="pt-[115px] sm:pt-[130px] pb-16 sm:pb-24 bg-[#FFFDFC] relative z-10 text-left">
         <div className="max-w-[1440px] w-[calc(100%-48px)] sm:w-[calc(100%-80px)] mx-auto space-y-12">
           
           {/* Section Header */}

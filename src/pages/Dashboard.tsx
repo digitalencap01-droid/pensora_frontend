@@ -63,6 +63,8 @@ export const Dashboard: React.FC = () => {
   const stageName = activeWorkspace?.stage || 'Growing';
   const readinessScore = activeWorkspace?.readinessScore || 85;
   const profileCompletion = activeWorkspace?.profileCompletion || 100;
+  const wsId = activeWorkspace?.id || 'w_bloom';
+  const isWhatsAppConnected = activeWorkspace?.whatsapp?.isConnected ?? (localStorage.getItem(`wa_connected_${wsId}`) !== 'false');
 
   // Marketing Journey stages
   const journeyStages = [
@@ -823,6 +825,27 @@ export const Dashboard: React.FC = () => {
                 <span className="text-[9px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
                   Active • 95%
                 </span>
+              </div>
+
+              <div 
+                onClick={() => navigate('/whatsapp')}
+                className="flex items-center justify-between p-2 rounded-xl bg-slate-50/70 border border-slate-100 hover:border-emerald-300 transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center text-[10px] font-black">
+                    WA
+                  </div>
+                  <span className="font-bold text-[#1E122C] text-[11px]">WhatsApp Business</span>
+                </div>
+                {isWhatsAppConnected ? (
+                  <span className="text-[9px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
+                    Active • 99%
+                  </span>
+                ) : (
+                  <span className="text-[9px] font-black text-amber-700 bg-amber-100 px-2 py-0.5 rounded-md flex items-center gap-1">
+                    Not Connected • Connect →
+                  </span>
+                )}
               </div>
             </div>
           </div>
