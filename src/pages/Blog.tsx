@@ -414,20 +414,8 @@ export const Blog: React.FC = () => {
         const res = await blogApi.publishToWebflow(article.id);
         setPublishSuccessMsg(`Published to Webflow CMS (${res.status})! Item ID: ${res.item_id}`);
       } else if (platformId === 'linkedin') {
-        // window.location.origin is NOT usable here — it resolves to
-        // localhost while developing, which LinkedIn's servers can't
-        // reach. VITE_SITE_URL must be a real, publicly-reachable URL.
-        const siteOrigin = import.meta.env.VITE_SITE_URL;
-        if (!siteOrigin) {
-          throw new Error(
-            'VITE_SITE_URL is not set — configure it in .env to a public URL before publishing to LinkedIn.'
-          );
-        }
-        const articleUrl = `${siteOrigin}/blogs/${article.slug || 'article'}`;
-
         // Have the model write real LinkedIn-native commentary from the
-        // article's topic/tone, instead of a generic "Just published"
-        // one-liner — that's what actually shows above the link card.
+        // article's topic/tone.
         const generated = await blogApi.generateLinkedInContent({
           content_type: 'article',
           topic: article.topic || article.title,
@@ -436,12 +424,10 @@ export const Blog: React.FC = () => {
         const hashtagLine = generated.hashtags.length ? `\n\n${generated.hashtags.join(' ')}` : '';
         const commentary = `${generated.text}${hashtagLine}`;
 
-        const res = await blogApi.publishToLinkedIn({
-          article_title: article.title,
-          article_summary: article.excerpt || (article.contentMarkdown ? article.contentMarkdown.slice(0, 250) : ''),
-          article_url: articleUrl,
-          commentary
-        });
+        // publish-post (not publish) — plain text only, no link/article
+        // preview card underneath. That card only appears when you send
+        // article_url via /linkedin/publish.
+        const res = await blogApi.publishLinkedInPost(commentary);
         setPublishSuccessMsg(`Published to LinkedIn! Post ID: ${res.post_urn}`);
       }
     } catch (err: any) {
