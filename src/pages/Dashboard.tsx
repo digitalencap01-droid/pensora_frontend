@@ -63,6 +63,8 @@ export const Dashboard: React.FC = () => {
   const stageName = activeWorkspace?.stage || 'Growing';
   const readinessScore = activeWorkspace?.readinessScore || 85;
   const profileCompletion = activeWorkspace?.profileCompletion || 100;
+  const wsId = activeWorkspace?.id || 'w_bloom';
+  const isWhatsAppConnected = activeWorkspace?.whatsapp?.isConnected ?? (localStorage.getItem(`wa_connected_${wsId}`) !== 'false');
 
   // Marketing Journey stages
   const journeyStages = [
@@ -98,7 +100,10 @@ export const Dashboard: React.FC = () => {
       {/* ========================================================
           1. COMPACT UNIFIED HERO BANNER
           ======================================================== */}
-      <div className="rounded-[28px] sm:rounded-[32px] border border-[#F3DEC8] bg-[#FFF8F5] p-5 sm:p-6 relative overflow-hidden shadow-[0_6px_24px_rgba(75,29,107,0.03)]">
+      <div className="rounded-[28px] sm:rounded-[32px] border border-[#FCE7F3] bg-gradient-to-br from-white via-[#FFFDFE] to-[#FDF4F8] p-5 sm:p-6 relative overflow-hidden shadow-[0_12px_32px_-6px_rgba(219,39,119,0.09)]">
+        {/* Subtle light pinkish-magenta ambient glow */}
+        <div className="absolute -top-20 -right-20 w-80 h-80 bg-[#FCE7F3]/45 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 left-1/4 w-72 h-72 bg-[#FDF2F8]/60 rounded-full blur-3xl pointer-events-none" />
         
         <div className="flex flex-col lg:flex-row items-stretch justify-between gap-6 relative z-10 min-h-[220px]">
           
@@ -116,10 +121,10 @@ export const Dashboard: React.FC = () => {
               {/* Main Brand Title */}
               <h1 className="text-2xl sm:text-3xl lg:text-[34px] font-black text-[#1E122C] tracking-tight leading-tight flex items-baseline gap-2 flex-wrap">
                 <span>{brandFirstWord}</span>
-                <span className="font-serif italic font-normal text-[#D94A2A]">
+                <span className="font-serif italic font-normal text-[#DB2777]">
                   {brandRest}
                 </span>
-                <span className="text-[#D94A2A] text-xl">🍂</span>
+                <span className="text-[#DB2777] text-xl">✨</span>
               </h1>
 
               {/* Subtitle Description */}
@@ -131,8 +136,8 @@ export const Dashboard: React.FC = () => {
             {/* 4 Metadata Badges: Single Row with Clean Spacing */}
             <div className="flex flex-wrap items-center gap-2 pt-1">
               {/* Pill 1: Workspace */}
-              <div className="flex items-center gap-2 bg-white border border-[#F3DEC8] px-3 py-1.5 rounded-xl shadow-2xs">
-                <div className="w-6 h-6 rounded-lg bg-[#F3E8FF] text-[#4B1D6B] flex items-center justify-center shrink-0">
+              <div className="flex items-center gap-2 bg-white/90 border border-[#FCE7F3] px-3 py-1.5 rounded-xl shadow-2xs">
+                <div className="w-6 h-6 rounded-lg bg-pink-50 text-[#DB2777] flex items-center justify-center shrink-0">
                   <Building2 className="w-3.5 h-3.5" />
                 </div>
                 <div className="leading-tight text-left">
@@ -146,14 +151,14 @@ export const Dashboard: React.FC = () => {
                 href={activeWorkspace?.website || 'https://bloomboutique.shop'}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-2 bg-white border border-[#F3DEC8] px-3 py-1.5 rounded-xl shadow-2xs hover:border-[#D94A2A] transition-colors"
+                className="flex items-center gap-2 bg-white/90 border border-[#FCE7F3] px-3 py-1.5 rounded-xl shadow-2xs hover:border-pink-300 transition-colors"
               >
-                <div className="w-6 h-6 rounded-lg bg-[#F3E8FF] text-[#4B1D6B] flex items-center justify-center shrink-0">
+                <div className="w-6 h-6 rounded-lg bg-pink-50 text-[#DB2777] flex items-center justify-center shrink-0">
                   <Globe className="w-3.5 h-3.5" />
                 </div>
                 <div className="leading-tight text-left">
                   <span className="text-[8.5px] font-bold text-[#6B5E77] block">Website</span>
-                  <span className="text-[11px] font-black text-[#4B1D6B] flex items-center gap-0.5 whitespace-nowrap">
+                  <span className="text-[11px] font-black text-[#DB2777] flex items-center gap-0.5 whitespace-nowrap">
                     <strong>{websiteDomain}</strong>
                     <span className="text-[9px]">↗</span>
                   </span>
@@ -161,8 +166,8 @@ export const Dashboard: React.FC = () => {
               </a>
 
               {/* Pill 3: Category */}
-              <div className="flex items-center gap-2 bg-white border border-[#F3DEC8] px-3 py-1.5 rounded-xl shadow-2xs">
-                <div className="w-6 h-6 rounded-lg bg-[#F3E8FF] text-[#4B1D6B] flex items-center justify-center shrink-0">
+              <div className="flex items-center gap-2 bg-white/90 border border-[#FCE7F3] px-3 py-1.5 rounded-xl shadow-2xs">
+                <div className="w-6 h-6 rounded-lg bg-pink-50 text-[#DB2777] flex items-center justify-center shrink-0">
                   <Tag className="w-3.5 h-3.5" />
                 </div>
                 <div className="leading-tight text-left">
@@ -198,14 +203,14 @@ export const Dashboard: React.FC = () => {
           <div 
             onMouseEnter={() => setShowMetricsHover(true)}
             onMouseLeave={() => setShowMetricsHover(false)}
-            className="bg-white rounded-[24px] sm:rounded-[28px] border border-[#F3DEC8] p-4.5 sm:p-5 shadow-[0_4px_20px_rgba(75,29,107,0.04)] w-full lg:w-[350px] xl:w-[370px] 2xl:w-[390px] shrink-0 z-10 flex flex-col justify-between space-y-2 relative transition-all duration-300 hover:shadow-[0_8px_30px_rgba(75,29,107,0.08)]"
+            className="bg-white/95 backdrop-blur-xs rounded-[24px] sm:rounded-[28px] border border-[#FCE7F3] p-4.5 sm:p-5 shadow-[0_6px_20px_-4px_rgba(219,39,119,0.07)] w-full lg:w-[350px] xl:w-[370px] 2xl:w-[390px] shrink-0 z-10 flex flex-col justify-between space-y-2 relative transition-all duration-300 hover:shadow-[0_12px_28px_-4px_rgba(219,39,119,0.14)]"
           >
             
             {/* Top Row: Workspace Health Title + Profile Setup Card */}
             <div className="flex items-start justify-between">
               <div className="space-y-0.5">
                 <div className="flex items-center gap-1.5">
-                  <div className="w-5.5 h-5.5 rounded-lg bg-[#4B1D6B]/10 flex items-center justify-center text-[#4B1D6B]">
+                  <div className="w-5.5 h-5.5 rounded-lg bg-pink-50 flex items-center justify-center text-[#DB2777]">
                     <Activity className="w-3 h-3 stroke-[2.5]" />
                   </div>
                   <h3 className="text-xs font-black text-[#1E122C] tracking-tight">
@@ -220,7 +225,7 @@ export const Dashboard: React.FC = () => {
               </div>
 
               {/* Profile Setup Badge Card */}
-              <div className="flex items-center gap-2 bg-white border border-[#F3DEC8] px-2.5 py-1.5 rounded-xl shadow-2xs">
+              <div className="flex items-center gap-2 bg-white border border-[#FCE7F3] px-2.5 py-1.5 rounded-xl shadow-2xs">
                 <div className="w-6.5 h-6.5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
                   <Check className="w-3.5 h-3.5 stroke-[3]" />
                 </div>
@@ -238,16 +243,16 @@ export const Dashboard: React.FC = () => {
                 <svg viewBox="0 0 200 110" className="w-full h-full overflow-visible">
                   <defs>
                     <linearGradient id="gaugeGradientVivid" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#FF5B37" />
-                      <stop offset="50%" stopColor="#C026D3" />
-                      <stop offset="100%" stopColor="#4A044E" />
+                      <stop offset="0%" stopColor="#FB7185" />
+                      <stop offset="50%" stopColor="#EC4899" />
+                      <stop offset="100%" stopColor="#8B5CF6" />
                     </linearGradient>
                   </defs>
                   {/* Background Track Arc */}
                   <path
                     d="M 20 100 A 80 80 0 0 1 180 100"
                     fill="none"
-                    stroke="#FDEEE4"
+                    stroke="#F1F5F9"
                     strokeWidth="18"
                     strokeLinecap="round"
                   />
@@ -291,34 +296,34 @@ export const Dashboard: React.FC = () => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 6, scale: 0.96 }}
                     transition={{ duration: 0.2 }}
-                    className="grid grid-cols-4 gap-1.5 pt-1 border-t border-[#F3DEC8]/70 text-center"
+                    className="grid grid-cols-4 gap-1.5 pt-1 border-t border-slate-100 text-center"
                   >
                     {/* Metric 1 */}
-                    <div className="bg-[#FEF9F5] border border-[#F3DEC8] rounded-lg p-1.5 flex flex-col items-center justify-between space-y-0.5">
-                      <Target className="w-3 h-3 text-[#D94A2A]" />
+                    <div className="bg-slate-50 border border-slate-100 rounded-lg p-1.5 flex flex-col items-center justify-between space-y-0.5">
+                      <Target className="w-3 h-3 text-[#DB2777]" />
                       <p className="text-[7.5px] text-[#6B5E77] font-bold leading-none">Campaigns</p>
                       <h4 className="text-[10px] font-black text-[#1E122C] leading-none">12</h4>
                     </div>
 
                     {/* Metric 2 */}
-                    <div className="bg-[#FEF9F5] border border-[#F3DEC8] rounded-lg p-1.5 flex flex-col items-center justify-between space-y-0.5">
-                      <Users className="w-3 h-3 text-[#8C1F3D]" />
+                    <div className="bg-slate-50 border border-slate-100 rounded-lg p-1.5 flex flex-col items-center justify-between space-y-0.5">
+                      <Users className="w-3 h-3 text-[#DB2777]" />
                       <p className="text-[7.5px] text-[#6B5E77] font-bold leading-none">Audience</p>
                       <h4 className="text-[10px] font-black text-emerald-600 leading-none">+24%</h4>
                     </div>
 
                     {/* Metric 3 */}
-                    <div className="bg-[#FEF9F5] border border-[#F3DEC8] rounded-lg p-1.5 flex flex-col items-center justify-between space-y-0.5">
-                      <BarChart2 className="w-3 h-3 text-[#4B1D6B]" />
+                    <div className="bg-slate-50 border border-slate-100 rounded-lg p-1.5 flex flex-col items-center justify-between space-y-0.5">
+                      <BarChart2 className="w-3 h-3 text-[#7C3AED]" />
                       <p className="text-[7.5px] text-[#6B5E77] font-bold leading-none">Performance</p>
                       <h4 className="text-[10px] font-black text-[#1E122C] leading-none">+18%</h4>
                     </div>
 
                     {/* Metric 4 */}
-                    <div className="bg-[#FEF9F5] border border-[#F3DEC8] rounded-lg p-1.5 flex flex-col items-center justify-between space-y-0.5">
-                      <Sparkles className="w-3 h-3 text-[#D94A2A]" />
+                    <div className="bg-slate-50 border border-slate-100 rounded-lg p-1.5 flex flex-col items-center justify-between space-y-0.5">
+                      <Sparkles className="w-3 h-3 text-[#DB2777]" />
                       <p className="text-[7.5px] text-[#6B5E77] font-bold leading-none">Ready</p>
-                      <h4 className="text-[10px] font-black text-[#D94A2A] leading-none">5 new</h4>
+                      <h4 className="text-[10px] font-black text-[#DB2777] leading-none">5 new</h4>
                     </div>
                   </motion.div>
                 ) : (
@@ -328,9 +333,9 @@ export const Dashboard: React.FC = () => {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.15 }}
-                    className="flex items-center justify-center gap-1.5 pt-1.5 text-[9.5px] font-bold text-[#6B5E77] border-t border-[#F3DEC8]/50"
+                    className="flex items-center justify-center gap-1.5 pt-1.5 text-[9.5px] font-bold text-[#6B5E77] border-t border-slate-100"
                   >
-                    <Sparkles className="w-3 h-3 text-[#D94A2A]" />
+                    <Sparkles className="w-3 h-3 text-[#DB2777]" />
                     <span>Hover to inspect active health metrics</span>
                   </motion.div>
                 )}
@@ -347,10 +352,10 @@ export const Dashboard: React.FC = () => {
           2. QUICK ACTION BUTTONS (CREATE CAMPAIGN, CALENDAR, ASK AI)
           ======================================================== */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-        {/* Button 1: Create Campaign (Dark Plum/Wine Gradient) */}
+        {/* Button 1: Create Campaign (Pinkish-Magenta Gradient) */}
         <button
           onClick={() => navigate('/ads')}
-          className="flex items-center justify-between px-4 py-3 rounded-2xl bg-gradient-to-r from-[#2B0847] via-[#48115B] to-[#801B48] text-white shadow-[0_4px_16px_rgba(43,8,71,0.18)] hover:shadow-[0_6px_20px_rgba(43,8,71,0.25)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer border border-white/10 text-left group"
+          className="flex items-center justify-between px-4 py-3 rounded-2xl bg-gradient-to-r from-[#BE185D] via-[#DB2777] to-[#EC4899] text-white shadow-[0_4px_16px_rgba(219,39,119,0.2)] hover:shadow-[0_6px_20px_rgba(219,39,119,0.28)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer border border-white/10 text-left group"
         >
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-9 h-9 rounded-xl bg-white/15 border border-white/15 flex items-center justify-center text-white shrink-0">
@@ -367,10 +372,10 @@ export const Dashboard: React.FC = () => {
         {/* Button 2: Generate Content Calendar (Light Card) */}
         <button
           onClick={() => navigate('/content')}
-          className="flex items-center justify-between px-4 py-3 rounded-2xl bg-white border border-[#F3DEC8] text-[#1E122C] shadow-[0_2px_12px_rgba(75,29,107,0.03)] hover:border-[#D94A2A]/50 hover:shadow-[0_4px_16px_rgba(217,74,42,0.08)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-left group"
+          className="flex items-center justify-between px-4 py-3 rounded-2xl bg-white border border-slate-100 text-[#1E122C] shadow-xs hover:border-pink-300 hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-left group"
         >
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-[#FFF1EB] border border-[#FAD8C7] flex items-center justify-center text-[#D94A2A] shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-pink-50 border border-pink-100 flex items-center justify-center text-[#DB2777] shrink-0">
               <Calendar className="w-4 h-4 stroke-[2.2]" />
             </div>
             <div className="truncate">
@@ -378,16 +383,16 @@ export const Dashboard: React.FC = () => {
               <p className="text-[10px] text-[#6B5E77] font-medium pt-0.5 leading-none truncate">Plan your content</p>
             </div>
           </div>
-          <ArrowRight className="w-4 h-4 text-[#6B5E77] group-hover:text-[#D94A2A] group-hover:translate-x-1 transition-all shrink-0 ml-2" />
+          <ArrowRight className="w-4 h-4 text-[#6B5E77] group-hover:text-[#DB2777] group-hover:translate-x-1 transition-all shrink-0 ml-2" />
         </button>
 
         {/* Button 3: Ask AI Assistant (Light Card) */}
         <button
           onClick={() => setAssistantOpen(true)}
-          className="flex items-center justify-between px-4 py-3 rounded-2xl bg-white border border-[#F3DEC8] text-[#1E122C] shadow-[0_2px_12px_rgba(75,29,107,0.03)] hover:border-[#4B1D6B]/50 hover:shadow-[0_4px_16px_rgba(75,29,107,0.08)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-left group"
+          className="flex items-center justify-between px-4 py-3 rounded-2xl bg-white border border-slate-100 text-[#1E122C] shadow-xs hover:border-purple-300 hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-left group"
         >
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-[#F5EEFB] border border-[#E9D5F7] flex items-center justify-center text-[#4B1D6B] shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-[#F5F0FF] border border-[#DDD6FE] flex items-center justify-center text-[#7C3AED] shrink-0">
               <MessageSquare className="w-4 h-4 stroke-[2.2]" />
             </div>
             <div className="truncate">
@@ -395,24 +400,24 @@ export const Dashboard: React.FC = () => {
               <p className="text-[10px] text-[#6B5E77] font-medium pt-0.5 leading-none truncate">Get AI recommendations</p>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-[#4B1D6B] group-hover:translate-x-1 transition-all shrink-0 ml-2 stroke-[2.5]" />
+          <ChevronRight className="w-4 h-4 text-[#7C3AED] group-hover:translate-x-1 transition-all shrink-0 ml-2 stroke-[2.5]" />
         </button>
       </div>
 
       {/* ========================================================
           3. AI MARKETING JOURNEY ROADMAP (TRACKER)
           ======================================================== */}
-      <div className="bg-white rounded-[28px] border border-[#F3DEC8] p-5 sm:p-6 shadow-[0_6px_20px_rgba(75,29,107,0.02)] space-y-4">
+      <div className="bg-white rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-[#4B1D6B]/10 flex items-center justify-center text-[#4B1D6B]">
-              <Zap className="w-3.5 h-3.5 fill-[#4B1D6B]" />
+            <div className="w-6 h-6 rounded-lg bg-pink-50 flex items-center justify-center text-[#DB2777]">
+              <Zap className="w-3.5 h-3.5 fill-[#DB2777]" />
             </div>
             <h3 className="text-xs font-black text-[#1E122C] tracking-tight uppercase">
               AI Marketing Journey Roadmap
             </h3>
           </div>
-          <span className="text-[10px] font-bold text-[#6B5E77] bg-[#FAF5F0] px-3 py-1 rounded-full border border-[#F3DEC8]">
+          <span className="text-[10px] font-bold text-slate-600 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
             Phase 4 of 6 Active
           </span>
         </div>
@@ -428,10 +433,10 @@ export const Dashboard: React.FC = () => {
                 key={stg.name}
                 className={`p-3 rounded-2xl border transition-all text-left flex flex-col justify-between space-y-2 ${
                   isActive
-                    ? 'bg-[#FFF8F5] border-[#D94A2A] shadow-xs ring-1 ring-[#D94A2A]/30'
+                    ? 'bg-[#FDF2F8] border-[#EC4899] shadow-xs ring-1 ring-[#EC4899]/30'
                     : isDone
                     ? 'bg-[#F4FDF8] border-emerald-200'
-                    : 'bg-[#FAF5F0]/60 border-[#F3DEC8]/70 opacity-75'
+                    : 'bg-slate-50/60 border-slate-100 opacity-75'
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -440,8 +445,8 @@ export const Dashboard: React.FC = () => {
                       isDone 
                         ? 'bg-emerald-600 text-white' 
                         : isActive 
-                        ? 'bg-[#D94A2A] text-white animate-pulse' 
-                        : 'bg-[#EBDDCF] text-[#6B5E77]'
+                        ? 'bg-[#DB2777] text-white animate-pulse' 
+                        : 'bg-slate-200 text-slate-500'
                     }`}
                   >
                     {isDone ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : i + 1}
@@ -450,7 +455,7 @@ export const Dashboard: React.FC = () => {
                     isDone 
                       ? 'bg-emerald-100 text-emerald-700' 
                       : isActive 
-                      ? 'bg-orange-100 text-orange-700 font-extrabold' 
+                      ? 'bg-pink-100 text-pink-700 font-extrabold' 
                       : 'bg-stone-100 text-[#6B5E77]'
                   }`}>
                     {stg.status}
@@ -458,7 +463,7 @@ export const Dashboard: React.FC = () => {
                 </div>
 
                 <div>
-                  <h4 className={`text-xs font-black ${isActive ? 'text-[#D94A2A]' : isDone ? 'text-emerald-900' : 'text-[#6B5E77]'}`}>
+                  <h4 className={`text-xs font-black ${isActive ? 'text-[#DB2777]' : isDone ? 'text-emerald-900' : 'text-[#6B5E77]'}`}>
                     {stg.name}
                   </h4>
                   <p className="text-[10px] text-[#6B5E77] font-medium leading-tight pt-0.5">
@@ -480,7 +485,7 @@ export const Dashboard: React.FC = () => {
         <div className="lg:col-span-8 space-y-6">
           
           {/* Section A: Active Alerts & Anomalies Table Card */}
-          <div className="bg-white rounded-[28px] sm:rounded-[32px] border border-[#F3DEC8] p-5 sm:p-6 shadow-[0_8px_24px_rgba(75,29,107,0.03)] space-y-4">
+          <div className="bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 p-5 sm:p-6 shadow-xs space-y-4">
             
             {/* Header */}
             <div className="flex items-center justify-between">
@@ -495,7 +500,7 @@ export const Dashboard: React.FC = () => {
 
               <button 
                 onClick={() => navigate('/discover')}
-                className="text-xs font-black text-[#8C1F3D] hover:text-[#D94A2A] transition-colors flex items-center gap-1 cursor-pointer bg-transparent border-0"
+                className="text-xs font-black text-[#DB2777] hover:text-[#BE185D] transition-colors flex items-center gap-1 cursor-pointer bg-transparent border-0"
               >
                 <span>View all</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -503,7 +508,7 @@ export const Dashboard: React.FC = () => {
             </div>
 
             {/* Table Header Row */}
-            <div className="hidden sm:grid grid-cols-12 text-[10px] font-black uppercase tracking-wider text-[#6B5E77] pb-1 border-b border-[#F3DEC8]/60">
+            <div className="hidden sm:grid grid-cols-12 text-[10px] font-black uppercase tracking-wider text-[#6B5E77] pb-1 border-b border-slate-100">
               <span className="col-span-7">Issue & Diagnosis</span>
               <span className="col-span-2 text-center">Impact</span>
               <span className="col-span-3 text-right pr-4">Action</span>
@@ -513,7 +518,7 @@ export const Dashboard: React.FC = () => {
             <div className="space-y-3">
               
               {/* Row 1: Mobile Button Issue */}
-              <div className="p-3.5 sm:p-4 rounded-2xl bg-[#FAF5F0] border border-[#F3DEC8] flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 transition-all hover:border-[#D94A2A]/40">
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50/70 border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 transition-all hover:border-pink-300">
                 <div className="flex items-start gap-3 min-w-0 flex-1">
                   <div className="w-9 h-9 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-500 shrink-0 shadow-3xs">
                     <Smartphone className="w-4.5 h-4.5" />
@@ -536,7 +541,7 @@ export const Dashboard: React.FC = () => {
                   <button
                     onClick={() => handleFixIssue('1')}
                     disabled={fixingIssueId === '1'}
-                    className="px-3.5 py-1.5 sm:py-2 bg-gradient-to-r from-[#E94E83] to-[#D83B70] hover:from-[#D83B70] hover:to-[#B32454] text-white text-[11px] font-black rounded-xl shadow-[0_4px_12px_rgba(233,78,131,0.25)] flex items-center gap-1.5 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer border-0 disabled:opacity-50"
+                    className="px-3.5 py-1.5 sm:py-2 bg-gradient-to-r from-[#EC4899] to-[#DB2777] hover:from-[#DB2777] hover:to-[#BE185D] text-white text-[11px] font-black rounded-xl shadow-[0_4px_12px_rgba(219,39,119,0.25)] flex items-center gap-1.5 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer border-0 disabled:opacity-50"
                   >
                     <Sparkles className="w-3 h-3 text-white fill-white" />
                     <span>{fixingIssueId === '1' ? 'Fixing...' : 'Auto-Fix Now'}</span>
@@ -545,7 +550,7 @@ export const Dashboard: React.FC = () => {
               </div>
 
               {/* Row 2: Free Shipping Banner */}
-              <div className="p-3.5 sm:p-4 rounded-2xl bg-[#FAF5F0] border border-[#F3DEC8] flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 transition-all hover:border-[#D94A2A]/40">
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50/70 border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 transition-all hover:border-pink-300">
                 <div className="flex items-start gap-3 min-w-0 flex-1">
                   <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-500 shrink-0 shadow-3xs">
                     <ShoppingBag className="w-4.5 h-4.5" />
@@ -568,7 +573,7 @@ export const Dashboard: React.FC = () => {
                   <button
                     onClick={() => handleFixIssue('2')}
                     disabled={fixingIssueId === '2'}
-                    className="px-3.5 py-1.5 sm:py-2 bg-gradient-to-r from-[#E94E83] to-[#D83B70] hover:from-[#D83B70] hover:to-[#B32454] text-white text-[11px] font-black rounded-xl shadow-[0_4px_12px_rgba(233,78,131,0.25)] flex items-center gap-1.5 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer border-0 disabled:opacity-50"
+                    className="px-3.5 py-1.5 sm:py-2 bg-gradient-to-r from-[#EC4899] to-[#DB2777] hover:from-[#DB2777] hover:to-[#BE185D] text-white text-[11px] font-black rounded-xl shadow-[0_4px_12px_rgba(219,39,119,0.25)] flex items-center gap-1.5 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer border-0 disabled:opacity-50"
                   >
                     <Sparkles className="w-3 h-3 text-white fill-white" />
                     <span>{fixingIssueId === '2' ? 'Fixing...' : 'Auto-Fix Now'}</span>
@@ -577,7 +582,7 @@ export const Dashboard: React.FC = () => {
               </div>
 
               {/* Row 3: Campaign Anomaly */}
-              <div className="p-3.5 sm:p-4 rounded-2xl bg-[#FAF5F0] border border-[#F3DEC8] flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 transition-all hover:border-[#D94A2A]/40">
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50/70 border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 transition-all hover:border-pink-300">
                 <div className="flex items-start gap-3 min-w-0 flex-1">
                   <div className="w-9 h-9 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center text-orange-500 shrink-0 shadow-3xs">
                     <Search className="w-4.5 h-4.5" />
@@ -599,7 +604,7 @@ export const Dashboard: React.FC = () => {
 
                   <button
                     onClick={() => navigate('/ads')}
-                    className="px-3.5 py-1.5 sm:py-2 bg-white hover:bg-[#FFF0EB] border border-[#F3DEC8] text-[#D94A2A] text-[11px] font-black rounded-xl shadow-2xs transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+                    className="px-3.5 py-1.5 sm:py-2 bg-white hover:bg-pink-50 border border-slate-200 text-[#DB2777] text-[11px] font-black rounded-xl shadow-2xs transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
                   >
                     <span>Manage Campaign</span>
                   </button>
@@ -611,10 +616,10 @@ export const Dashboard: React.FC = () => {
           </div>
 
           {/* Section B: Live AI Action Queue & Approvals */}
-          <div className="bg-white rounded-[28px] sm:rounded-[32px] border border-[#F3DEC8] p-5 sm:p-6 shadow-[0_8px_24px_rgba(75,29,107,0.03)] space-y-4">
+          <div className="bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 p-5 sm:p-6 shadow-xs space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-[#4B1D6B]/10 flex items-center justify-center text-[#4B1D6B]">
+                <div className="w-6 h-6 rounded-lg bg-pink-50 flex items-center justify-center text-[#DB2777]">
                   <ShieldCheck className="w-4 h-4 stroke-[2.5]" />
                 </div>
                 <h3 className="text-xs sm:text-sm font-black text-[#1E122C] tracking-tight">
@@ -624,7 +629,7 @@ export const Dashboard: React.FC = () => {
 
               <button 
                 onClick={() => navigate('/actions')}
-                className="text-xs font-black text-[#8C1F3D] hover:text-[#D94A2A] transition-colors flex items-center gap-1 cursor-pointer bg-transparent border-0"
+                className="text-xs font-black text-[#DB2777] hover:text-[#BE185D] transition-colors flex items-center gap-1 cursor-pointer bg-transparent border-0"
               >
                 <span>View all actions</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -633,7 +638,7 @@ export const Dashboard: React.FC = () => {
 
             <div className="space-y-3">
               {/* Action Item 1: Needs Approval */}
-              <div className="p-4 rounded-2xl bg-[#FFFDFB] border border-[#F3DEC8] space-y-3 transition-all hover:shadow-xs">
+              <div className="p-4 rounded-2xl bg-white border border-slate-100 space-y-3 transition-all hover:shadow-xs">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-[9px] font-black uppercase tracking-wider text-amber-700 bg-amber-100 px-2 py-0.5 rounded-md border border-amber-200">
@@ -643,7 +648,7 @@ export const Dashboard: React.FC = () => {
                       Created 15m ago
                     </span>
                   </div>
-                  <span className="text-[10px] font-bold text-[#D94A2A] bg-[#FFF0EB] px-2 py-0.5 rounded-lg border border-[#F3DEC8]">
+                  <span className="text-[10px] font-bold text-[#DB2777] bg-pink-50 px-2 py-0.5 rounded-lg border border-pink-100">
                     Meta Ads Campaign
                   </span>
                 </div>
@@ -657,7 +662,7 @@ export const Dashboard: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="flex items-center justify-end gap-2.5 pt-1 border-t border-[#F3DEC8]/50">
+                <div className="flex items-center justify-end gap-2.5 pt-1 border-t border-slate-100">
                   <button
                     onClick={() => dismissAction('act_1')}
                     className="px-3 py-1.5 text-[11px] font-bold text-[#6B5E77] hover:text-rose-600 transition-colors bg-transparent border-0 cursor-pointer"
@@ -667,7 +672,7 @@ export const Dashboard: React.FC = () => {
                   <button
                     onClick={() => handleApproveAction('act_1')}
                     disabled={approvingActionId === 'act_1'}
-                    className="px-3.5 py-1.5 bg-[#4B1D6B] hover:bg-[#381352] text-white text-[11px] font-black rounded-xl shadow-xs flex items-center gap-1.5 transition-all cursor-pointer border-0"
+                    className="px-3.5 py-1.5 bg-[#DB2777] hover:bg-[#BE185D] text-white text-[11px] font-black rounded-xl shadow-xs flex items-center gap-1.5 transition-all cursor-pointer border-0"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     <span>{approvingActionId === 'act_1' ? 'Deploying...' : 'Approve & Publish'}</span>
@@ -704,10 +709,10 @@ export const Dashboard: React.FC = () => {
         <div className="lg:col-span-4 space-y-6">
           
           {/* Card 1: Performance Snapshot */}
-          <div className="bg-white rounded-[28px] sm:rounded-[32px] border border-[#F3DEC8] p-5 sm:p-6 shadow-[0_8px_24px_rgba(75,29,107,0.03)] space-y-4">
+          <div className="bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 p-5 sm:p-6 shadow-xs space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-[#D94A2A]/10 flex items-center justify-center text-[#D94A2A]">
+                <div className="w-6 h-6 rounded-lg bg-pink-50 flex items-center justify-center text-[#DB2777]">
                   <BarChart2 className="w-3.5 h-3.5" />
                 </div>
                 <h3 className="text-xs font-black text-[#1E122C] tracking-tight">
@@ -715,13 +720,13 @@ export const Dashboard: React.FC = () => {
                 </h3>
               </div>
 
-              <div className="flex items-center gap-1 text-[10px] font-bold text-[#6B5E77] bg-[#FAF5F0] px-2 py-1 rounded-lg border border-[#F3DEC8] cursor-pointer">
+              <div className="flex items-center gap-1 text-[10px] font-bold text-slate-600 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100 cursor-pointer">
                 <span>This Month</span>
                 <ChevronDown className="w-3 h-3" />
               </div>
             </div>
 
-            {/* Metric 1: Website Visitors (with orange sparkline) */}
+            {/* Metric 1: Website Visitors (with pink sparkline) */}
             <div className="space-y-1 pt-1">
               <span className="text-[10px] font-bold text-[#6B5E77] block">Website Visitors</span>
               <div className="flex items-baseline justify-between">
@@ -732,15 +737,15 @@ export const Dashboard: React.FC = () => {
                   </span>
                 </div>
                 {/* Sparkline Curve */}
-                <svg className="w-24 h-7 text-[#D94A2A]" viewBox="0 0 100 30" fill="none">
+                <svg className="w-24 h-7 text-[#EC4899]" viewBox="0 0 100 30" fill="none">
                   <path d="M0 25 Q 25 15, 50 18 T 75 8 T 100 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-                  <circle cx="75" cy="8" r="3.5" fill="#D94A2A" />
+                  <circle cx="75" cy="8" r="3.5" fill="#EC4899" />
                 </svg>
               </div>
             </div>
 
             {/* Metric 2: Campaign Clicks (with purple sparkline) */}
-            <div className="space-y-1 pt-2 border-t border-[#F3DEC8]/60">
+            <div className="space-y-1 pt-2 border-t border-slate-100">
               <span className="text-[10px] font-bold text-[#6B5E77] block">Campaign Clicks</span>
               <div className="flex items-baseline justify-between">
                 <div className="flex items-baseline gap-2">
@@ -750,20 +755,20 @@ export const Dashboard: React.FC = () => {
                   </span>
                 </div>
                 {/* Sparkline Curve */}
-                <svg className="w-24 h-7 text-[#4B1D6B]" viewBox="0 0 100 30" fill="none">
+                <svg className="w-24 h-7 text-[#7C3AED]" viewBox="0 0 100 30" fill="none">
                   <path d="M0 10 Q 25 22, 50 14 T 75 18 T 100 8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
                 </svg>
               </div>
             </div>
 
             {/* Mini Summary Stats */}
-            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#F3DEC8]/60 text-left">
-              <div className="bg-[#FAF5F0] p-2.5 rounded-xl border border-[#F3DEC8]">
+            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 text-left">
+              <div className="bg-slate-50/70 p-2.5 rounded-xl border border-slate-100">
                 <span className="text-[9px] font-bold text-[#6B5E77] block">Conv. Rate</span>
                 <strong className="text-xs font-black text-[#1E122C]">3.4%</strong>
                 <span className="text-[9px] font-bold text-emerald-600 block">+0.8%</span>
               </div>
-              <div className="bg-[#FAF5F0] p-2.5 rounded-xl border border-[#F3DEC8]">
+              <div className="bg-slate-50/70 p-2.5 rounded-xl border border-slate-100">
                 <span className="text-[9px] font-bold text-[#6B5E77] block">Avg. ROAS</span>
                 <strong className="text-xs font-black text-[#1E122C]">4.2x</strong>
                 <span className="text-[9px] font-bold text-emerald-600 block">+18%</span>
@@ -772,10 +777,10 @@ export const Dashboard: React.FC = () => {
           </div>
 
           {/* Card 2: Connected Channels & Health */}
-          <div className="bg-white rounded-[28px] sm:rounded-[32px] border border-[#F3DEC8] p-5 sm:p-6 shadow-[0_8px_24px_rgba(75,29,107,0.03)] space-y-3.5">
+          <div className="bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 p-5 sm:p-6 shadow-xs space-y-3.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-[#4B1D6B]/10 flex items-center justify-center text-[#4B1D6B]">
+                <div className="w-6 h-6 rounded-lg bg-pink-50 flex items-center justify-center text-[#DB2777]">
                   <Globe className="w-3.5 h-3.5" />
                 </div>
                 <h3 className="text-xs font-black text-[#1E122C] tracking-tight">
@@ -786,9 +791,9 @@ export const Dashboard: React.FC = () => {
             </div>
 
             <div className="space-y-2 text-xs">
-              <div className="flex items-center justify-between p-2 rounded-xl bg-[#FAF5F0] border border-[#F3DEC8]">
+              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50/70 border border-slate-100">
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-md bg-[#F3E8FF] text-[#4B1D6B] flex items-center justify-center text-[10px] font-black">
+                  <div className="w-5 h-5 rounded-md bg-[#F5F0FF] text-[#7C3AED] flex items-center justify-center text-[10px] font-black">
                     G
                   </div>
                   <span className="font-bold text-[#1E122C] text-[11px]">Google Ads</span>
@@ -798,9 +803,9 @@ export const Dashboard: React.FC = () => {
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-2 rounded-xl bg-[#FAF5F0] border border-[#F3DEC8]">
+              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50/70 border border-slate-100">
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-md bg-[#FFF0EB] text-[#D94A2A] flex items-center justify-center text-[10px] font-black">
+                  <div className="w-5 h-5 rounded-md bg-pink-50 text-[#DB2777] flex items-center justify-center text-[10px] font-black">
                     IG
                   </div>
                   <span className="font-bold text-[#1E122C] text-[11px]">Instagram Business</span>
@@ -810,7 +815,7 @@ export const Dashboard: React.FC = () => {
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-2 rounded-xl bg-[#FAF5F0] border border-[#F3DEC8]">
+              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50/70 border border-slate-100">
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 rounded-md bg-purple-50 text-purple-700 flex items-center justify-center text-[10px] font-black">
                     EM
@@ -821,14 +826,35 @@ export const Dashboard: React.FC = () => {
                   Active • 95%
                 </span>
               </div>
+
+              <div 
+                onClick={() => navigate('/whatsapp')}
+                className="flex items-center justify-between p-2 rounded-xl bg-slate-50/70 border border-slate-100 hover:border-emerald-300 transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center text-[10px] font-black">
+                    WA
+                  </div>
+                  <span className="font-bold text-[#1E122C] text-[11px]">WhatsApp Business</span>
+                </div>
+                {isWhatsAppConnected ? (
+                  <span className="text-[9px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
+                    Active • 99%
+                  </span>
+                ) : (
+                  <span className="text-[9px] font-black text-amber-700 bg-amber-100 px-2 py-0.5 rounded-md flex items-center gap-1">
+                    Not Connected • Connect →
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Card 3: Recent AI Activity Stream */}
-          <div className="bg-white rounded-[28px] sm:rounded-[32px] border border-[#F3DEC8] p-5 sm:p-6 shadow-[0_8px_24px_rgba(75,29,107,0.03)] space-y-4">
+          <div className="bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 p-5 sm:p-6 shadow-xs space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-[#4B1D6B]/10 flex items-center justify-center text-[#4B1D6B]">
+                <div className="w-6 h-6 rounded-lg bg-pink-50 flex items-center justify-center text-[#DB2777]">
                   <Activity className="w-3.5 h-3.5" />
                 </div>
                 <h3 className="text-xs font-black text-[#1E122C] tracking-tight">
@@ -838,7 +864,7 @@ export const Dashboard: React.FC = () => {
 
               <button 
                 onClick={() => navigate('/results')}
-                className="text-xs font-black text-[#8C1F3D] hover:text-[#D94A2A] transition-colors flex items-center gap-1 cursor-pointer bg-transparent border-0"
+                className="text-xs font-black text-[#DB2777] hover:text-[#BE185D] transition-colors flex items-center gap-1 cursor-pointer bg-transparent border-0"
               >
                 <span>View all</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -849,7 +875,7 @@ export const Dashboard: React.FC = () => {
             <div className="space-y-3 pt-1 text-xs">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-start gap-2 min-w-0">
-                  <span className="w-2 h-2 rounded-full bg-[#4B1D6B] mt-1 shrink-0" />
+                  <span className="w-2 h-2 rounded-full bg-[#7C3AED] mt-1 shrink-0" />
                   <span className="text-[#1E122C] font-semibold leading-tight truncate">Campaign &quot;Summer Collection&quot; created</span>
                 </div>
                 <span className="text-[10px] text-[#6B5E77] font-medium shrink-0">2h ago</span>
@@ -857,7 +883,7 @@ export const Dashboard: React.FC = () => {
 
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-start gap-2 min-w-0">
-                  <span className="w-2 h-2 rounded-full bg-[#D94A2A] mt-1 shrink-0" />
+                  <span className="w-2 h-2 rounded-full bg-[#EC4899] mt-1 shrink-0" />
                   <span className="text-[#1E122C] font-semibold leading-tight truncate">Content calendar generated</span>
                 </div>
                 <span className="text-[10px] text-[#6B5E77] font-medium shrink-0">4h ago</span>
@@ -865,7 +891,7 @@ export const Dashboard: React.FC = () => {
 
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-start gap-2 min-w-0">
-                  <span className="w-2 h-2 rounded-full bg-[#8C1F3D] mt-1 shrink-0" />
+                  <span className="w-2 h-2 rounded-full bg-[#DB2777] mt-1 shrink-0" />
                   <span className="text-[#1E122C] font-semibold leading-tight truncate">AI analysis completed for your website</span>
                 </div>
                 <span className="text-[10px] text-[#6B5E77] font-medium shrink-0">6h ago</span>
@@ -873,7 +899,7 @@ export const Dashboard: React.FC = () => {
 
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-start gap-2 min-w-0">
-                  <span className="w-2 h-2 rounded-full bg-[#4B1D6B] mt-1 shrink-0" />
+                  <span className="w-2 h-2 rounded-full bg-[#7C3AED] mt-1 shrink-0" />
                   <span className="text-[#1E122C] font-semibold leading-tight truncate">New audience segment identified</span>
                 </div>
                 <span className="text-[10px] text-[#6B5E77] font-medium shrink-0">1d ago</span>
@@ -901,7 +927,7 @@ export const Dashboard: React.FC = () => {
 
           <button 
             onClick={() => navigate('/recommendations')}
-            className="text-xs font-black text-[#8C1F3D] hover:text-[#D94A2A] transition-colors flex items-center gap-1 cursor-pointer bg-transparent border-0"
+            className="text-xs font-black text-[#DB2777] hover:text-[#BE185D] transition-colors flex items-center gap-1 cursor-pointer bg-transparent border-0"
           >
             <span>View all</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -912,10 +938,10 @@ export const Dashboard: React.FC = () => {
           {/* Card 1: Improve Mobile CTA */}
           <div 
             onClick={() => navigate('/onboarding')}
-            className="p-5 rounded-[24px] bg-white border border-[#F3DEC8] shadow-2xs flex items-center justify-between gap-4 cursor-pointer hover:border-[#D94A2A]/50 hover:-translate-y-0.5 transition-all group"
+            className="p-5 rounded-[24px] bg-white border border-slate-100 shadow-2xs flex items-center justify-between gap-4 cursor-pointer hover:border-pink-300 hover:-translate-y-0.5 transition-all group"
           >
             <div className="flex items-center gap-3.5 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-[#F5EEFB] border border-[#E9D5F7] flex items-center justify-center text-[#4B1D6B] shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-[#F5F0FF] border border-[#DDD6FE] flex items-center justify-center text-[#7C3AED] shrink-0">
                 <Smartphone className="w-4.5 h-4.5" />
               </div>
               <div className="space-y-0.5 min-w-0">
@@ -925,16 +951,16 @@ export const Dashboard: React.FC = () => {
                 </p>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-[#D94A2A] group-hover:translate-x-1 transition-transform shrink-0 ml-2" />
+            <ArrowRight className="w-4 h-4 text-[#7C3AED] group-hover:translate-x-1 transition-transform shrink-0 ml-2" />
           </div>
 
           {/* Card 2: Boost Organic Reach */}
           <div 
             onClick={() => navigate('/content')}
-            className="p-5 rounded-[24px] bg-white border border-[#F3DEC8] shadow-2xs flex items-center justify-between gap-4 cursor-pointer hover:border-[#D94A2A]/50 hover:-translate-y-0.5 transition-all group"
+            className="p-5 rounded-[24px] bg-white border border-slate-100 shadow-2xs flex items-center justify-between gap-4 cursor-pointer hover:border-pink-300 hover:-translate-y-0.5 transition-all group"
           >
             <div className="flex items-center gap-3.5 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-[#F5EEFB] border border-[#E9D5F7] flex items-center justify-center text-[#4B1D6B] shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-[#F5F0FF] border border-[#DDD6FE] flex items-center justify-center text-[#7C3AED] shrink-0">
                 <BarChart2 className="w-4.5 h-4.5" />
               </div>
               <div className="space-y-0.5 min-w-0">
@@ -944,16 +970,16 @@ export const Dashboard: React.FC = () => {
                 </p>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-[#D94A2A] group-hover:translate-x-1 transition-transform shrink-0 ml-2" />
+            <ArrowRight className="w-4 h-4 text-[#7C3AED] group-hover:translate-x-1 transition-transform shrink-0 ml-2" />
           </div>
 
           {/* Card 3: Optimize Ad Spend */}
           <div 
             onClick={() => navigate('/ads')}
-            className="p-5 rounded-[24px] bg-white border border-[#F3DEC8] shadow-2xs flex items-center justify-between gap-4 cursor-pointer hover:border-[#D94A2A]/50 hover:-translate-y-0.5 transition-all group"
+            className="p-5 rounded-[24px] bg-white border border-slate-100 shadow-2xs flex items-center justify-between gap-4 cursor-pointer hover:border-pink-300 hover:-translate-y-0.5 transition-all group"
           >
             <div className="flex items-center gap-3.5 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-[#FFF1EB] border border-[#FAD8C7] flex items-center justify-center text-[#D94A2A] shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-pink-50 border border-pink-100 flex items-center justify-center text-[#DB2777] shrink-0">
                 <Target className="w-4.5 h-4.5" />
               </div>
               <div className="space-y-0.5 min-w-0">
@@ -963,7 +989,7 @@ export const Dashboard: React.FC = () => {
                 </p>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-[#D94A2A] group-hover:translate-x-1 transition-transform shrink-0 ml-2" />
+            <ArrowRight className="w-4 h-4 text-[#DB2777] group-hover:translate-x-1 transition-transform shrink-0 ml-2" />
           </div>
         </div>
       </div>
