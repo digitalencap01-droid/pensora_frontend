@@ -297,6 +297,20 @@ export const Blog: React.FC = () => {
   const [isPublishing, setIsPublishing] = useState<boolean>(false);
   const [publishSuccessMsg, setPublishSuccessMsg] = useState<string | null>(null);
 
+  // LinkedIn compose modal — mirrors LinkedIn's own "Start a post" bar
+  // (text + Photo attach) before actually publishing. imageFile (device
+  // upload) and imageUrl (pre-filled from the article's cover image, or
+  // pasted directly) are mutually exclusive — picking one clears the
+  // other.
+  const [linkedinComposer, setLinkedinComposer] = useState<{
+    isLoadingDraft: boolean;
+    text: string;
+    hashtags: string[];
+    imageFile: File | null;
+    imageFilePreviewUrl: string | null;
+    imageUrl: string;
+  } | null>(null);
+
   // Sync Webflow and LinkedIn backend connection status on mount
   useEffect(() => {
     Promise.allSettled([
@@ -408,33 +422,143 @@ export const Blog: React.FC = () => {
   };
 
   const handlePublishToPlatform = async (article: BlogArticle, platformId: PublishingPlatformId) => {
-    setIsPublishing(true);
-    setPublishSuccessMsg(null);
-    try {
-      if (platformId === 'webflow') {
-        const res = await blogApi.publishToWebflow(article.id);
-        setPublishSuccessMsg(`Published to Webflow CMS (${res.status})! Item ID: ${res.item_id}`);
-      } else if (platformId === 'linkedin') {
-        // Have the model write real LinkedIn-native commentary from the
-        // article's topic/tone.
+    if (platformId === 'linkedin') {
+      // LinkedIn goes through the compose modal (mirrors LinkedIn's own
+      // "Start a post" bar) instead of publishing immediately — open it
+      // with an AI-drafted starting point the user can edit/attach a
+      // photo to before actually posting. Pre-fill the image from the
+      // article's own cover image (Cover & Media step) when one was
+      // set — the user only needs to add one here if they didn't.
+      const coverImageUrl = article.featuredImage || article.thumbnailImage || '';
+      setLinkedinComposer({
+        isLoadingDraft: true,
+        text: '',
+        hashtags: [],
+        imageFile: null,
+        imageFilePreviewUrl: null,
+        imageUrl: coverImageUrl
+      });
+      try {
         const generated = await blogApi.generateLinkedInContent({
           content_type: 'article',
           topic: article.topic || article.title,
           tone: article.tone
         });
-        const hashtagLine = generated.hashtags.length ? `\n\n${generated.hashtags.join(' ')}` : '';
-        const commentary = `${generated.text}${hashtagLine}`;
-
-        // publish-post (not publish) — plain text only, no link/article
-        // preview card underneath. That card only appears when you send
-        // article_url via /linkedin/publish.
-        const res = await blogApi.publishLinkedInPost(commentary);
-        setPublishSuccessMsg(`Published to LinkedIn! Post ID: ${res.post_urn}`);
+        setLinkedinComposer({
+          isLoadingDraft: false,
+          text: generated.text,
+          hashtags: generated.hashtags,
+          imageFile: null,
+          imageFilePreviewUrl: null,
+          imageUrl: coverImageUrl
+        });
+      } catch (err: any) {
+        alert(`Could not draft LinkedIn post: ${err.message || 'Unknown error'}`);
+        setLinkedinComposer(null);
       }
+      return;
+    }
+
+    setIsPublishing(true);
+    setPublishSuccessMsg(null);
+    try {
+      const res = await blogApi.publishToWebflow(article.id);
+      setPublishSuccessMsg(`Published to Webflow CMS (${res.status})! Item ID: ${res.item_id}`);
     } catch (err: any) {
       alert(`Publishing failed: ${err.message || 'Unknown error'}`);
     } finally {
       setIsPublishing(false);
+    }
+  };
+
+  const handleLinkedinComposerImageSelect = (file: File | null) => {
+    setLinkedinComposer(prev => {
+      if (!prev) return prev;
+      if (prev.imageFilePreviewUrl) {
+        URL.revokeObjectURL(prev.imageFilePreviewUrl);
+      }
+      return {
+        ...prev,
+        imageFile: file,
+        imageFilePreviewUrl: file ? URL.createObjectURL(file) : null,
+        // Device upload and pasted URL are mutually exclusive.
+        imageUrl: file ? '' : prev.imageUrl
+      };
+    });
+  };
+
+  const handleLinkedinComposerImageUrlChange = (url: string) => {
+    setLinkedinComposer(prev => {
+      if (!prev) return prev;
+      if (prev.imageFilePreviewUrl) {
+        URL.revokeObjectURL(prev.imageFilePreviewUrl);
+      }
+      return {
+        ...prev,
+        imageUrl: url,
+        imageFile: null,
+        imageFilePreviewUrl: null
+      };
+    });
+  };
+
+  const handleLinkedinComposerImageClear = () => {
+    setLinkedinComposer(prev => {
+      if (!prev) return prev;
+      if (prev.imageFilePreviewUrl) {
+        URL.revokeObjectURL(prev.imageFilePreviewUrl);
+      }
+      return { ...prev, imageFile: null, imageFilePreviewUrl: null, imageUrl: '' };
+    });
+  };
+
+  const closeLinkedinComposer = () => {
+    if (linkedinComposer?.imageFilePreviewUrl) {
+      URL.revokeObjectURL(linkedinComposer.imageFilePreviewUrl);
+    }
+    setLinkedinComposer(null);
+  };
+
+  const handlePublishLinkedinComposer = async () => {
+    if (!linkedinComposer) return;
+    const hashtagLine = linkedinComposer.hashtags.length ? `\n\n${linkedinComposer.hashtags.join(' ')}` : '';
+    const commentary = `${linkedinComposer.text}${hashtagLine}`;
+
+    setIsPublishing(true);
+    setPublishSuccessMsg(null);
+    try {
+      const res = await blogApi.publishLinkedInPost(
+        commentary,
+        linkedinComposer.imageFile,
+        linkedinComposer.imageUrl
+      );
+      setPublishSuccessMsg(`Published to LinkedIn! Post ID: ${res.post_urn}`);
+      closeLinkedinComposer();
+    } catch (err: any) {
+      alert(`Publishing failed: ${err.message || 'Unknown error'}`);
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const handleHeroImageUpload = async (file: File | null) => {
+    if (!file) return;
+
+    setIsUploadingHeroImage(true);
+    setHeroImageUploadError(null);
+    try {
+      const result = await blogApi.uploadImages([file]);
+      const uploaded = result.images[0];
+      if (!uploaded) {
+        throw new Error('Upload succeeded but no image was returned.');
+      }
+      setMainImage(uploaded.url);
+      setThumbnailImage(uploaded.url);
+      setErrors(prev => ({ ...prev, mainImage: undefined, thumbnailImage: undefined }));
+    } catch (err: any) {
+      setHeroImageUploadError(err.message || 'Upload failed');
+    } finally {
+      setIsUploadingHeroImage(false);
     }
   };
 
@@ -455,6 +579,8 @@ export const Blog: React.FC = () => {
   // Media
   const [mainImage, setMainImage] = useState<string>('');
   const [thumbnailImage, setThumbnailImage] = useState<string>('');
+  const [isUploadingHeroImage, setIsUploadingHeroImage] = useState<boolean>(false);
+  const [heroImageUploadError, setHeroImageUploadError] = useState<string | null>(null);
 
   // Strategy & Specs
   const [siteName, setSiteName] = useState<string>('');
@@ -1430,6 +1556,46 @@ export const Blog: React.FC = () => {
                         <p className="text-[10.5px] font-bold text-rose-600 flex items-center gap-1">
                           <AlertCircle className="w-3 h-3 shrink-0" />
                           <span>{errors.mainImage}</span>
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-3 pt-1">
+                      <div className="h-px flex-1 bg-[#EDE8F8]" />
+                      <span className="text-[10px] font-bold text-[#9E92A6] uppercase tracking-wide">or</span>
+                      <div className="h-px flex-1 bg-[#EDE8F8]" />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label
+                        className={`flex items-center justify-center gap-2 w-full px-3.5 py-2.5 rounded-xl border border-dashed text-xs font-bold transition-colors ${
+                          isUploadingHeroImage
+                            ? 'border-[#EDE8F8] text-[#9E92A6] cursor-wait'
+                            : 'border-[#EDE8F8] text-[#1E122C] hover:border-[#DB2777]/40 hover:bg-[#FAF8FE] cursor-pointer'
+                        }`}
+                      >
+                        {isUploadingHeroImage ? (
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Upload className="w-3.5 h-3.5 text-[#DB2777]" />
+                        )}
+                        {isUploadingHeroImage ? 'Uploading…' : 'Upload image from your device'}
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/gif,image/webp"
+                          className="hidden"
+                          disabled={isUploadingHeroImage}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0] || null;
+                            handleHeroImageUpload(file);
+                            e.target.value = '';
+                          }}
+                        />
+                      </label>
+                      {heroImageUploadError && (
+                        <p className="text-[10.5px] font-bold text-rose-600 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3 shrink-0" />
+                          <span>{heroImageUploadError}</span>
                         </p>
                       )}
                     </div>
@@ -2885,6 +3051,139 @@ export const Blog: React.FC = () => {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          LINKEDIN COMPOSE MODAL — mirrors LinkedIn's own "Start a post" bar:
+          editable text + Photo attach, before actually publishing.
+          ========================================================================= */}
+      {linkedinComposer && (
+        <div className="fixed inset-0 z-[70] overflow-y-auto flex items-center justify-center p-4">
+          <div
+            className="fixed inset-0 bg-[#1E122C]/50 backdrop-blur-xs"
+            onClick={closeLinkedinComposer}
+          />
+
+          <div className="relative bg-white rounded-[32px] max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-[#EDE8F8] z-10 space-y-5 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between border-b border-[#EDE8F8] pb-3.5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-[#0077B5] text-white flex items-center justify-center shadow-[0_4px_16px_rgba(0,119,181,0.25)]">
+                  <Linkedin className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-black text-[#1E122C]">Create a post</h3>
+                  <p className="text-[11px] text-[#6B5E77] font-medium mt-0.5">Review and edit before it goes live on LinkedIn.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={closeLinkedinComposer}
+                className="p-2 hover:bg-[#FAF8FE] rounded-xl text-[#6B5E77] hover:text-[#1E122C] cursor-pointer transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {linkedinComposer.isLoadingDraft ? (
+              <div className="flex flex-col items-center justify-center gap-3 py-12">
+                <RefreshCw className="w-6 h-6 text-[#0077B5] animate-spin" />
+                <p className="text-xs font-semibold text-[#6B5E77]">Drafting your post…</p>
+              </div>
+            ) : (
+              <>
+                <textarea
+                  value={linkedinComposer.text}
+                  onChange={e =>
+                    setLinkedinComposer(prev => (prev ? { ...prev, text: e.target.value } : prev))
+                  }
+                  rows={8}
+                  className="w-full rounded-2xl border border-[#EDE8F8] p-4 text-sm text-[#1E122C] focus:outline-none focus:ring-2 focus:ring-[#0077B5]/30 focus:border-[#0077B5] resize-none"
+                  placeholder="What do you want to talk about?"
+                />
+
+                {linkedinComposer.hashtags.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {linkedinComposer.hashtags.map(tag => (
+                      <span
+                        key={tag}
+                        className="text-[11px] font-semibold text-[#0077B5] bg-[#0077B5]/8 px-2 py-1 rounded-lg"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {(() => {
+                  const previewSrc = linkedinComposer.imageFilePreviewUrl || linkedinComposer.imageUrl;
+                  return previewSrc ? (
+                    <div className="relative rounded-2xl overflow-hidden border border-[#EDE8F8]">
+                      <img
+                        src={previewSrc}
+                        alt="Selected attachment"
+                        className="w-full max-h-64 object-cover"
+                      />
+                      {linkedinComposer.imageFilePreviewUrl ? null : (
+                        <span className="absolute bottom-2 left-2 text-[10px] font-bold text-white bg-black/60 px-2 py-0.5 rounded-full">
+                          From cover image
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={handleLinkedinComposerImageClear}
+                        className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white cursor-pointer"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <label className="flex items-center gap-2 w-fit px-3.5 py-2 rounded-xl border border-[#EDE8F8] hover:border-[#0077B5]/40 hover:bg-[#FAF8FE] text-xs font-bold text-[#1E122C] cursor-pointer transition-colors">
+                          <ImageIcon className="w-4 h-4 text-[#0077B5]" />
+                          Photo
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/gif"
+                            className="hidden"
+                            onChange={e => handleLinkedinComposerImageSelect(e.target.files?.[0] || null)}
+                          />
+                        </label>
+                        <span className="text-[10px] font-bold text-[#9E92A6] uppercase tracking-wide">or</span>
+                      </div>
+                      <input
+                        type="url"
+                        value={linkedinComposer.imageUrl}
+                        onChange={e => handleLinkedinComposerImageUrlChange(e.target.value)}
+                        placeholder="Paste an image URL…"
+                        className="w-full rounded-xl px-3 py-2 text-xs font-semibold text-[#1E122C] bg-[#FAF8FE]/60 border border-[#EDE8F8] outline-none focus:border-[#0077B5] transition-all"
+                      />
+                    </div>
+                  );
+                })()}
+
+                <div className="flex items-center justify-end gap-3 pt-2 border-t border-[#EDE8F8]">
+                  <button
+                    type="button"
+                    onClick={closeLinkedinComposer}
+                    disabled={isPublishing}
+                    className="px-5 py-2 text-[#6B5E77] hover:text-[#1E122C] text-xs font-black rounded-xl transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handlePublishLinkedinComposer}
+                    disabled={isPublishing || !linkedinComposer.text.trim()}
+                    className="px-5 py-2 bg-[#0077B5] hover:bg-[#006097] text-white text-xs font-black rounded-xl shadow-xs hover:shadow-md transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isPublishing ? 'Posting…' : 'Post'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

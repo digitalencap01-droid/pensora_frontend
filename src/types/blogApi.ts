@@ -209,3 +209,19 @@ export interface ApiErrorPayload {
   stage?: string;
   message?: string;
 }
+
+export interface UploadedImageSummary {
+  id: string;
+  url: string;
+  order_index: number;
+  width?: number | null;
+  height?: number | null;
+}
+
+export interface ImageBatchUploadResult {
+  batch_id: string;
+  image_count: number;
+  status: string;
+  created_at: string;
+  images: UploadedImageSummary[];
+}

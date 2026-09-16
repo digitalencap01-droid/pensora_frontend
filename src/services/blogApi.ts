@@ -11,6 +11,7 @@ import {
   LinkedInPublishResult,
   LinkedInGenerateRequest,
   LinkedInGenerateResult,
+  ImageBatchUploadResult,
 } from '../types/blogApi';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -32,10 +33,14 @@ export class BlogApiError extends Error {
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
   try {
+    // FormData bodies (multipart file uploads) must NOT have an
+    // explicit Content-Type set — the browser generates the
+    // multipart boundary itself and setting it manually breaks parsing.
+    const isFormData = init?.body instanceof FormData;
     response = await fetch(`${API_BASE_URL}${path}`, {
       ...init,
       headers: {
-        'Content-Type': 'application/json',
+        ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
         ...(init?.headers || {}),
       },
     });
@@ -131,10 +136,23 @@ export const blogApi = {
     });
   },
 
-  publishLinkedInPost(text: string): Promise<LinkedInPublishResult> {
+  publishLinkedInPost(
+    text: string,
+    image?: File | null,
+    imageUrl?: string | null
+  ): Promise<LinkedInPublishResult> {
+    const formData = new FormData();
+    formData.append('text', text);
+    if (image) {
+      // A device-uploaded file takes priority over a URL if somehow
+      // both are set.
+      formData.append('image', image);
+    } else if (imageUrl) {
+      formData.append('image_url', imageUrl);
+    }
     return request<LinkedInPublishResult>('/api/v1/linkedin/publish-post', {
       method: 'POST',
-      body: JSON.stringify({ text }),
+      body: formData,
     });
   },
 
@@ -142,6 +160,15 @@ export const blogApi = {
     return request<LinkedInGenerateResult>('/api/v1/linkedin/generate', {
       method: 'POST',
       body: JSON.stringify(payload),
+    });
+  },
+
+  uploadImages(files: File[]): Promise<ImageBatchUploadResult> {
+    const formData = new FormData();
+    files.forEach(file => formData.append('files', file));
+    return request<ImageBatchUploadResult>('/api/v1/images/upload', {
+      method: 'POST',
+      body: formData,
     });
   },
 };
