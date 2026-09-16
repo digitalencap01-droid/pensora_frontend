@@ -52,7 +52,8 @@ import {
   ShoppingBag,
   Activity,
   Send,
-  Linkedin
+  Linkedin,
+  PlayCircle
 } from 'lucide-react';
 import { useMarketing } from '../context/MarketingContext';
 import {
@@ -75,6 +76,9 @@ import {
   ProjectSummary,
   SEOResult,
   ToneType,
+  WebflowSite,
+  WebflowCollection,
+  WebflowFieldOption,
 } from '../types/blogApi';
 
 // Real backend project status (app/schemas/project_management.py: ProjectSummary.status)
@@ -204,6 +208,7 @@ function artifactsToArticle(
 
 
 export type PublishingPlatformId = 'webflow' | 'linkedin';
+export type GenerationDestination = PublishingPlatformId | 'blog';
 
 export interface PlatformConnection {
   id: PublishingPlatformId;
@@ -261,8 +266,26 @@ export const Blog: React.FC = () => {
     }
   }, [activeStep, maxStepReached]);
 
-  // Target Destination Platform
-  const [targetPlatform, setTargetPlatform] = useState<PublishingPlatformId>('webflow');
+  // Target Destination Platform — chosen up front (before Step 1) so the
+  // rest of the Studio flow can adapt to it, e.g. Cover & Media offering
+  // Video only when targeting LinkedIn (Webflow's CMS has no video field).
+  const [targetPlatform, setTargetPlatform] = useState<GenerationDestination>('blog');
+  const [hasChosenPlatform, setHasChosenPlatform] = useState<boolean>(false);
+  // Set right before opening the connect modal from the picker screen
+  // (Webflow only — LinkedIn leaves the page for OAuth, see the
+  // ?linkedin= handling below) so a successful connect drops the user
+  // straight into the wizard instead of back at the picker.
+  const [pendingWizardEntryAfterConnect, setPendingWizardEntryAfterConnect] = useState<boolean>(false);
+
+  // Cover & Media's Photo/Video toggle (LinkedIn only) + the picked
+  // video. This lives outside `generatedArticle`/`BlogArticle` (there's
+  // no backend field for it — video never goes through the generation
+  // pipeline, only straight to LinkedIn) and is only trusted as a
+  // carry-over when publishing the article just generated in this same
+  // session — see handlePublishToPlatform.
+  const [heroMediaType, setHeroMediaType] = useState<'photo' | 'video'>('photo');
+  const [heroVideoFile, setHeroVideoFile] = useState<File | null>(null);
+  const [heroVideoPreviewUrl, setHeroVideoPreviewUrl] = useState<string | null>(null);
 
   // Platform Connections state with localStorage persistence
   const [platformConnections, setPlatformConnections] = useState<PlatformConnection[]>(() => {
@@ -280,6 +303,17 @@ export const Blog: React.FC = () => {
 
   const [isManageConnectionsOpen, setIsManageConnectionsOpen] = useState<boolean>(false);
   const [configuringPlatform, setConfiguringPlatform] = useState<PlatformConnection | null>(null);
+
+  // Whichever way the config modal closes (X, backdrop, Cancel,
+  // Disconnect) without a successful connect, don't let a stale
+  // "continue into wizard on connect" carry over to some unrelated
+  // later use of the same modal (e.g. from Step 4).
+  useEffect(() => {
+    if (!configuringPlatform) {
+      setPendingWizardEntryAfterConnect(false);
+    }
+  }, [configuringPlatform]);
+
   const [configForm, setConfigForm] = useState<{
     siteUrl: string;
     username: string;
@@ -294,22 +328,84 @@ export const Blog: React.FC = () => {
     statusMode: 'draft'
   });
 
+  // Real Webflow site/collection selection for the config modal — the
+  // dropdowns are populated from Webflow's own API (via the backend),
+  // not typed in freehand.
+  const [webflowSites, setWebflowSites] = useState<WebflowSite[]>([]);
+  const [webflowCollections, setWebflowCollections] = useState<WebflowCollection[]>([]);
+  const [webflowFields, setWebflowFields] = useState<WebflowFieldOption[]>([]);
+  const [selectedWebflowSiteId, setSelectedWebflowSiteId] = useState<string>('');
+  const [selectedWebflowCollectionId, setSelectedWebflowCollectionId] = useState<string>('');
+  const [isLoadingWebflowSites, setIsLoadingWebflowSites] = useState<boolean>(false);
+  const [isLoadingWebflowCollections, setIsLoadingWebflowCollections] = useState<boolean>(false);
+  const [isConnectingWebflow, setIsConnectingWebflow] = useState<boolean>(false);
+  const [webflowConfigError, setWebflowConfigError] = useState<string | null>(null);
+
   const [isPublishing, setIsPublishing] = useState<boolean>(false);
   const [publishSuccessMsg, setPublishSuccessMsg] = useState<string | null>(null);
 
   // LinkedIn compose modal — mirrors LinkedIn's own "Start a post" bar
-  // (text + Photo attach) before actually publishing. imageFile (device
-  // upload) and imageUrl (pre-filled from the article's cover image, or
-  // pasted directly) are mutually exclusive — picking one clears the
-  // other.
+  // (text + Photo/Video attach) before actually publishing. imageFile
+  // (device upload), imageUrl (pre-filled from the article's cover
+  // image, or pasted directly), and videoFile are all mutually
+  // exclusive — picking one clears the others, since a LinkedIn post
+  // carries at most one media attachment.
   const [linkedinComposer, setLinkedinComposer] = useState<{
     isLoadingDraft: boolean;
     text: string;
     hashtags: string[];
+    topic: string;
     imageFile: File | null;
     imageFilePreviewUrl: string | null;
     imageUrl: string;
+    videoFile: File | null;
+    videoPreviewUrl: string | null;
   } | null>(null);
+
+  // Pure UI navigation for the composer's "attach media" step — which
+  // type the user is choosing, and (for Photo) which source. Reset
+  // whenever the composer opens/closes or media is cleared, so a
+  // stale sub-screen never carries over into the next post.
+  const [linkedinMediaPickerType, setLinkedinMediaPickerType] = useState<'video' | 'photo' | null>(null);
+  const [linkedinPhotoSource, setLinkedinPhotoSource] = useState<'device' | 'url'>('device');
+  // Draft text for the "Paste a URL" field — kept separate from
+  // linkedinComposer.imageUrl so the preview doesn't take over (and
+  // yank focus away) after every keystroke; it only commits on
+  // explicit "Add image".
+  const [linkedinImageUrlDraft, setLinkedinImageUrlDraft] = useState<string>('');
+  // Hashtags: typed-and-pending text (not yet added as a chip) + a
+  // loading flag for the "Suggest with AI" re-roll.
+  const [linkedinHashtagDraft, setLinkedinHashtagDraft] = useState<string>('');
+  const [isSuggestingHashtags, setIsSuggestingHashtags] = useState<boolean>(false);
+
+  // Step 1 hashtag presets — set before the article/post even exists, so
+  // they carry straight into the LinkedIn compose modal once it opens
+  // (same idea as the Cover & Media carry-over above).
+  const [presetHashtags, setPresetHashtags] = useState<string[]>([]);
+  const [presetHashtagDraft, setPresetHashtagDraft] = useState<string>('');
+  const [isSuggestingPresetHashtags, setIsSuggestingPresetHashtags] = useState<boolean>(false);
+
+  // LinkedIn's OAuth connect leaves the page entirely and comes back
+  // to /blog?linkedin=connected (or =error) — pick that up and drop
+  // the user straight into the LinkedIn wizard (skipping the picker
+  // they already used before they left), since that's what "connect
+  // at the start" means for a flow with a real redirect in it.
+  useEffect(() => {
+    const linkedinParam = searchParams.get('linkedin');
+    if (!linkedinParam) return;
+
+    if (linkedinParam === 'connected') {
+      setTargetPlatform('linkedin');
+      setHasChosenPlatform(true);
+    } else if (linkedinParam === 'error') {
+      alert('Could not connect your LinkedIn account. Please try again.');
+    }
+
+    const next = new URLSearchParams(searchParams);
+    next.delete('linkedin');
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Sync Webflow and LinkedIn backend connection status on mount
   useEffect(() => {
@@ -361,6 +457,112 @@ export const Blog: React.FC = () => {
       collectionId: platform.collectionId || '',
       statusMode: platform.statusMode || 'draft'
     });
+
+    if (platform.id === 'webflow') {
+      setWebflowConfigError(null);
+      setWebflowSites([]);
+      setWebflowCollections([]);
+      setWebflowFields([]);
+      setSelectedWebflowSiteId('');
+      setSelectedWebflowCollectionId('');
+      setIsLoadingWebflowSites(true);
+
+      Promise.all([blogApi.getWebflowSites(), blogApi.getWebflowStatus()])
+        .then(([sitesRes, statusRes]) => {
+          setWebflowSites(sitesRes.sites);
+          if (statusRes.connected && statusRes.site_id) {
+            setSelectedWebflowSiteId(statusRes.site_id);
+            if (statusRes.collection_id) {
+              setIsLoadingWebflowCollections(true);
+              blogApi.getWebflowCollections(statusRes.site_id)
+                .then(colRes => {
+                  setWebflowCollections(colRes.collections);
+                  setSelectedWebflowCollectionId(statusRes.collection_id || '');
+                })
+                .catch(() => {})
+                .finally(() => setIsLoadingWebflowCollections(false));
+            }
+          }
+        })
+        .catch((err: any) => {
+          setWebflowConfigError(err.message || 'Could not load your Webflow sites.');
+        })
+        .finally(() => setIsLoadingWebflowSites(false));
+    }
+  };
+
+  const handleWebflowSiteChange = (siteId: string) => {
+    setSelectedWebflowSiteId(siteId);
+    setSelectedWebflowCollectionId('');
+    setWebflowCollections([]);
+    setWebflowFields([]);
+    setWebflowConfigError(null);
+    if (!siteId) return;
+
+    setIsLoadingWebflowCollections(true);
+    blogApi.getWebflowCollections(siteId)
+      .then(res => setWebflowCollections(res.collections))
+      .catch((err: any) => setWebflowConfigError(err.message || 'Could not load collections for that site.'))
+      .finally(() => setIsLoadingWebflowCollections(false));
+  };
+
+  const handleWebflowCollectionChange = (collectionId: string) => {
+    setSelectedWebflowCollectionId(collectionId);
+    setWebflowFields([]);
+    if (!collectionId) return;
+    // Best-effort — used to auto-map the image fields on connect, not shown as its own step.
+    blogApi.getWebflowFields(collectionId).then(res => setWebflowFields(res.fields)).catch(() => {});
+  };
+
+  const handleConnectWebflow = async () => {
+    if (!selectedWebflowSiteId || !selectedWebflowCollectionId) return;
+    const site = webflowSites.find(s => s.id === selectedWebflowSiteId);
+    const collection = webflowCollections.find(c => c.id === selectedWebflowCollectionId);
+    if (!site || !collection) return;
+
+    setIsConnectingWebflow(true);
+    setWebflowConfigError(null);
+    try {
+      // Auto-detect the image field slugs from the collection's own
+      // fields so the user doesn't have to map them by hand — falls
+      // back to leaving them unset (Webflow allows that for drafts).
+      const mainImageField =
+        webflowFields.find(f => f.slug === 'main-image')?.slug ||
+        webflowFields.find(f => f.type === 'Image' && !f.slug.toLowerCase().includes('thumbnail'))?.slug;
+      const thumbnailField =
+        webflowFields.find(f => f.slug === 'thumbnail-image')?.slug ||
+        webflowFields.find(f => f.slug.toLowerCase().includes('thumbnail'))?.slug;
+
+      const res = await blogApi.connectWebflow({
+        site_id: site.id,
+        site_name: site.display_name,
+        collection_id: collection.id,
+        collection_name: collection.display_name,
+        main_image_field: mainImageField,
+        thumbnail_field: thumbnailField
+      });
+
+      const updated = platformConnections.map(p =>
+        p.id === 'webflow'
+          ? {
+              ...p,
+              connected: true,
+              siteUrl: `${res.site_name} (${res.collection_name})`,
+              lastSynced: new Date().toLocaleDateString()
+            }
+          : p
+      );
+      saveConnections(updated);
+      setConfiguringPlatform(null);
+      if (pendingWizardEntryAfterConnect) {
+        setPendingWizardEntryAfterConnect(false);
+        setHasChosenPlatform(true);
+      }
+    } catch (err: any) {
+      setWebflowConfigError(err.message || 'Could not connect to Webflow.');
+    } finally {
+      setIsConnectingWebflow(false);
+    }
   };
 
   const handleSavePlatformConfig = () => {
@@ -392,6 +594,13 @@ export const Blog: React.FC = () => {
         console.error('Failed to disconnect LinkedIn on backend', err);
       }
     }
+    if (id === 'webflow') {
+      try {
+        await blogApi.disconnectWebflow();
+      } catch (err) {
+        console.error('Failed to disconnect Webflow on backend', err);
+      }
+    }
     const updated = platformConnections.map(p => {
       if (p.id === id) {
         return {
@@ -421,36 +630,61 @@ export const Blog: React.FC = () => {
     }
   };
 
-  const handlePublishToPlatform = async (article: BlogArticle, platformId: PublishingPlatformId) => {
+  const handlePublishToPlatform = async (article: BlogArticle, platformId: GenerationDestination) => {
+    if (platformId === 'blog') {
+      // Standalone post — no publishing integration was chosen, so
+      // there's nothing to send anywhere. The UI shouldn't call this
+      // in that case (see the hidden Publish button below), but guard
+      // it anyway rather than silently attempting a Webflow publish.
+      return;
+    }
+
     if (platformId === 'linkedin') {
       // LinkedIn goes through the compose modal (mirrors LinkedIn's own
       // "Start a post" bar) instead of publishing immediately — open it
-      // with an AI-drafted starting point the user can edit/attach a
-      // photo to before actually posting. Pre-fill the image from the
-      // article's own cover image (Cover & Media step) when one was
-      // set — the user only needs to add one here if they didn't.
-      const coverImageUrl = article.featuredImage || article.thumbnailImage || '';
+      // with an AI-drafted starting point the user can edit/attach
+      // media to before actually posting. Carry over whatever was
+      // picked in Cover & Media (photo URL, or — only when publishing
+      // the article just generated THIS session, since the video file
+      // itself isn't persisted anywhere — the hero video) so the user
+      // only needs to add media here if they didn't already.
+      const isJustGeneratedArticle = generatedArticle?.id === article.id;
+      const carriedVideoFile = isJustGeneratedArticle ? heroVideoFile : null;
+      const carriedVideoPreviewUrl = carriedVideoFile ? URL.createObjectURL(carriedVideoFile) : null;
+      const coverImageUrl = carriedVideoFile ? '' : (article.featuredImage || article.thumbnailImage || '');
+      const composerTopic = article.topic || article.title;
+      setLinkedinMediaPickerType(null);
+      setLinkedinPhotoSource('device');
+      setLinkedinImageUrlDraft('');
+      setLinkedinHashtagDraft('');
       setLinkedinComposer({
         isLoadingDraft: true,
         text: '',
-        hashtags: [],
+        hashtags: presetHashtags,
+        topic: composerTopic,
         imageFile: null,
         imageFilePreviewUrl: null,
-        imageUrl: coverImageUrl
+        imageUrl: coverImageUrl,
+        videoFile: carriedVideoFile,
+        videoPreviewUrl: carriedVideoPreviewUrl
       });
       try {
         const generated = await blogApi.generateLinkedInContent({
           content_type: 'article',
-          topic: article.topic || article.title,
+          topic: composerTopic,
           tone: article.tone
         });
+        const presetLower = new Set(presetHashtags.map(t => t.toLowerCase()));
         setLinkedinComposer({
           isLoadingDraft: false,
           text: generated.text,
-          hashtags: generated.hashtags,
+          hashtags: [...presetHashtags, ...generated.hashtags.filter(t => !presetLower.has(t.toLowerCase()))],
+          topic: composerTopic,
           imageFile: null,
           imageFilePreviewUrl: null,
-          imageUrl: coverImageUrl
+          imageUrl: coverImageUrl,
+          videoFile: carriedVideoFile,
+          videoPreviewUrl: carriedVideoPreviewUrl
         });
       } catch (err: any) {
         alert(`Could not draft LinkedIn post: ${err.message || 'Unknown error'}`);
@@ -477,12 +711,17 @@ export const Blog: React.FC = () => {
       if (prev.imageFilePreviewUrl) {
         URL.revokeObjectURL(prev.imageFilePreviewUrl);
       }
+      if (prev.videoPreviewUrl) {
+        URL.revokeObjectURL(prev.videoPreviewUrl);
+      }
       return {
         ...prev,
         imageFile: file,
         imageFilePreviewUrl: file ? URL.createObjectURL(file) : null,
-        // Device upload and pasted URL are mutually exclusive.
-        imageUrl: file ? '' : prev.imageUrl
+        // Device upload, pasted URL, and video are all mutually exclusive.
+        imageUrl: file ? '' : prev.imageUrl,
+        videoFile: null,
+        videoPreviewUrl: null
       };
     });
   };
@@ -493,22 +732,67 @@ export const Blog: React.FC = () => {
       if (prev.imageFilePreviewUrl) {
         URL.revokeObjectURL(prev.imageFilePreviewUrl);
       }
+      if (prev.videoPreviewUrl) {
+        URL.revokeObjectURL(prev.videoPreviewUrl);
+      }
       return {
         ...prev,
         imageUrl: url,
         imageFile: null,
-        imageFilePreviewUrl: null
+        imageFilePreviewUrl: null,
+        videoFile: null,
+        videoPreviewUrl: null
       };
     });
   };
 
-  const handleLinkedinComposerImageClear = () => {
+  const handleLinkedinComposerVideoSelect = (file: File | null) => {
+    setLinkedinComposer(prev => {
+      if (!prev) return prev;
+      if (prev.videoPreviewUrl) {
+        URL.revokeObjectURL(prev.videoPreviewUrl);
+      }
+      if (prev.imageFilePreviewUrl) {
+        URL.revokeObjectURL(prev.imageFilePreviewUrl);
+      }
+      if (file) {
+        const maxBytes = 500 * 1024 * 1024;
+        if (file.size > maxBytes) {
+          alert('That video is too large — LinkedIn\'s limit is 500MB.');
+          return prev;
+        }
+      }
+      return {
+        ...prev,
+        videoFile: file,
+        videoPreviewUrl: file ? URL.createObjectURL(file) : null,
+        imageFile: null,
+        imageFilePreviewUrl: null,
+        imageUrl: ''
+      };
+    });
+  };
+
+  const handleLinkedinComposerMediaClear = () => {
+    setLinkedinMediaPickerType(null);
+    setLinkedinPhotoSource('device');
+    setLinkedinImageUrlDraft('');
     setLinkedinComposer(prev => {
       if (!prev) return prev;
       if (prev.imageFilePreviewUrl) {
         URL.revokeObjectURL(prev.imageFilePreviewUrl);
       }
-      return { ...prev, imageFile: null, imageFilePreviewUrl: null, imageUrl: '' };
+      if (prev.videoPreviewUrl) {
+        URL.revokeObjectURL(prev.videoPreviewUrl);
+      }
+      return {
+        ...prev,
+        imageFile: null,
+        imageFilePreviewUrl: null,
+        imageUrl: '',
+        videoFile: null,
+        videoPreviewUrl: null
+      };
     });
   };
 
@@ -516,7 +800,89 @@ export const Blog: React.FC = () => {
     if (linkedinComposer?.imageFilePreviewUrl) {
       URL.revokeObjectURL(linkedinComposer.imageFilePreviewUrl);
     }
+    if (linkedinComposer?.videoPreviewUrl) {
+      URL.revokeObjectURL(linkedinComposer.videoPreviewUrl);
+    }
+    setLinkedinMediaPickerType(null);
+    setLinkedinPhotoSource('device');
+    setLinkedinImageUrlDraft('');
+    setLinkedinHashtagDraft('');
     setLinkedinComposer(null);
+  };
+
+  const normalizeHashtag = (raw: string): string | null => {
+    const cleaned = raw.trim().replace(/^#+/, '').replace(/\s+/g, '');
+    return cleaned ? `#${cleaned}` : null;
+  };
+
+  const handleAddLinkedinHashtag = () => {
+    const tag = normalizeHashtag(linkedinHashtagDraft);
+    if (!tag) return;
+    setLinkedinComposer(prev => {
+      if (!prev) return prev;
+      if (prev.hashtags.some(existing => existing.toLowerCase() === tag.toLowerCase())) {
+        return prev;
+      }
+      return { ...prev, hashtags: [...prev.hashtags, tag] };
+    });
+    setLinkedinHashtagDraft('');
+  };
+
+  const handleRemoveLinkedinHashtag = (tag: string) => {
+    setLinkedinComposer(prev => (prev ? { ...prev, hashtags: prev.hashtags.filter(t => t !== tag) } : prev));
+  };
+
+  const handleAddPresetHashtag = () => {
+    const tag = normalizeHashtag(presetHashtagDraft);
+    if (!tag) return;
+    setPresetHashtags(prev => (prev.some(t => t.toLowerCase() === tag.toLowerCase()) ? prev : [...prev, tag]));
+    setPresetHashtagDraft('');
+  };
+
+  const handleRemovePresetHashtag = (tag: string) => {
+    setPresetHashtags(prev => prev.filter(t => t !== tag));
+  };
+
+  const handleSuggestPresetHashtags = async () => {
+    if (!topic.trim()) return;
+    setIsSuggestingPresetHashtags(true);
+    try {
+      const res = await blogApi.suggestLinkedInHashtags({
+        topic,
+        content_type: 'article',
+        draft_text: null
+      });
+      setPresetHashtags(prev => {
+        const existingLower = new Set(prev.map(t => t.toLowerCase()));
+        return [...prev, ...res.hashtags.filter(t => !existingLower.has(t.toLowerCase()))];
+      });
+    } catch (err: any) {
+      alert(`Could not suggest hashtags: ${err.message || 'Unknown error'}`);
+    } finally {
+      setIsSuggestingPresetHashtags(false);
+    }
+  };
+
+  const handleSuggestLinkedinHashtags = async () => {
+    if (!linkedinComposer) return;
+    setIsSuggestingHashtags(true);
+    try {
+      const res = await blogApi.suggestLinkedInHashtags({
+        topic: linkedinComposer.topic,
+        content_type: 'article',
+        draft_text: linkedinComposer.text || null
+      });
+      setLinkedinComposer(prev => {
+        if (!prev) return prev;
+        const existingLower = new Set(prev.hashtags.map(t => t.toLowerCase()));
+        const merged = [...prev.hashtags, ...res.hashtags.filter(t => !existingLower.has(t.toLowerCase()))];
+        return { ...prev, hashtags: merged };
+      });
+    } catch (err: any) {
+      alert(`Could not suggest hashtags: ${err.message || 'Unknown error'}`);
+    } finally {
+      setIsSuggestingHashtags(false);
+    }
   };
 
   const handlePublishLinkedinComposer = async () => {
@@ -530,7 +896,8 @@ export const Blog: React.FC = () => {
       const res = await blogApi.publishLinkedInPost(
         commentary,
         linkedinComposer.imageFile,
-        linkedinComposer.imageUrl
+        linkedinComposer.imageUrl,
+        linkedinComposer.videoFile
       );
       setPublishSuccessMsg(`Published to LinkedIn! Post ID: ${res.post_urn}`);
       closeLinkedinComposer();
@@ -562,6 +929,62 @@ export const Blog: React.FC = () => {
     }
   };
 
+  const handleMainImageUpload = async (file: File | null) => {
+    if (!file) return;
+    setIsUploadingMainImage(true);
+    setMainImageUploadError(null);
+    try {
+      const result = await blogApi.uploadImages([file]);
+      const uploaded = result.images[0];
+      if (!uploaded) {
+        throw new Error('Upload succeeded but no image was returned.');
+      }
+      setMainImage(uploaded.url);
+      setErrors(prev => ({ ...prev, mainImage: undefined }));
+    } catch (err: any) {
+      setMainImageUploadError(err.message || 'Upload failed');
+    } finally {
+      setIsUploadingMainImage(false);
+    }
+  };
+
+  const handleThumbnailImageUpload = async (file: File | null) => {
+    if (!file) return;
+    setIsUploadingThumbnailImage(true);
+    setThumbnailImageUploadError(null);
+    try {
+      const result = await blogApi.uploadImages([file]);
+      const uploaded = result.images[0];
+      if (!uploaded) {
+        throw new Error('Upload succeeded but no image was returned.');
+      }
+      setThumbnailImage(uploaded.url);
+      setErrors(prev => ({ ...prev, thumbnailImage: undefined }));
+    } catch (err: any) {
+      setThumbnailImageUploadError(err.message || 'Upload failed');
+    } finally {
+      setIsUploadingThumbnailImage(false);
+    }
+  };
+
+  const handleHeroVideoSelect = (file: File | null) => {
+    if (heroVideoPreviewUrl) {
+      URL.revokeObjectURL(heroVideoPreviewUrl);
+    }
+    if (!file) {
+      setHeroVideoFile(null);
+      setHeroVideoPreviewUrl(null);
+      return;
+    }
+    const maxBytes = 500 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      alert('That video is too large — LinkedIn\'s limit is 500MB.');
+      return;
+    }
+    setHeroVideoFile(file);
+    setHeroVideoPreviewUrl(URL.createObjectURL(file));
+  };
+
   // =========================================================================
   // CORE FORM STATE (Defaults set to empty so inputs are not pre-filled)
   // =========================================================================
@@ -581,6 +1004,17 @@ export const Blog: React.FC = () => {
   const [thumbnailImage, setThumbnailImage] = useState<string>('');
   const [isUploadingHeroImage, setIsUploadingHeroImage] = useState<boolean>(false);
   const [heroImageUploadError, setHeroImageUploadError] = useState<string | null>(null);
+  const [showHeroImageUrlInput, setShowHeroImageUrlInput] = useState<boolean>(false);
+
+  // Webflow's Cover & Media view: main image and thumbnail are two
+  // independent fields (Webflow's CMS has separate fields for each),
+  // each switchable between pasting a link or uploading from device.
+  const [mainImageSource, setMainImageSource] = useState<'link' | 'upload'>('link');
+  const [thumbnailImageSource, setThumbnailImageSource] = useState<'link' | 'upload'>('link');
+  const [isUploadingMainImage, setIsUploadingMainImage] = useState<boolean>(false);
+  const [isUploadingThumbnailImage, setIsUploadingThumbnailImage] = useState<boolean>(false);
+  const [mainImageUploadError, setMainImageUploadError] = useState<string | null>(null);
+  const [thumbnailImageUploadError, setThumbnailImageUploadError] = useState<string | null>(null);
 
   // Strategy & Specs
   const [siteName, setSiteName] = useState<string>('');
@@ -1021,9 +1455,116 @@ export const Blog: React.FC = () => {
       {/* =========================================================================
           TAB 1: STUDIO WORKSPACE (SPLIT-SCREEN INTERACTIVE CANVAS)
           ========================================================================= */}
-      {activeTab === 'write' && (
+      {/* =========================================================================
+          PLATFORM PICKER — shown before Step 1. Chosen up front so the
+          rest of the flow can adapt (e.g. Cover & Media offers Video
+          only when targeting LinkedIn).
+          ========================================================================= */}
+      {activeTab === 'write' && !hasChosenPlatform && (
+        <div className="animate-in fade-in duration-200 max-w-3xl mx-auto text-center py-14 space-y-8">
+          <div>
+            <h2 className="text-2xl font-black text-[#1E122C]">What are you creating?</h2>
+            <p className="text-sm text-[#6B5E77] font-medium mt-2">
+              Pick one — the rest of the studio adapts to it, and this can't be changed once you start.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <button
+              type="button"
+              onClick={() => { setTargetPlatform('blog'); setHasChosenPlatform(true); }}
+              className="flex flex-col items-center gap-3 p-6 rounded-3xl bg-white border border-[#EDE8F8] hover:border-[#DB2777]/40 hover:shadow-[0_8px_30px_-6px_rgba(219,39,119,0.1)] transition-all cursor-pointer"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-[#7C3AED] text-white flex items-center justify-center">
+                <FileText className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-[#1E122C]">Simple Blog</h3>
+                <p className="text-[11px] text-[#6B5E77] font-medium mt-1">
+                  Just the article — copy the HTML or export it yourself.
+                </p>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setTargetPlatform('linkedin');
+                const conn = platformConnections.find(p => p.id === 'linkedin');
+                if (conn?.connected) {
+                  setHasChosenPlatform(true);
+                } else if (conn) {
+                  // Connecting LinkedIn means an OAuth redirect away from
+                  // this page entirely — the ?linkedin=connected handler
+                  // above brings the user straight back into this flow.
+                  openPlatformConfig(conn);
+                }
+              }}
+              className="relative flex flex-col items-center gap-3 p-6 rounded-3xl bg-white border border-[#EDE8F8] hover:border-[#0077B5]/40 hover:shadow-[0_8px_30px_-6px_rgba(0,119,181,0.1)] transition-all cursor-pointer"
+            >
+              {platformConnections.find(p => p.id === 'linkedin')?.connected && (
+                <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[9px] font-black">Connected</span>
+              )}
+              <div className="w-12 h-12 rounded-2xl bg-[#0077B5] text-white flex items-center justify-center">
+                <Linkedin className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-[#1E122C]">LinkedIn</h3>
+                <p className="text-[11px] text-[#6B5E77] font-medium mt-1">
+                  A post for your feed, with a photo or video attached.
+                </p>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setTargetPlatform('webflow');
+                const conn = platformConnections.find(p => p.id === 'webflow');
+                if (conn?.connected) {
+                  setHasChosenPlatform(true);
+                } else if (conn) {
+                  setPendingWizardEntryAfterConnect(true);
+                  openPlatformConfig(conn);
+                }
+              }}
+              className="relative flex flex-col items-center gap-3 p-6 rounded-3xl bg-white border border-[#EDE8F8] hover:border-[#DB2777]/40 hover:shadow-[0_8px_30px_-6px_rgba(219,39,119,0.1)] transition-all cursor-pointer"
+            >
+              {platformConnections.find(p => p.id === 'webflow')?.connected && (
+                <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[9px] font-black">Connected</span>
+              )}
+              <div className="w-12 h-12 rounded-2xl bg-[#146EF5] text-white flex items-center justify-center font-black text-lg">W</div>
+              <div>
+                <h3 className="text-sm font-black text-[#1E122C]">Webflow</h3>
+                <p className="text-[11px] text-[#6B5E77] font-medium mt-1">
+                  A full SEO blog post, published straight to your CMS.
+                </p>
+              </div>
+            </button>
+          </div>
+          <p className="text-[11px] text-[#6B5E77] font-medium">
+            Not connected yet? Picking LinkedIn or Webflow above will ask you to connect it first.
+          </p>
+        </div>
+      )}
+
+      {activeTab === 'write' && hasChosenPlatform && (
         <div className="space-y-6 animate-in fade-in duration-200">
-          
+
+          {/* Chosen up front — no option to switch shown here by design */}
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#FAF8FE] border border-[#EDE8F8]">
+            <div className="flex items-center gap-2 text-xs font-bold text-[#1E122C]">
+              {targetPlatform === 'linkedin' ? (
+                <Linkedin className="w-4 h-4 text-[#0077B5]" />
+              ) : targetPlatform === 'webflow' ? (
+                <span className="w-4 h-4 rounded bg-[#146EF5] text-white text-[9px] font-black flex items-center justify-center">W</span>
+              ) : (
+                <FileText className="w-4 h-4 text-[#7C3AED]" />
+              )}
+              {targetPlatform === 'linkedin' ? 'Creating a LinkedIn post' : targetPlatform === 'webflow' ? 'Publishing to Webflow' : 'Creating a simple blog post'}
+            </div>
+          </div>
+
           {/* 2-Column Split Studio Canvas */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             
@@ -1144,51 +1685,106 @@ export const Blog: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Quick Destination Channel Selector */}
-                  <div className="space-y-2 pt-2 border-t border-[#EDE8F8]">
-                    <div className="flex items-center justify-between">
-                      <label className="text-[11px] font-black text-[#6B5E77] uppercase tracking-wide">
-                        Target Publishing Channel
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => setIsManageConnectionsOpen(true)}
-                        className="text-[11px] font-bold text-[#DB2777] hover:underline cursor-pointer flex items-center gap-1"
-                      >
-                        Manage Connections →
-                      </button>
-                    </div>
+                  {/* Publishing Channel (locked — chosen on the platform picker) */}
+                  {targetPlatform !== 'blog' && (
+                    <div className="space-y-2 pt-2 border-t border-[#EDE8F8]">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-black text-[#6B5E77] uppercase tracking-wide">
+                          Target Publishing Channel
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setIsManageConnectionsOpen(true)}
+                          className="text-[11px] font-bold text-[#DB2777] hover:underline cursor-pointer flex items-center gap-1"
+                        >
+                          Manage Connections →
+                        </button>
+                      </div>
 
-                    <div className="grid grid-cols-2 gap-2.5">
-                      {[
-                        { id: 'webflow' as const, label: 'Webflow CMS', tag: 'Visual CMS' },
-                        { id: 'linkedin' as const, label: 'LinkedIn', tag: 'Social Network' }
-                      ].map(item => {
+                      {(() => {
+                        const item = targetPlatform === 'webflow'
+                          ? { id: 'webflow' as const, label: 'Webflow CMS', tag: 'Visual CMS' }
+                          : { id: 'linkedin' as const, label: 'LinkedIn', tag: 'Social Network' };
                         const conn = platformConnections.find(p => p.id === item.id);
-                        const isSelected = targetPlatform === item.id;
                         return (
-                          <button
-                            key={item.id}
-                            type="button"
-                            onClick={() => setTargetPlatform(item.id)}
-                            className={`p-2.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                              isSelected
-                                ? 'bg-gradient-to-r from-[#BE185D] to-[#DB2777] text-white border-[#DB2777] shadow-xs'
-                                : 'bg-white border-[#EDE8F8] text-[#6B5E77] hover:border-[#DB2777]'
-                            }`}
-                          >
+                          <div className="p-2.5 rounded-2xl border text-left flex flex-col justify-between bg-gradient-to-r from-[#BE185D] to-[#DB2777] text-white border-[#DB2777] shadow-xs">
                             <div className="flex items-center justify-between">
                               <span className="text-[10px] font-black uppercase opacity-75">{item.tag}</span>
-                              {conn?.connected && (
-                                <span className={`w-2 h-2 rounded-full ${isSelected ? 'bg-white' : 'bg-emerald-500'}`} />
-                              )}
+                              {conn?.connected && <span className="w-2 h-2 rounded-full bg-white" />}
                             </div>
                             <span className="text-xs font-black truncate mt-1">{item.label}</span>
-                          </button>
+                          </div>
                         );
-                      })}
+                      })()}
                     </div>
-                  </div>
+                  )}
+
+                  {/* Hashtags (LinkedIn only) */}
+                  {targetPlatform === 'linkedin' && (
+                    <div className="space-y-2 pt-2 border-t border-[#EDE8F8]">
+                      <label className="text-[11px] font-black text-[#6B5E77] uppercase tracking-wide">
+                        Hashtags <span className="normal-case font-bold text-[#9E92A6]">(optional)</span>
+                      </label>
+
+                      {presetHashtags.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {presetHashtags.map(tag => (
+                            <span
+                              key={tag}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#FDF2F8] border border-[#DB2777]/30 text-[11px] font-bold text-[#DB2777]"
+                            >
+                              {tag}
+                              <button
+                                type="button"
+                                onClick={() => handleRemovePresetHashtag(tag)}
+                                className="cursor-pointer hover:text-rose-600"
+                                aria-label={`Remove ${tag}`}
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={presetHashtagDraft}
+                          onChange={(e) => setPresetHashtagDraft(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleAddPresetHashtag();
+                            }
+                          }}
+                          placeholder="e.g. AIagents"
+                          className="flex-1 rounded-xl px-3 py-2 text-xs font-bold placeholder-[#9E92A6] outline-none bg-[#FAF8FE]/60 border border-[#EDE8F8] text-[#1E122C] focus:border-[#DB2777] focus:bg-white focus:ring-4 focus:ring-[#DB2777]/10 transition-all"
+                        />
+                        <button
+                          type="button"
+                          disabled={!presetHashtagDraft.trim()}
+                          onClick={handleAddPresetHashtag}
+                          className="px-3 py-2 rounded-xl text-[11px] font-black bg-[#FAF8FE] border border-[#EDE8F8] text-[#6B5E77] hover:border-[#DB2777] hover:text-[#DB2777] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
+                        >
+                          Add
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isSuggestingPresetHashtags || !topic.trim()}
+                          onClick={handleSuggestPresetHashtags}
+                          className="px-3 py-2 rounded-xl text-[11px] font-black bg-gradient-to-r from-[#BE185D] to-[#DB2777] text-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all flex items-center gap-1 shrink-0"
+                        >
+                          {isSuggestingPresetHashtags ? (
+                            <RefreshCw className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Sparkles className="w-3 h-3" />
+                          )}
+                          Suggest with AI
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Search Queries & Country Grid */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 pt-2">
@@ -1504,11 +2100,251 @@ export const Blog: React.FC = () => {
 
                   {/* Featured Banner Visual Deck */}
                   <div className="space-y-3 pt-2 border-t border-[#EDE8F8]">
-                    <label className="text-xs font-black text-[#1E122C] uppercase tracking-wide flex items-center gap-1.5">
-                      <ImageIcon className="w-3.5 h-3.5 text-[#DB2777]" />
-                      Featured Hero Image
-                    </label>
+                    {targetPlatform !== 'webflow' && (
+                      <label className="text-xs font-black text-[#1E122C] uppercase tracking-wide flex items-center gap-1.5">
+                        <ImageIcon className="w-3.5 h-3.5 text-[#DB2777]" />
+                        {targetPlatform === 'linkedin' ? 'Featured Hero Media' : 'Featured Hero Image'}
+                      </label>
+                    )}
 
+                    {/* Photo/Video toggle — LinkedIn only; Webflow's CMS
+                        has no video field, so it stays photo-only. */}
+                    {targetPlatform === 'linkedin' && (
+                      <div className="flex items-center gap-2.5">
+                        <button
+                          type="button"
+                          onClick={() => setHeroMediaType('photo')}
+                          className={`flex-1 flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-colors ${
+                            heroMediaType === 'photo'
+                              ? 'bg-[#FDF2F8] border-[#DB2777] text-[#1E122C]'
+                              : 'bg-white border-[#EDE8F8] text-[#6B5E77] hover:border-[#DB2777]/40'
+                          }`}
+                        >
+                          <ImageIcon className="w-4 h-4 text-[#DB2777]" />
+                          Photo
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setHeroMediaType('video')}
+                          className={`flex-1 flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-colors ${
+                            heroMediaType === 'video'
+                              ? 'bg-[#FDF2F8] border-[#DB2777] text-[#1E122C]'
+                              : 'bg-white border-[#EDE8F8] text-[#6B5E77] hover:border-[#DB2777]/40'
+                          }`}
+                        >
+                          <PlayCircle className="w-4 h-4 text-[#DB2777]" />
+                          Video
+                        </button>
+                      </div>
+                    )}
+
+                    {targetPlatform === 'linkedin' && heroMediaType === 'video' ? (
+                      <div className="space-y-2">
+                        {heroVideoPreviewUrl ? (
+                          <div className="relative rounded-2xl overflow-hidden border border-[#EDE8F8]">
+                            <video src={heroVideoPreviewUrl} controls className="w-full max-h-56 bg-black" />
+                            <button
+                              type="button"
+                              onClick={() => handleHeroVideoSelect(null)}
+                              className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white cursor-pointer"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <label className="flex items-center justify-center gap-2 w-full px-3.5 py-3 rounded-xl border border-dashed border-[#EDE8F8] hover:border-[#DB2777]/40 hover:bg-[#FAF8FE] text-xs font-bold text-[#1E122C] cursor-pointer transition-colors">
+                            <Upload className="w-3.5 h-3.5 text-[#DB2777]" />
+                            Choose a video from your device
+                            <input
+                              type="file"
+                              accept="video/mp4"
+                              className="hidden"
+                              onChange={e => handleHeroVideoSelect(e.target.files?.[0] || null)}
+                            />
+                          </label>
+                        )}
+                        <p className="text-[10px] text-[#9E92A6] font-semibold">MP4 files up to 500MB. Used when you publish this to LinkedIn.</p>
+                      </div>
+                    ) : targetPlatform === 'webflow' ? (
+                      <div className="space-y-1.5">
+                        <p className="text-xs font-black text-[#1E122C] flex items-center gap-1.5">
+                          <ImageIcon className="w-3.5 h-3.5 text-[#DB2777]" />
+                          Featured &amp; thumbnail image
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl border border-[#EDE8F8] bg-[#FAF8FE]/40">
+                          {/* Main image */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <label className="text-[10.5px] font-bold text-[#6B5E77]">Main image (optional)</label>
+                              <div className="inline-flex p-0.5 rounded-lg bg-white border border-[#EDE8F8]">
+                                <button
+                                  type="button"
+                                  onClick={() => setMainImageSource('link')}
+                                  className={`px-2 py-1 rounded-md text-[10px] font-bold cursor-pointer transition-colors ${
+                                    mainImageSource === 'link' ? 'bg-[#FDF2F8] text-[#DB2777]' : 'text-[#6B5E77]'
+                                  }`}
+                                >
+                                  Link
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setMainImageSource('upload')}
+                                  className={`px-2 py-1 rounded-md text-[10px] font-bold cursor-pointer transition-colors ${
+                                    mainImageSource === 'upload' ? 'bg-[#FDF2F8] text-[#DB2777]' : 'text-[#6B5E77]'
+                                  }`}
+                                >
+                                  Upload
+                                </button>
+                              </div>
+                            </div>
+
+                            {mainImageSource === 'link' ? (
+                              <input
+                                type="url"
+                                value={mainImage}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setMainImage(val);
+                                  if (errors.mainImage && (!val.trim() || isValidHttpUrl(val))) {
+                                    setErrors(prev => ({ ...prev, mainImage: undefined }));
+                                  }
+                                }}
+                                placeholder="https://example.com/image.jpg"
+                                className={`w-full rounded-xl px-3 py-2 text-xs font-semibold text-[#1E122C] outline-none transition-all ${
+                                  errors.mainImage
+                                    ? 'border-2 border-rose-400 bg-rose-50/40 focus:border-rose-500'
+                                    : 'bg-white border border-[#EDE8F8] focus:border-[#DB2777]'
+                                }`}
+                              />
+                            ) : mainImage ? (
+                              <div className="relative rounded-xl overflow-hidden border border-[#EDE8F8]">
+                                <img src={mainImage} alt="Main" className="w-full h-24 object-cover" />
+                                <button
+                                  type="button"
+                                  onClick={() => setMainImage('')}
+                                  className="absolute top-1.5 right-1.5 p-1 rounded-full bg-black/60 hover:bg-black/80 text-white cursor-pointer"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </div>
+                            ) : (
+                              <label className={`flex items-center justify-center gap-1.5 w-full px-3 py-2.5 rounded-xl border border-dashed text-[11px] font-bold cursor-pointer transition-colors ${
+                                isUploadingMainImage ? 'border-[#EDE8F8] text-[#9E92A6] cursor-wait' : 'border-[#EDE8F8] text-[#1E122C] hover:border-[#DB2777]/40 hover:bg-white'
+                              }`}>
+                                {isUploadingMainImage ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5 text-[#DB2777]" />}
+                                {isUploadingMainImage ? 'Uploading…' : 'Choose file'}
+                                <input
+                                  type="file"
+                                  accept="image/jpeg,image/png,image/gif,image/webp"
+                                  className="hidden"
+                                  disabled={isUploadingMainImage}
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0] || null;
+                                    handleMainImageUpload(file);
+                                    e.target.value = '';
+                                  }}
+                                />
+                              </label>
+                            )}
+                            {(errors.mainImage || mainImageUploadError) && (
+                              <p className="text-[10px] font-bold text-rose-600 flex items-center gap-1">
+                                <AlertCircle className="w-3 h-3 shrink-0" />
+                                <span>{errors.mainImage || mainImageUploadError}</span>
+                              </p>
+                            )}
+                            <p className="text-[10px] text-[#9E92A6] font-semibold">
+                              Shown at the top of the article and used as the social preview image.
+                            </p>
+                          </div>
+
+                          {/* Thumbnail */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <label className="text-[10.5px] font-bold text-[#6B5E77]">Thumbnail (optional)</label>
+                              <div className="inline-flex p-0.5 rounded-lg bg-white border border-[#EDE8F8]">
+                                <button
+                                  type="button"
+                                  onClick={() => setThumbnailImageSource('link')}
+                                  className={`px-2 py-1 rounded-md text-[10px] font-bold cursor-pointer transition-colors ${
+                                    thumbnailImageSource === 'link' ? 'bg-[#FDF2F8] text-[#DB2777]' : 'text-[#6B5E77]'
+                                  }`}
+                                >
+                                  Link
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setThumbnailImageSource('upload')}
+                                  className={`px-2 py-1 rounded-md text-[10px] font-bold cursor-pointer transition-colors ${
+                                    thumbnailImageSource === 'upload' ? 'bg-[#FDF2F8] text-[#DB2777]' : 'text-[#6B5E77]'
+                                  }`}
+                                >
+                                  Upload
+                                </button>
+                              </div>
+                            </div>
+
+                            {thumbnailImageSource === 'link' ? (
+                              <input
+                                type="url"
+                                value={thumbnailImage}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setThumbnailImage(val);
+                                  if (errors.thumbnailImage && (!val.trim() || isValidHttpUrl(val))) {
+                                    setErrors(prev => ({ ...prev, thumbnailImage: undefined }));
+                                  }
+                                }}
+                                placeholder="https://example.com/image.jpg"
+                                className={`w-full rounded-xl px-3 py-2 text-xs font-semibold text-[#1E122C] outline-none transition-all ${
+                                  errors.thumbnailImage
+                                    ? 'border-2 border-rose-400 bg-rose-50/40 focus:border-rose-500'
+                                    : 'bg-white border border-[#EDE8F8] focus:border-[#DB2777]'
+                                }`}
+                              />
+                            ) : thumbnailImage ? (
+                              <div className="relative rounded-xl overflow-hidden border border-[#EDE8F8]">
+                                <img src={thumbnailImage} alt="Thumbnail" className="w-full h-24 object-cover" />
+                                <button
+                                  type="button"
+                                  onClick={() => setThumbnailImage('')}
+                                  className="absolute top-1.5 right-1.5 p-1 rounded-full bg-black/60 hover:bg-black/80 text-white cursor-pointer"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </div>
+                            ) : (
+                              <label className={`flex items-center justify-center gap-1.5 w-full px-3 py-2.5 rounded-xl border border-dashed text-[11px] font-bold cursor-pointer transition-colors ${
+                                isUploadingThumbnailImage ? 'border-[#EDE8F8] text-[#9E92A6] cursor-wait' : 'border-[#EDE8F8] text-[#1E122C] hover:border-[#DB2777]/40 hover:bg-white'
+                              }`}>
+                                {isUploadingThumbnailImage ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5 text-[#DB2777]" />}
+                                {isUploadingThumbnailImage ? 'Uploading…' : 'Choose file'}
+                                <input
+                                  type="file"
+                                  accept="image/jpeg,image/png,image/gif,image/webp"
+                                  className="hidden"
+                                  disabled={isUploadingThumbnailImage}
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0] || null;
+                                    handleThumbnailImageUpload(file);
+                                    e.target.value = '';
+                                  }}
+                                />
+                              </label>
+                            )}
+                            {(errors.thumbnailImage || thumbnailImageUploadError) && (
+                              <p className="text-[10px] font-bold text-rose-600 flex items-center gap-1">
+                                <AlertCircle className="w-3 h-3 shrink-0" />
+                                <span>{errors.thumbnailImage || thumbnailImageUploadError}</span>
+                              </p>
+                            )}
+                            <p className="text-[10px] text-[#9E92A6] font-semibold">
+                              For platforms needing a separate thumbnail (e.g. Webflow). Falls back to the main image.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
                     {/* Visual Presets Selector */}
                     <div className="grid grid-cols-3 gap-2.5">
                       {[
@@ -1533,40 +2369,6 @@ export const Blog: React.FC = () => {
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[10.5px] font-bold text-[#6B5E77]">Custom Image URL</label>
-                      <input
-                        type="url"
-                        value={mainImage}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setMainImage(val);
-                          setThumbnailImage(val);
-                          if (errors.mainImage && (!val.trim() || isValidHttpUrl(val))) {
-                            setErrors(prev => ({ ...prev, mainImage: undefined, thumbnailImage: undefined }));
-                          }
-                        }}
-                        placeholder="https://images.unsplash.com/photo-..."
-                        className={`w-full rounded-xl px-3 py-2 text-xs font-semibold text-[#1E122C] outline-none transition-all ${
-                          errors.mainImage
-                            ? 'border-2 border-rose-400 bg-rose-50/40 focus:border-rose-500'
-                            : 'bg-[#FAF8FE]/60 border border-[#EDE8F8] focus:border-[#DB2777]'
-                        }`}
-                      />
-                      {errors.mainImage && (
-                        <p className="text-[10.5px] font-bold text-rose-600 flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3 shrink-0" />
-                          <span>{errors.mainImage}</span>
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-3 pt-1">
-                      <div className="h-px flex-1 bg-[#EDE8F8]" />
-                      <span className="text-[10px] font-bold text-[#9E92A6] uppercase tracking-wide">or</span>
-                      <div className="h-px flex-1 bg-[#EDE8F8]" />
-                    </div>
-
-                    <div className="space-y-1">
                       <label
                         className={`flex items-center justify-center gap-2 w-full px-3.5 py-2.5 rounded-xl border border-dashed text-xs font-bold transition-colors ${
                           isUploadingHeroImage
@@ -1579,7 +2381,7 @@ export const Blog: React.FC = () => {
                         ) : (
                           <Upload className="w-3.5 h-3.5 text-[#DB2777]" />
                         )}
-                        {isUploadingHeroImage ? 'Uploading…' : 'Upload image from your device'}
+                        {isUploadingHeroImage ? 'Uploading…' : 'Choose a photo from your device'}
                         <input
                           type="file"
                           accept="image/jpeg,image/png,image/gif,image/webp"
@@ -1599,6 +2401,47 @@ export const Blog: React.FC = () => {
                         </p>
                       )}
                     </div>
+
+                    {showHeroImageUrlInput ? (
+                      <div className="space-y-1">
+                        <label className="text-[10.5px] font-bold text-[#6B5E77]">Image link</label>
+                        <input
+                          type="url"
+                          value={mainImage}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setMainImage(val);
+                            setThumbnailImage(val);
+                            if (errors.mainImage && (!val.trim() || isValidHttpUrl(val))) {
+                              setErrors(prev => ({ ...prev, mainImage: undefined, thumbnailImage: undefined }));
+                            }
+                          }}
+                          placeholder="https://images.unsplash.com/photo-..."
+                          autoFocus
+                          className={`w-full rounded-xl px-3 py-2 text-xs font-semibold text-[#1E122C] outline-none transition-all ${
+                            errors.mainImage
+                              ? 'border-2 border-rose-400 bg-rose-50/40 focus:border-rose-500'
+                              : 'bg-[#FAF8FE]/60 border border-[#EDE8F8] focus:border-[#DB2777]'
+                          }`}
+                        />
+                        {errors.mainImage && (
+                          <p className="text-[10.5px] font-bold text-rose-600 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3 shrink-0" />
+                            <span>{errors.mainImage}</span>
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setShowHeroImageUrlInput(true)}
+                        className="text-[10.5px] font-bold text-[#DB2777] hover:underline cursor-pointer"
+                      >
+                        Or use an image link instead
+                      </button>
+                    )}
+                      </>
+                    )}
                   </div>
                 </div>
               )}
@@ -1608,29 +2451,33 @@ export const Blog: React.FC = () => {
                   ========================================================================= */}
               {activeStep === 4 && (
                 <div className="space-y-6 animate-in fade-in duration-150">
-                  {/* Section 1: Connected Platforms & Destination Selector */}
+                  {/* Section 1: connection/config for the platform chosen at
+                      the very start — not a re-picker, see the picker
+                      screen before Step 1. */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="text-xs font-black text-[#1E122C] uppercase tracking-wide flex items-center gap-1.5">
                           <Globe className="w-3.5 h-3.5 text-[#DB2777]" />
-                          Publishing Destination & Platform Integrations
+                          {targetPlatform === 'blog' ? 'Publishing' : 'Platform Connection'}
                         </h3>
                         <p className="text-[11px] text-[#6B5E77] font-medium mt-0.5">
-                          Select where your generated blog posts will be published or syndicated.
+                          {targetPlatform === 'blog'
+                            ? "This is a standalone post — no platform integration needed. Copy the HTML or export it once it's ready."
+                            : 'Make sure this connection is set up before publishing.'}
                         </p>
                       </div>
                     </div>
 
-                    {/* Platforms Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {platformConnections.map(platform => {
-                        const isSelected = targetPlatform === platform.id;
+                    {/* Connection card for the already-chosen platform only */}
+                    {targetPlatform !== 'blog' && (
+                    <div className="grid grid-cols-1 gap-3">
+                      {platformConnections.filter(platform => platform.id === targetPlatform).map(platform => {
+                        const isSelected = true;
                         return (
                           <div
                             key={platform.id}
-                            onClick={() => setTargetPlatform(platform.id)}
-                            className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+                            className={`p-3.5 rounded-2xl border transition-all flex flex-col justify-between ${
                               isSelected
                                 ? 'bg-[#FDF2F8] border-[#DB2777] ring-2 ring-[#DB2777]/20 shadow-xs'
                                 : 'bg-white border-[#EDE8F8] hover:border-[#DB2777]/40'
@@ -1690,6 +2537,7 @@ export const Blog: React.FC = () => {
                         );
                       })}
                     </div>
+                    )}
                   </div>
 
                   {/* =========================================================================
@@ -2333,6 +3181,7 @@ export const Blog: React.FC = () => {
                       </h4>
 
                       <div className="space-y-2 pt-1">
+                        {targetPlatform !== 'blog' && (
                         <button
                           type="button"
                           disabled={isPublishing}
@@ -2351,6 +3200,7 @@ export const Blog: React.FC = () => {
                             </>
                           )}
                         </button>
+                        )}
 
                         <div className="flex gap-2">
                           <button
@@ -2724,9 +3574,10 @@ export const Blog: React.FC = () => {
 
                       <button
                         type="button"
-                        disabled={isPublishing}
+                        disabled={isPublishing || targetPlatform === 'blog'}
                         onClick={() => handlePublishToPlatform(activeDoc, targetPlatform)}
-                        className="px-4 py-2 bg-gradient-to-r from-[#BE185D] via-[#DB2777] to-[#EC4899] hover:opacity-95 text-white text-xs font-black rounded-xl shadow-xs hover:shadow-md cursor-pointer flex items-center gap-1.5 transition-all disabled:opacity-50"
+                        title={targetPlatform === 'blog' ? 'Choose LinkedIn or Webflow from the Studio Workspace to publish' : undefined}
+                        className="px-4 py-2 bg-gradient-to-r from-[#BE185D] via-[#DB2777] to-[#EC4899] hover:opacity-95 text-white text-xs font-black rounded-xl shadow-xs hover:shadow-md cursor-pointer flex items-center gap-1.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isPublishing ? (
                           <>
@@ -2736,7 +3587,7 @@ export const Blog: React.FC = () => {
                         ) : (
                           <>
                             <Send className="w-3.5 h-3.5" />
-                            <span>Publish to {platformConnections.find(p => p.id === targetPlatform)?.name || 'Platform'}</span>
+                            <span>{targetPlatform === 'blog' ? 'No platform chosen' : `Publish to ${platformConnections.find(p => p.id === targetPlatform)?.name || 'Platform'}`}</span>
                           </>
                         )}
                       </button>
@@ -2927,30 +3778,62 @@ export const Blog: React.FC = () => {
             <div className="space-y-4 text-left">
               {configuringPlatform.id === 'webflow' && (
                 <>
+                  <p className="text-xs font-bold text-[#1E122C] flex items-center gap-2">
+                    <span className="w-5 h-5 rounded bg-[#146EF5] text-white text-[10px] font-black flex items-center justify-center">W</span>
+                    Publish this article to Webflow
+                  </p>
+
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-[#1E122C]">Webflow Site Name / ID</label>
-                    <input
-                      type="text"
-                      value={configForm.siteUrl}
-                      onChange={(e) => setConfigForm(prev => ({ ...prev, siteUrl: e.target.value }))}
-                      placeholder="Encaptechno"
-                      className="w-full bg-white border border-[#EDE8F8] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none focus:border-[#DB2777]"
-                    />
+                    <label className="text-xs font-bold text-[#1E122C]">Site</label>
+                    <select
+                      value={selectedWebflowSiteId}
+                      onChange={(e) => handleWebflowSiteChange(e.target.value)}
+                      disabled={isLoadingWebflowSites}
+                      className="w-full bg-white border border-[#EDE8F8] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none focus:border-[#DB2777] disabled:opacity-60"
+                    >
+                      <option value="">{isLoadingWebflowSites ? 'Loading your sites…' : webflowSites.length ? 'Select a site…' : 'No sites found'}</option>
+                      {webflowSites.map(site => (
+                        <option key={site.id} value={site.id}>{site.display_name}</option>
+                      ))}
+                    </select>
                   </div>
+
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-[#1E122C]">Collection ID / Name</label>
-                    <input
-                      type="text"
-                      value={configForm.collectionId}
-                      onChange={(e) => setConfigForm(prev => ({ ...prev, collectionId: e.target.value }))}
-                      placeholder="Blogs"
-                      className="w-full bg-white border border-[#EDE8F8] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none focus:border-[#DB2777]"
-                    />
+                    <label className="text-xs font-bold text-[#1E122C]">Collection</label>
+                    <select
+                      value={selectedWebflowCollectionId}
+                      onChange={(e) => handleWebflowCollectionChange(e.target.value)}
+                      disabled={!selectedWebflowSiteId || isLoadingWebflowCollections}
+                      className="w-full bg-white border border-[#EDE8F8] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-[#1E122C] outline-none focus:border-[#DB2777] disabled:opacity-60"
+                    >
+                      <option value="">
+                        {!selectedWebflowSiteId
+                          ? 'Choose a site first'
+                          : isLoadingWebflowCollections
+                          ? 'Loading collections…'
+                          : webflowCollections.length
+                          ? 'Select a collection…'
+                          : 'No collections found'}
+                      </option>
+                      {webflowCollections.map(collection => (
+                        <option key={collection.id} value={collection.id}>{collection.display_name}</option>
+                      ))}
+                    </select>
                   </div>
-                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-[11px] font-bold text-emerald-800 flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Backend integration active with Webflow API server (Encaptechno).</span>
-                  </div>
+
+                  {webflowConfigError && (
+                    <p className="text-[10.5px] font-bold text-rose-600 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3 shrink-0" />
+                      <span>{webflowConfigError}</span>
+                    </p>
+                  )}
+
+                  {configuringPlatform.connected && (
+                    <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-[11px] font-bold text-emerald-800 flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>Connected — pick a different site/collection above to switch, or Connect again to confirm.</span>
+                    </div>
+                  )}
                 </>
               )}
 
@@ -3044,10 +3927,18 @@ export const Blog: React.FC = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={handleSavePlatformConfig}
-                  className="px-5 py-2 bg-gradient-to-r from-[#BE185D] via-[#DB2777] to-[#EC4899] text-white text-xs font-black rounded-xl shadow-xs hover:shadow-md cursor-pointer"
+                  onClick={configuringPlatform.id === 'webflow' ? handleConnectWebflow : handleSavePlatformConfig}
+                  disabled={
+                    configuringPlatform.id === 'webflow' &&
+                    (isConnectingWebflow || !selectedWebflowSiteId || !selectedWebflowCollectionId)
+                  }
+                  className="px-5 py-2 bg-gradient-to-r from-[#BE185D] via-[#DB2777] to-[#EC4899] text-white text-xs font-black rounded-xl shadow-xs hover:shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Save Connection
+                  {configuringPlatform.id === 'webflow'
+                    ? isConnectingWebflow
+                      ? 'Connecting…'
+                      : 'Connect Webflow'
+                    : 'Save Connection'}
                 </button>
               </div>
             </div>
@@ -3103,63 +3994,224 @@ export const Blog: React.FC = () => {
                   placeholder="What do you want to talk about?"
                 />
 
-                {linkedinComposer.hashtags.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {linkedinComposer.hashtags.map(tag => (
-                      <span
-                        key={tag}
-                        className="text-[11px] font-semibold text-[#0077B5] bg-[#0077B5]/8 px-2 py-1 rounded-lg"
-                      >
-                        {tag}
-                      </span>
-                    ))}
+                <div className="space-y-1.5">
+                  <label className="text-[10.5px] font-bold text-[#6B5E77]">Hashtags (optional)</label>
+
+                  {linkedinComposer.hashtags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {linkedinComposer.hashtags.map(tag => (
+                        <span
+                          key={tag}
+                          className="flex items-center gap-1 text-[11px] font-semibold text-[#0077B5] bg-[#0077B5]/8 pl-2 pr-1 py-1 rounded-lg"
+                        >
+                          {tag}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveLinkedinHashtag(tag)}
+                            className="p-0.5 rounded-full hover:bg-[#0077B5]/15 cursor-pointer"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={linkedinHashtagDraft}
+                      onChange={e => setLinkedinHashtagDraft(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddLinkedinHashtag();
+                        }
+                      }}
+                      placeholder="Type your own, press Enter"
+                      className="flex-1 rounded-xl px-3 py-2 text-xs font-semibold text-[#1E122C] bg-[#FAF8FE]/60 border border-[#EDE8F8] outline-none focus:border-[#0077B5] transition-all"
+                    />
+                    <button
+                      type="button"
+                      disabled={!linkedinHashtagDraft.trim()}
+                      onClick={handleAddLinkedinHashtag}
+                      className="px-3.5 py-2 rounded-xl border border-[#EDE8F8] hover:bg-[#FAF8FE] text-xs font-bold text-[#1E122C] shrink-0 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Add
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isSuggestingHashtags}
+                      onClick={handleSuggestLinkedinHashtags}
+                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#0077B5]/30 bg-[#0077B5]/5 hover:bg-[#0077B5]/10 text-xs font-bold text-[#0077B5] shrink-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {isSuggestingHashtags ? (
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Sparkles className="w-3.5 h-3.5" />
+                      )}
+                      Suggest with AI
+                    </button>
                   </div>
-                )}
+                </div>
 
                 {(() => {
+                  if (linkedinComposer.videoPreviewUrl) {
+                    return (
+                      <div className="relative rounded-2xl overflow-hidden border border-[#EDE8F8]">
+                        <video
+                          src={linkedinComposer.videoPreviewUrl}
+                          controls
+                          className="w-full max-h-64 bg-black"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleLinkedinComposerMediaClear}
+                          className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white cursor-pointer"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    );
+                  }
+
                   const previewSrc = linkedinComposer.imageFilePreviewUrl || linkedinComposer.imageUrl;
-                  return previewSrc ? (
-                    <div className="relative rounded-2xl overflow-hidden border border-[#EDE8F8]">
-                      <img
-                        src={previewSrc}
-                        alt="Selected attachment"
-                        className="w-full max-h-64 object-cover"
-                      />
-                      {linkedinComposer.imageFilePreviewUrl ? null : (
-                        <span className="absolute bottom-2 left-2 text-[10px] font-bold text-white bg-black/60 px-2 py-0.5 rounded-full">
-                          From cover image
-                        </span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={handleLinkedinComposerImageClear}
-                        className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white cursor-pointer"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <label className="flex items-center gap-2 w-fit px-3.5 py-2 rounded-xl border border-[#EDE8F8] hover:border-[#0077B5]/40 hover:bg-[#FAF8FE] text-xs font-bold text-[#1E122C] cursor-pointer transition-colors">
-                          <ImageIcon className="w-4 h-4 text-[#0077B5]" />
-                          Photo
+                  if (previewSrc) {
+                    return (
+                      <div className="relative rounded-2xl overflow-hidden border border-[#EDE8F8]">
+                        <img
+                          src={previewSrc}
+                          alt="Selected attachment"
+                          className="w-full max-h-64 object-cover"
+                        />
+                        {linkedinComposer.imageFilePreviewUrl ? null : (
+                          <span className="absolute bottom-2 left-2 text-[10px] font-bold text-white bg-black/60 px-2 py-0.5 rounded-full">
+                            From cover image
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={handleLinkedinComposerMediaClear}
+                          className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white cursor-pointer"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    );
+                  }
+
+                  // ---- No media attached yet: guided picker ----
+
+                  // Step 1: which type? (mirrors LinkedIn's own Video / Photo row)
+                  if (linkedinMediaPickerType === null) {
+                    return (
+                      <div className="space-y-1.5">
+                        <p className="text-[10.5px] font-bold text-[#6B5E77]">Want to add a photo or video? (optional)</p>
+                        <div className="flex items-center gap-2.5">
+                          <button
+                            type="button"
+                            onClick={() => setLinkedinMediaPickerType('video')}
+                            className="flex-1 flex items-center justify-center gap-2 px-3.5 py-3 rounded-xl border border-[#EDE8F8] hover:border-[#0077B5]/40 hover:bg-[#FAF8FE] text-xs font-bold text-[#1E122C] cursor-pointer transition-colors"
+                          >
+                            <PlayCircle className="w-4 h-4 text-[#0077B5]" />
+                            Video
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setLinkedinMediaPickerType('photo')}
+                            className="flex-1 flex items-center justify-center gap-2 px-3.5 py-3 rounded-xl border border-[#EDE8F8] hover:border-[#0077B5]/40 hover:bg-[#FAF8FE] text-xs font-bold text-[#1E122C] cursor-pointer transition-colors"
+                          >
+                            <ImageIcon className="w-4 h-4 text-[#0077B5]" />
+                            Photo
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // Step 2a: Video — device upload only (LinkedIn has no URL-fetch path for video)
+                  if (linkedinMediaPickerType === 'video') {
+                    return (
+                      <div className="space-y-2">
+                        <label className="flex items-center justify-center gap-2 w-full px-3.5 py-3 rounded-xl border border-dashed border-[#EDE8F8] hover:border-[#0077B5]/40 hover:bg-[#FAF8FE] text-xs font-bold text-[#1E122C] cursor-pointer transition-colors">
+                          <PlayCircle className="w-4 h-4 text-[#0077B5]" />
+                          Choose a video from your device
                           <input
                             type="file"
-                            accept="image/jpeg,image/png,image/gif"
+                            accept="video/mp4"
                             className="hidden"
-                            onChange={e => handleLinkedinComposerImageSelect(e.target.files?.[0] || null)}
+                            onChange={e => handleLinkedinComposerVideoSelect(e.target.files?.[0] || null)}
                           />
                         </label>
-                        <span className="text-[10px] font-bold text-[#9E92A6] uppercase tracking-wide">or</span>
+                        <p className="text-[10px] text-[#9E92A6] font-semibold">MP4 files up to 500MB.</p>
+                        <button
+                          type="button"
+                          onClick={() => setLinkedinMediaPickerType(null)}
+                          className="text-[10.5px] font-bold text-[#6B5E77] hover:text-[#1E122C] cursor-pointer"
+                        >
+                          ← Back
+                        </button>
                       </div>
-                      <input
-                        type="url"
-                        value={linkedinComposer.imageUrl}
-                        onChange={e => handleLinkedinComposerImageUrlChange(e.target.value)}
-                        placeholder="Paste an image URL…"
-                        className="w-full rounded-xl px-3 py-2 text-xs font-semibold text-[#1E122C] bg-[#FAF8FE]/60 border border-[#EDE8F8] outline-none focus:border-[#0077B5] transition-all"
-                      />
+                    );
+                  }
+
+                  // Step 2b: Photo — one obvious button (upload); the URL
+                  // option is a small link underneath for anyone who
+                  // wants it, not a decision everyone has to make.
+                  return (
+                    <div className="space-y-2">
+                      <label className="flex items-center justify-center gap-2 w-full px-3.5 py-3 rounded-xl border border-dashed border-[#EDE8F8] hover:border-[#0077B5]/40 hover:bg-[#FAF8FE] text-xs font-bold text-[#1E122C] cursor-pointer transition-colors">
+                        <ImageIcon className="w-4 h-4 text-[#0077B5]" />
+                        Choose a photo from your device
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/gif"
+                          className="hidden"
+                          onChange={e => handleLinkedinComposerImageSelect(e.target.files?.[0] || null)}
+                        />
+                      </label>
+
+                      {linkedinPhotoSource === 'url' ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="url"
+                            value={linkedinImageUrlDraft}
+                            onChange={e => setLinkedinImageUrlDraft(e.target.value)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter' && linkedinImageUrlDraft.trim()) {
+                                handleLinkedinComposerImageUrlChange(linkedinImageUrlDraft.trim());
+                              }
+                            }}
+                            placeholder="Paste an image link…"
+                            autoFocus
+                            className="flex-1 rounded-xl px-3 py-2 text-xs font-semibold text-[#1E122C] bg-[#FAF8FE]/60 border border-[#EDE8F8] outline-none focus:border-[#0077B5] transition-all"
+                          />
+                          <button
+                            type="button"
+                            disabled={!linkedinImageUrlDraft.trim()}
+                            onClick={() => handleLinkedinComposerImageUrlChange(linkedinImageUrlDraft.trim())}
+                            className="px-3.5 py-2 rounded-xl bg-[#0077B5] hover:bg-[#006097] text-white text-xs font-bold shrink-0 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                          >
+                            Add
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setLinkedinPhotoSource('url')}
+                          className="text-[10.5px] font-bold text-[#0077B5] hover:underline cursor-pointer"
+                        >
+                          Or use a photo link instead
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => { setLinkedinMediaPickerType(null); setLinkedinPhotoSource('device'); }}
+                        className="text-[10.5px] font-bold text-[#6B5E77] hover:text-[#1E122C] cursor-pointer"
+                      >
+                        ← Back
+                      </button>
                     </div>
                   );
                 })()}

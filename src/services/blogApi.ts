@@ -7,10 +7,16 @@ import {
   UsageSummary,
   WebflowPublishResponse,
   WebflowStatusResponse,
+  WebflowSitesResult,
+  WebflowCollectionsResult,
+  WebflowFieldsResult,
+  WebflowConnectRequest,
   LinkedInStatusResponse,
   LinkedInPublishResult,
   LinkedInGenerateRequest,
   LinkedInGenerateResult,
+  LinkedInHashtagSuggestRequest,
+  LinkedInHashtagSuggestResult,
   ImageBatchUploadResult,
 } from '../types/blogApi';
 
@@ -110,6 +116,31 @@ export const blogApi = {
     });
   },
 
+  getWebflowSites(): Promise<WebflowSitesResult> {
+    return request<WebflowSitesResult>('/api/v1/webflow/sites');
+  },
+
+  getWebflowCollections(siteId: string): Promise<WebflowCollectionsResult> {
+    return request<WebflowCollectionsResult>(`/api/v1/webflow/collections?site_id=${encodeURIComponent(siteId)}`);
+  },
+
+  getWebflowFields(collectionId: string): Promise<WebflowFieldsResult> {
+    return request<WebflowFieldsResult>(`/api/v1/webflow/collections/${encodeURIComponent(collectionId)}/fields`);
+  },
+
+  connectWebflow(payload: WebflowConnectRequest): Promise<WebflowStatusResponse> {
+    return request<WebflowStatusResponse>('/api/v1/webflow/connect', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  disconnectWebflow(): Promise<void> {
+    return request<void>('/api/v1/webflow/disconnect', {
+      method: 'DELETE',
+    });
+  },
+
   getLinkedInStatus(): Promise<LinkedInStatusResponse> {
     return request<LinkedInStatusResponse>('/api/v1/linkedin/status');
   },
@@ -139,11 +170,15 @@ export const blogApi = {
   publishLinkedInPost(
     text: string,
     image?: File | null,
-    imageUrl?: string | null
+    imageUrl?: string | null,
+    video?: File | null
   ): Promise<LinkedInPublishResult> {
     const formData = new FormData();
     formData.append('text', text);
-    if (image) {
+    if (video) {
+      // Video takes priority server-side too if somehow both are set.
+      formData.append('video', video);
+    } else if (image) {
       // A device-uploaded file takes priority over a URL if somehow
       // both are set.
       formData.append('image', image);
@@ -158,6 +193,13 @@ export const blogApi = {
 
   generateLinkedInContent(payload: LinkedInGenerateRequest): Promise<LinkedInGenerateResult> {
     return request<LinkedInGenerateResult>('/api/v1/linkedin/generate', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  suggestLinkedInHashtags(payload: LinkedInHashtagSuggestRequest): Promise<LinkedInHashtagSuggestResult> {
+    return request<LinkedInHashtagSuggestResult>('/api/v1/linkedin/hashtags/suggest', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
