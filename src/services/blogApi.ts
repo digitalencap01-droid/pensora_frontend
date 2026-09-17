@@ -145,17 +145,20 @@ export const blogApi = {
     return request<LinkedInStatusResponse>('/api/v1/linkedin/status');
   },
 
-  getLinkedInConnectUrl(returnPath = '/blog'): Promise<{ authorize_url: string }> {
-    return request<{ authorize_url: string }>(`/api/v1/linkedin/connect?return_path=${encodeURIComponent(returnPath)}`);
+  getLinkedInConnectUrl(returnPath = '/blog', forceLogin = false): Promise<{ authorize_url: string }> {
+    return request<{ authorize_url: string }>(
+      `/api/v1/linkedin/connect?return_path=${encodeURIComponent(returnPath)}&force_login=${forceLogin}`
+    );
   },
 
-  disconnectLinkedIn(): Promise<void> {
-    return request<void>('/api/v1/linkedin/disconnect', {
+  disconnectLinkedIn(accountId: number): Promise<void> {
+    return request<void>(`/api/v1/linkedin/disconnect/${accountId}`, {
       method: 'DELETE',
     });
   },
 
   publishToLinkedIn(payload: {
+    account_ids: number[];
     article_title: string;
     article_summary?: string;
     article_url: string;
@@ -169,12 +172,14 @@ export const blogApi = {
 
   publishLinkedInPost(
     text: string,
+    accountIds: number[],
     image?: File | null,
     imageUrl?: string | null,
     video?: File | null
   ): Promise<LinkedInPublishResult> {
     const formData = new FormData();
     formData.append('text', text);
+    accountIds.forEach(id => formData.append('account_ids', String(id)));
     if (video) {
       // Video takes priority server-side too if somehow both are set.
       formData.append('video', video);

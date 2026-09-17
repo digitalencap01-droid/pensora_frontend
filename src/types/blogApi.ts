@@ -223,14 +223,28 @@ export interface WebflowConnectRequest {
   thumbnail_field?: string | null;
 }
 
+export interface LinkedInAccount {
+  id: number;
+  linkedin_name?: string | null;
+  linkedin_email?: string | null;
+}
+
 export interface LinkedInStatusResponse {
   connected: boolean;
+  accounts: LinkedInAccount[];
+}
+
+export interface LinkedInAccountPublishResult {
+  account_id: number;
   linkedin_name?: string | null;
+  success: boolean;
+  post_urn?: string | null;
+  post_url?: string | null;
+  error?: string | null;
 }
 
 export interface LinkedInPublishResult {
-  post_urn: string;
-  post_url?: string | null;
+  results: LinkedInAccountPublishResult[];
 }
 
 export type LinkedInContentType = 'post' | 'article';

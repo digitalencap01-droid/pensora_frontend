@@ -79,6 +79,7 @@ import {
   WebflowSite,
   WebflowCollection,
   WebflowFieldOption,
+  LinkedInAccount,
 } from '../types/blogApi';
 
 // Real backend project status (app/schemas/project_management.py: ProjectSummary.status)
@@ -362,6 +363,15 @@ export const Blog: React.FC = () => {
     videoPreviewUrl: string | null;
   } | null>(null);
 
+  // Every connected LinkedIn account (multi-account support — one
+  // OAuth connection per account, all held at once). Populated from
+  // GET /linkedin/status on mount and after a successful connect.
+  const [linkedinAccounts, setLinkedinAccounts] = useState<LinkedInAccount[]>([]);
+  // Which of those accounts the current compose session will post to —
+  // defaults to all connected accounts when the composer opens, and
+  // shown as checkboxes only when there's more than one to choose from.
+  const [linkedinComposerAccountIds, setLinkedinComposerAccountIds] = useState<number[]>([]);
+
   // Pure UI navigation for the composer's "attach media" step — which
   // type the user is choosing, and (for Photo) which source. Reset
   // whenever the composer opens/closes or media is cleared, so a
@@ -428,7 +438,11 @@ export const Blog: React.FC = () => {
             return {
               ...p,
               connected: status.connected,
-              siteUrl: status.linkedin_name ? `@${status.linkedin_name}` : p.siteUrl
+              siteUrl: status.accounts.length
+                ? status.accounts.length === 1
+                  ? `@${status.accounts[0].linkedin_name || 'LinkedIn account'}`
+                  : `${status.accounts.length} accounts connected`
+                : p.siteUrl
             };
           }
           return p;
@@ -438,6 +452,9 @@ export const Blog: React.FC = () => {
         } catch {}
         return updated;
       });
+      if (linkedinRes.status === 'fulfilled') {
+        setLinkedinAccounts(linkedinRes.value.accounts);
+      }
     }).catch(() => {});
   }, []);
 
@@ -565,35 +582,10 @@ export const Blog: React.FC = () => {
     }
   };
 
-  const handleSavePlatformConfig = () => {
-    if (!configuringPlatform) return;
-    const updated = platformConnections.map(p => {
-      if (p.id === configuringPlatform.id) {
-        return {
-          ...p,
-          connected: true,
-          siteUrl: configForm.siteUrl,
-          username: configForm.username,
-          apiKey: configForm.apiKey,
-          collectionId: configForm.collectionId,
-          statusMode: configForm.statusMode,
-          lastSynced: new Date().toLocaleDateString()
-        };
-      }
-      return p;
-    });
-    saveConnections(updated);
-    setConfiguringPlatform(null);
-  };
-
+  // Webflow only — LinkedIn accounts are disconnected individually via
+  // handleDisconnectLinkedInAccount below, since multiple can be
+  // connected at once.
   const handleDisconnectPlatform = async (id: PublishingPlatformId) => {
-    if (id === 'linkedin') {
-      try {
-        await blogApi.disconnectLinkedIn();
-      } catch (err) {
-        console.error('Failed to disconnect LinkedIn on backend', err);
-      }
-    }
     if (id === 'webflow') {
       try {
         await blogApi.disconnectWebflow();
@@ -619,9 +611,40 @@ export const Blog: React.FC = () => {
     }
   };
 
+  const handleDisconnectLinkedInAccount = async (accountId: number) => {
+    try {
+      await blogApi.disconnectLinkedIn(accountId);
+    } catch (err) {
+      console.error('Failed to disconnect LinkedIn account on backend', err);
+      return;
+    }
+    const remaining = linkedinAccounts.filter(a => a.id !== accountId);
+    setLinkedinAccounts(remaining);
+    const updated = platformConnections.map(p =>
+      p.id === 'linkedin'
+        ? {
+            ...p,
+            connected: remaining.length > 0,
+            siteUrl: remaining.length
+              ? remaining.length === 1
+                ? `@${remaining[0].linkedin_name || 'LinkedIn account'}`
+                : `${remaining.length} accounts connected`
+              : ''
+          }
+        : p
+    );
+    saveConnections(updated);
+  };
+
   const handleConnectLinkedIn = async () => {
     try {
-      const res = await blogApi.getLinkedInConnectUrl('/blog');
+      // Once at least one account is already connected, this is an
+      // "add another account" click — ask LinkedIn to show its login
+      // screen instead of silently reusing the browser's active
+      // session. Best-effort only: LinkedIn doesn't officially
+      // document this, so an incognito window / different browser is
+      // still the reliable fallback if it gets reused anyway.
+      const res = await blogApi.getLinkedInConnectUrl('/blog', linkedinAccounts.length > 0);
       if (res.authorize_url) {
         window.location.href = res.authorize_url;
       }
@@ -657,6 +680,7 @@ export const Blog: React.FC = () => {
       setLinkedinPhotoSource('device');
       setLinkedinImageUrlDraft('');
       setLinkedinHashtagDraft('');
+      setLinkedinComposerAccountIds(linkedinAccounts.map(a => a.id));
       setLinkedinComposer({
         isLoadingDraft: true,
         text: '',
@@ -887,6 +911,10 @@ export const Blog: React.FC = () => {
 
   const handlePublishLinkedinComposer = async () => {
     if (!linkedinComposer) return;
+    if (!linkedinComposerAccountIds.length) {
+      alert('Pick at least one LinkedIn account to post to.');
+      return;
+    }
     const hashtagLine = linkedinComposer.hashtags.length ? `\n\n${linkedinComposer.hashtags.join(' ')}` : '';
     const commentary = `${linkedinComposer.text}${hashtagLine}`;
 
@@ -895,12 +923,30 @@ export const Blog: React.FC = () => {
     try {
       const res = await blogApi.publishLinkedInPost(
         commentary,
+        linkedinComposerAccountIds,
         linkedinComposer.imageFile,
         linkedinComposer.imageUrl,
         linkedinComposer.videoFile
       );
-      setPublishSuccessMsg(`Published to LinkedIn! Post ID: ${res.post_urn}`);
-      closeLinkedinComposer();
+      const succeeded = res.results.filter(r => r.success);
+      const failed = res.results.filter(r => !r.success);
+      if (failed.length === 0) {
+        setPublishSuccessMsg(
+          succeeded.length === 1
+            ? `Published to LinkedIn! Post ID: ${succeeded[0].post_urn}`
+            : `Published to ${succeeded.length} LinkedIn accounts!`
+        );
+        closeLinkedinComposer();
+      } else {
+        const failedNames = failed
+          .map(r => r.linkedin_name || `account #${r.account_id}`)
+          .join(', ');
+        alert(
+          `Published to ${succeeded.length} of ${res.results.length} accounts. ` +
+          `Failed: ${failedNames} — ${failed[0].error || 'Unknown error'}`
+        );
+        if (succeeded.length > 0) closeLinkedinComposer();
+      }
     } catch (err: any) {
       alert(`Publishing failed: ${err.message || 'Unknown error'}`);
     } finally {
@@ -3839,37 +3885,56 @@ export const Blog: React.FC = () => {
 
               {configuringPlatform.id === 'linkedin' && (
                 <div className="space-y-3">
-                  {configuringPlatform.connected ? (
-                    <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl space-y-2">
-                      <div className="flex items-center gap-2 text-emerald-800 font-bold text-xs">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                        <span>Connected to LinkedIn</span>
-                      </div>
-                      <p className="text-[11px] text-emerald-700 font-medium">
-                        Account: <span className="font-bold">{configuringPlatform.siteUrl || 'LinkedIn Profile'}</span>
-                      </p>
-                      <p className="text-[10.5px] text-[#6B5E77]">
-                        Articles and posts will be published directly to your LinkedIn account using official OAuth credentials.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="p-4 bg-[#FAF8FE] border border-[#EDE8F8] rounded-2xl space-y-3">
-                      <div className="space-y-1">
-                        <h4 className="text-xs font-bold text-[#1E122C]">Authorize via LinkedIn OAuth 2.0</h4>
-                        <p className="text-[11px] text-[#6B5E77] leading-relaxed">
-                          Connect your LinkedIn profile to publish blog articles and thought leadership posts directly to your network.
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleConnectLinkedIn}
-                        className="w-full py-2.5 px-4 bg-[#0077B5] hover:bg-[#006097] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
-                      >
-                        <Linkedin className="w-4 h-4" />
-                        <span>Sign in with LinkedIn</span>
-                      </button>
+                  {linkedinAccounts.length > 0 && (
+                    <div className="space-y-2">
+                      {linkedinAccounts.map(account => (
+                        <div
+                          key={account.id}
+                          className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between gap-3"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold text-emerald-800 truncate">
+                                {account.linkedin_name || 'LinkedIn Account'}
+                              </p>
+                              {account.linkedin_email && (
+                                <p className="text-[10px] text-emerald-700 truncate">{account.linkedin_email}</p>
+                              )}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleDisconnectLinkedInAccount(account.id)}
+                            className="px-2.5 py-1.5 rounded-lg text-[10.5px] font-bold text-rose-600 hover:bg-rose-50 cursor-pointer shrink-0"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   )}
+
+                  <div className="p-4 bg-[#FAF8FE] border border-[#EDE8F8] rounded-2xl space-y-3">
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-bold text-[#1E122C]">
+                        {linkedinAccounts.length > 0 ? 'Add another LinkedIn account' : 'Authorize via LinkedIn OAuth 2.0'}
+                      </h4>
+                      <p className="text-[11px] text-[#6B5E77] leading-relaxed">
+                        {linkedinAccounts.length > 0
+                          ? 'Connect an additional LinkedIn profile so you can choose which accounts to post to when publishing.'
+                          : 'Connect your LinkedIn profile to publish blog articles and thought leadership posts directly to your network.'}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleConnectLinkedIn}
+                      className="w-full py-2.5 px-4 bg-[#0077B5] hover:bg-[#006097] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
+                    >
+                      <Linkedin className="w-4 h-4" />
+                      <span>{linkedinAccounts.length > 0 ? 'Connect another account' : 'Sign in with LinkedIn'}</span>
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -3903,7 +3968,19 @@ export const Blog: React.FC = () => {
               </div>
             </div>
 
-            {/* Modal Actions */}
+            {/* Modal Actions — LinkedIn manages connect/disconnect inline
+                per-account above, so its footer is just a close button. */}
+            {configuringPlatform.id === 'linkedin' ? (
+              <div className="flex items-center justify-end pt-3 border-t border-[#EDE8F8]">
+                <button
+                  type="button"
+                  onClick={() => setConfiguringPlatform(null)}
+                  className="px-5 py-2 bg-[#1E122C] hover:bg-black text-white text-xs font-black rounded-xl cursor-pointer"
+                >
+                  Done
+                </button>
+              </div>
+            ) : (
             <div className="flex items-center justify-between pt-3 border-t border-[#EDE8F8]">
               {configuringPlatform.connected ? (
                 <button
@@ -3927,21 +4004,15 @@ export const Blog: React.FC = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={configuringPlatform.id === 'webflow' ? handleConnectWebflow : handleSavePlatformConfig}
-                  disabled={
-                    configuringPlatform.id === 'webflow' &&
-                    (isConnectingWebflow || !selectedWebflowSiteId || !selectedWebflowCollectionId)
-                  }
+                  onClick={handleConnectWebflow}
+                  disabled={isConnectingWebflow || !selectedWebflowSiteId || !selectedWebflowCollectionId}
                   className="px-5 py-2 bg-gradient-to-r from-[#BE185D] via-[#DB2777] to-[#EC4899] text-white text-xs font-black rounded-xl shadow-xs hover:shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {configuringPlatform.id === 'webflow'
-                    ? isConnectingWebflow
-                      ? 'Connecting…'
-                      : 'Connect Webflow'
-                    : 'Save Connection'}
+                  {isConnectingWebflow ? 'Connecting…' : 'Connect Webflow'}
                 </button>
               </div>
             </div>
+            )}
           </div>
         </div>
       )}
@@ -4216,6 +4287,35 @@ export const Blog: React.FC = () => {
                   );
                 })()}
 
+                {linkedinAccounts.length > 1 && (
+                  <div className="space-y-1.5">
+                    <label className="text-[10.5px] font-bold text-[#6B5E77]">Post to</label>
+                    <div className="space-y-1.5">
+                      {linkedinAccounts.map(account => {
+                        const checked = linkedinComposerAccountIds.includes(account.id);
+                        return (
+                          <label
+                            key={account.id}
+                            className="flex items-center gap-2.5 p-2.5 rounded-xl border border-[#EDE8F8] hover:border-[#0077B5]/40 cursor-pointer text-xs font-bold text-[#1E122C]"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() =>
+                                setLinkedinComposerAccountIds(prev =>
+                                  checked ? prev.filter(id => id !== account.id) : [...prev, account.id]
+                                )
+                              }
+                              className="w-4 h-4 accent-[#0077B5] cursor-pointer shrink-0"
+                            />
+                            <span className="truncate">{account.linkedin_name || 'LinkedIn Account'}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-end gap-3 pt-2 border-t border-[#EDE8F8]">
                   <button
                     type="button"
@@ -4228,10 +4328,14 @@ export const Blog: React.FC = () => {
                   <button
                     type="button"
                     onClick={handlePublishLinkedinComposer}
-                    disabled={isPublishing || !linkedinComposer.text.trim()}
+                    disabled={isPublishing || !linkedinComposer.text.trim() || !linkedinComposerAccountIds.length}
                     className="px-5 py-2 bg-[#0077B5] hover:bg-[#006097] text-white text-xs font-black rounded-xl shadow-xs hover:shadow-md transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isPublishing ? 'Posting…' : 'Post'}
+                    {isPublishing
+                      ? 'Posting…'
+                      : linkedinComposerAccountIds.length > 1
+                      ? `Post to ${linkedinComposerAccountIds.length} accounts`
+                      : 'Post'}
                   </button>
                 </div>
               </>
