@@ -239,6 +239,13 @@ const generateSeedContacts = (): Contact[] => {
   return seed;
 };
 
+const getApiBase = () => {
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  return backendApi.getBaseUrl();
+};
+
 export const Contacts: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -250,7 +257,7 @@ export const Contacts: React.FC = () => {
   const fetchLeads = useCallback(async () => {
     try {
       setIsLoading(true);
-      const res = await fetch(`${API_BASE}/api/v1/leads?page_size=250`);
+      const res = await fetch(`${getApiBase()}/api/v1/leads?page_size=250`);
       if (res.ok) {
         const data = await res.json();
         if (data.items) {
@@ -700,7 +707,7 @@ export const Contacts: React.FC = () => {
     };
 
     try {
-      const res = await fetch(`${API_BASE}/api/v1/leads`, {
+      const res = await fetch(`${getApiBase()}/api/v1/leads`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -774,7 +781,7 @@ export const Contacts: React.FC = () => {
     };
 
     try {
-      const res = await fetch(`${API_BASE}/api/v1/leads/${activeContact.id}`, {
+      const res = await fetch(`${getApiBase()}/api/v1/leads/${activeContact.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -811,7 +818,7 @@ export const Contacts: React.FC = () => {
   const handleDeleteContact = async (id: string) => {
     if (confirm('Are you sure you want to delete this contact?')) {
       try {
-        const res = await fetch(`${API_BASE}/api/v1/leads/${id}`, {
+        const res = await fetch(`${getApiBase()}/api/v1/leads/${id}`, {
           method: 'DELETE',
         });
         if (!res.ok) {
@@ -867,7 +874,7 @@ export const Contacts: React.FC = () => {
       try {
         await Promise.all(
           idsToDelete.map(id =>
-            fetch(`${API_BASE}/api/v1/leads/${id}`, {
+            fetch(`${getApiBase()}/api/v1/leads/${id}`, {
               method: 'DELETE',
             })
           )
@@ -951,7 +958,7 @@ export const Contacts: React.FC = () => {
         return;
       }
 
-      const res = await fetch(`${API_BASE}/api/v1/leads/import/direct`, {
+      const res = await fetch(`${getApiBase()}/api/v1/leads/import/direct`, {
         method: 'POST',
         body: formData,
       });

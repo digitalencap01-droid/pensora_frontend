@@ -3,8 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { MarketingProvider } from './context/MarketingContext';
 import AppLayout from './components/layout/AppLayout';
 
-// Public Pages
 import Landing from './pages/Landing';
+import BlogsPublic from './pages/BlogsPublic';
 import Signup from './pages/Signup';
 import Onboarding from './pages/Onboarding';
 
@@ -31,6 +31,7 @@ export const App: React.FC = () => {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Landing />} />
+          <Route path="/blogs" element={<BlogsPublic />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/onboarding" element={<Onboarding />} />
 

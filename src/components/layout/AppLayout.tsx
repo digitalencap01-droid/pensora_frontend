@@ -16,7 +16,7 @@ export const AppLayout: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF5F0] flex selection:bg-[#D94A2A]/20 w-full relative overflow-x-hidden">
+    <div className="min-h-screen bg-white flex selection:bg-purple-100 selection:text-purple-900 w-full relative overflow-x-hidden">
       {/* Sidebar - Desktop */}
       <Sidebar />
 

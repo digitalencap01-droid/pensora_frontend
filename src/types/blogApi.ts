@@ -52,6 +52,9 @@ export interface ContentGenerateRequest {
   slug_override?: string;
   indexable: boolean;
   include_sources: boolean;
+  publisher_name?: string;
+  publisher_url?: string;
+  publisher_logo_url?: string;
 }
 
 export interface ArticleSource {
@@ -157,7 +160,137 @@ export interface UsageSummary {
   total_words_written: number;
 }
 
+export interface WebflowStatusResponse {
+  connected: boolean;
+  site_id?: string | null;
+  site_name?: string | null;
+  collection_id?: string | null;
+  collection_name?: string | null;
+  title_field?: string | null;
+  slug_field?: string | null;
+  body_field?: string | null;
+  summary_field?: string | null;
+  main_image_field?: string | null;
+  thumbnail_field?: string | null;
+}
+
+export interface WebflowPublishResponse {
+  item_id: string;
+  status: 'draft' | 'live';
+  dashboard_url?: string | null;
+}
+
+export interface WebflowSite {
+  id: string;
+  display_name: string;
+  short_name?: string | null;
+}
+
+export interface WebflowSitesResult {
+  sites: WebflowSite[];
+}
+
+export interface WebflowCollection {
+  id: string;
+  display_name: string;
+  slug: string;
+}
+
+export interface WebflowCollectionsResult {
+  collections: WebflowCollection[];
+}
+
+export interface WebflowFieldOption {
+  slug: string;
+  display_name: string;
+  type: string;
+}
+
+export interface WebflowFieldsResult {
+  fields: WebflowFieldOption[];
+}
+
+export interface WebflowConnectRequest {
+  site_id: string;
+  site_name: string;
+  collection_id: string;
+  collection_name: string;
+  title_field?: string;
+  slug_field?: string;
+  body_field?: string;
+  summary_field?: string;
+  main_image_field?: string | null;
+  thumbnail_field?: string | null;
+}
+
+export interface LinkedInAccount {
+  id: number;
+  linkedin_name?: string | null;
+  linkedin_email?: string | null;
+}
+
+export interface LinkedInStatusResponse {
+  connected: boolean;
+  accounts: LinkedInAccount[];
+}
+
+export interface LinkedInAccountPublishResult {
+  account_id: number;
+  linkedin_name?: string | null;
+  success: boolean;
+  post_urn?: string | null;
+  post_url?: string | null;
+  error?: string | null;
+}
+
+export interface LinkedInPublishResult {
+  results: LinkedInAccountPublishResult[];
+}
+
+export type LinkedInContentType = 'post' | 'article';
+
+export interface LinkedInGenerateRequest {
+  content_type: LinkedInContentType;
+  topic: string;
+  tone?: string | null;
+  use_web_search?: boolean;
+  document_id?: string | null;
+  image_batch_id?: string | null;
+}
+
+export interface LinkedInGenerateResult {
+  content_type: LinkedInContentType;
+  text: string;
+  hashtags: string[];
+}
+
+export interface LinkedInHashtagSuggestRequest {
+  topic: string;
+  content_type: LinkedInContentType;
+  draft_text?: string | null;
+}
+
+export interface LinkedInHashtagSuggestResult {
+  hashtags: string[];
+}
+
 export interface ApiErrorPayload {
   stage?: string;
   message?: string;
+}
+
+export interface UploadedImageSummary {
+  id: string;
+  url: string;
+  order_index: number;
+  width?: number | null;
+  height?: number | null;
+}
+
+export interface ImageBatchUploadResult {
+  batch_id: string;
+  image_count: number;
+  status: string;
+  created_at: string;
+  images: UploadedImageSummary[];
 }

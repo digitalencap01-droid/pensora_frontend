@@ -86,6 +86,9 @@ export interface WhatsappStrategy {
   businessType: 'support_crm' | 'promotional_broadcasts' | 'abandoned_cart_recovery' | 'order_updates';
   subscriberOptInCount: string;
   preferredLanguage: string;
+  isConnected?: boolean;
+  connectedAt?: string;
+  connectionMethod?: 'qr' | 'cloud_api';
 }
 
 export interface SocialStrategy {
