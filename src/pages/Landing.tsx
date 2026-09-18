@@ -244,27 +244,27 @@ export const Landing: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FFFDFC] text-[#181516] selection:bg-[#7042D9] selection:text-white antialiased overflow-x-hidden relative">
+    <div className="min-h-screen bg-[#FFFDFC] text-[#181516] selection:bg-[#118AB2] selection:text-white antialiased overflow-x-hidden relative">
       
       {/* Smooth scroll engine */}
       <SmoothScroll />
 
       {/* Desktop Custom Cursor */}
       <motion.div
-        className="hidden md:block fixed top-0 left-0 w-6 h-6 rounded-full border-2 border-[#7042D9] pointer-events-none z-50 mix-blend-difference"
+        className="hidden md:block fixed top-0 left-0 w-6 h-6 rounded-full border-2 border-[#118AB2] pointer-events-none z-50 mix-blend-difference"
         animate={{
           x: mousePosition.x - 12,
           y: mousePosition.y - 12,
           scale: cursorVariant === 'hover' ? 2 : cursorVariant === 'arrow' ? 1.5 : 1,
-          backgroundColor: cursorVariant === 'hover' ? '#7042D9' : 'transparent',
-          borderColor: cursorVariant === 'hover' ? 'transparent' : '#7042D9'
+          backgroundColor: cursorVariant === 'hover' ? '#118AB2' : 'transparent',
+          borderColor: cursorVariant === 'hover' ? 'transparent' : '#118AB2'
         }}
         transition={{ type: 'spring', damping: 30, stiffness: 350, mass: 0.4 }}
       />
 
       {/* Thin scroll progress indicator */}
       <motion.div 
-        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#3D126F] via-[#7042D9] to-[#FF762D] z-50 origin-left"
+        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#118AB2] via-[#7CD5C7] to-[#118AB2] z-50 origin-left"
         style={{ scaleX: useScroll().scrollYProgress }}
       />
 
