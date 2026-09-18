@@ -42,6 +42,9 @@ import {
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Contact } from '../types';
+import { backendApi } from '../services/backendApi';
+
+const API_BASE = backendApi.getBaseUrl();
 
 // ==========================================
 // BRAND ICONS (Official user-uploaded assets & crisp SVGs)
@@ -240,10 +243,7 @@ const getApiBase = () => {
   if (import.meta.env.VITE_API_BASE_URL) {
     return import.meta.env.VITE_API_BASE_URL;
   }
-  if (typeof window !== 'undefined' && window.location.hostname) {
-    return `http://${window.location.hostname}:8004`;
-  }
-  return 'http://127.0.0.1:8004';
+  return backendApi.getBaseUrl();
 };
 
 export const Contacts: React.FC = () => {
@@ -977,7 +977,7 @@ export const Contacts: React.FC = () => {
       }
     } catch (err) {
       console.error('Import failed:', err);
-      setCsvParseError('Could not connect to backend server (port 8004).');
+      setCsvParseError('Could not connect to backend server.');
     } finally {
       setIsUploadingFile(false);
     }
