@@ -276,6 +276,21 @@ export const EmailCampaign: React.FC = () => {
     });
   }, [audienceContacts, selectedPreset, audienceSearch]);
 
+  const selectedRecipients = useMemo(() => {
+    return audienceContacts.filter(c => selectedContactIds.includes(c.id));
+  }, [audienceContacts, selectedContactIds]);
+
+  const handleOpenCreator = () => {
+    setCreatorStep(1);
+    setSelectedPreset('all');
+    setCohortName('All Subscribers');
+    if (audienceContacts.length > 0) {
+      setSelectedContactIds(audienceContacts.map(c => c.id));
+      setCohortCount(audienceContacts.length);
+    }
+    setIsCreatorOpen(true);
+  };
+
   const handleSelectPreset = (presetId: string, label: string) => {
     setSelectedPreset(presetId);
     setCohortName(label);
@@ -689,10 +704,7 @@ Thanks,
 
         <div className="flex items-center gap-3 shrink-0">
           <button
-            onClick={() => {
-              setCreatorStep(1);
-              setIsCreatorOpen(true);
-            }}
+            onClick={handleOpenCreator}
             className="flex items-center gap-2 px-5 py-2.5 bg-[#8C1F3D] hover:bg-[#731831] text-white rounded-xl text-xs font-black shadow-md hover:shadow-lg transition-all cursor-pointer"
           >
             <Zap className="w-4 h-4" />
@@ -820,10 +832,7 @@ Thanks,
                   <span>Browse Templates</span>
                 </button>
                 <button
-                  onClick={() => {
-                    setCreatorStep(1);
-                    setIsCreatorOpen(true);
-                  }}
+                  onClick={handleOpenCreator}
                   className="px-4 py-2 bg-[#8C1F3D] hover:bg-[#731831] text-white rounded-xl text-xs font-black shadow-md cursor-pointer flex items-center gap-1.5"
                 >
                   <Zap className="w-3.5 h-3.5" />
@@ -838,10 +847,7 @@ Thanks,
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-black text-[#1E122C]">Recent Email Broadcasts &amp; Automated Flows</h3>
               <button
-                onClick={() => {
-                  setCreatorStep(1);
-                  setIsCreatorOpen(true);
-                }}
+                onClick={handleOpenCreator}
                 className="text-xs font-bold text-[#8C1F3D] hover:underline cursor-pointer"
               >
                 + Create New Campaign
@@ -861,10 +867,7 @@ Thanks,
                     </p>
                   </div>
                   <button
-                    onClick={() => {
-                      setCreatorStep(1);
-                      setIsCreatorOpen(true);
-                    }}
+                    onClick={handleOpenCreator}
                     className="px-4 py-2 bg-[#8C1F3D] hover:bg-[#731831] text-white rounded-xl text-xs font-black shadow-md cursor-pointer inline-flex items-center gap-1.5 transition-all"
                   >
                     <Zap className="w-3.5 h-3.5" />
@@ -1513,10 +1516,10 @@ Thanks,
                     {/* 4 Cohort Presets */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
                       {[
+                        { id: 'all', label: 'All Subscribers', count: cohortStats.all, tag: 'Full List' },
                         { id: 'vip_engaged', label: 'VIP Engaged', count: cohortStats.vip_engaged, tag: 'High LTV' },
                         { id: 'promo_consented', label: 'Promo Consented', count: cohortStats.promo_consented, tag: 'Active' },
-                        { id: 'cart_abandoners', label: 'Cart Abandoners', count: cohortStats.cart_abandoners, tag: 'Urgent' },
-                        { id: 'all', label: 'All Subscribers', count: cohortStats.all, tag: 'Full List' }
+                        { id: 'cart_abandoners', label: 'Cart Abandoners', count: cohortStats.cart_abandoners, tag: 'Urgent' }
                       ].map((preset) => (
                         <button
                           key={preset.id}
@@ -2156,6 +2159,66 @@ Thanks,
                       </button>
                     </div>
                   </div>
+
+                  {/* Targeted Audience & Recipient Verification Badge Panel */}
+                  <div className="p-4 rounded-2xl bg-white border border-[#F3DEC8] space-y-3 shadow-xs">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-[#8C1F3D]" />
+                        <span className="text-xs font-black text-[#1E122C]">
+                          Targeted Recipients ({selectedRecipients.length} Selected)
+                        </span>
+                        <span className="text-[10px] font-bold text-[#8C1F3D] bg-[#FFEFEA] px-2 py-0.5 rounded-full border border-[#FAD8C7]">
+                          Cohort: {cohortName}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setCreatorStep(1)}
+                        className="text-[11px] font-bold text-[#8C1F3D] hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        <span>Change Audience ➔</span>
+                      </button>
+                    </div>
+
+                    {selectedRecipients.length === 0 ? (
+                      <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                        <span><strong>No recipients selected!</strong> Please return to Step 1 and select at least one recipient before launching.</span>
+                      </div>
+                    ) : (
+                      <div className="space-y-2.5">
+                        <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto p-2.5 bg-[#FCFAF8] rounded-xl border border-[#F3DEC8]/70">
+                          {selectedRecipients.map((c) => (
+                            <span 
+                              key={c.id} 
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-white text-[#1E122C] border border-[#F3DEC8] shadow-3xs"
+                            >
+                              <span className="font-bold text-[#8C1F3D]">{c.name || c.email}</span>
+                              <span className="text-[10.5px] text-[#6B5E77] font-mono">({c.email})</span>
+                              {c.tags && c.tags.includes('vip') && (
+                                <span className="text-[9px] font-black uppercase text-[#EA580C] bg-[#FFF0E6] px-1 rounded">VIP</span>
+                              )}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Deliverability & Compliance Status Banner */}
+                        <div className="pt-1 flex items-center justify-between text-[10.5px] text-[#6B5E77] flex-wrap gap-2 border-t border-[#F3DEC8]/40">
+                          <div className="flex items-center gap-1.5">
+                            <ShieldCheck className="w-3.5 h-3.5 text-[#059669]" />
+                            <span className="text-[#059669] font-bold">RFC 8058 1-Click Unsubscribe</span>
+                            <span>• Dynamic token replacement active</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-[#8A8294]">
+                            <span>From: <strong className="text-[#1E122C]">{senderEmail}</strong></span>
+                            <span>•</span>
+                            <span>Domain: <strong className="text-[#1E122C]">{cleanDomain}</strong></span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -2197,11 +2260,24 @@ Thanks,
                 <button
                   type="button"
                   onClick={handleFinalLaunch}
-                  disabled={isLaunching}
-                  className="px-6 py-2.5 bg-[#10B981] hover:bg-[#059669] text-white rounded-xl text-xs font-black shadow-md cursor-pointer disabled:opacity-50 transition-all flex items-center gap-1.5"
+                  disabled={isLaunching || selectedContactIds.length === 0}
+                  className="px-6 py-2.5 bg-[#10B981] hover:bg-[#059669] text-white rounded-xl text-xs font-black shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-1.5"
                 >
-                  {isLaunching && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
-                  <span>{isLaunching ? '🚀 Dispatching to Engine...' : sendMode === 'now' ? '🚀 Dispatch Campaign Now' : '⏰ Schedule Campaign'}</span>
+                  {isLaunching ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>{sendMode === 'now' ? '🚀 Dispatching to Engine...' : '⏰ Scheduling Campaign...'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-3.5 h-3.5" />
+                      <span>
+                        {sendMode === 'now'
+                          ? `🚀 Launch Broadcast (${selectedContactIds.length} Recipients)`
+                          : `⏰ Schedule Campaign (${selectedContactIds.length} Recipients)`}
+                      </span>
+                    </>
+                  )}
                 </button>
               )}
             </div>
